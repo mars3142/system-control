@@ -4,6 +4,10 @@ managed_components/
 sdkconfig
 sdkconfig.old
 dependencies.lock
+config.env
+kconfigs_projbuild.in
+kconfigs.in
+config/
 
 # cmake
 cmake-build-debug
