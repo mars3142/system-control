@@ -1,7 +1,4 @@
 dependencies:
-  lvgl/lvgl: ~8.3.0
-  esp_lvgl_port: ^1.4.0
-  tny-robotics/sh1106-esp-idf: ^1.0.0
   u8g2:
     git: https://github.com/olikraus/u8g2.git
   u8g2_hal:
