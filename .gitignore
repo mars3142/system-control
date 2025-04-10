@@ -1,0 +1,18 @@
+# esp-idf
+build/
+managed_components/
+sdkconfig
+sdkconfig.old
+dependencies.lock
+
+# They ignored Idea (Webstorm) completely
+.idea/
+.cache/
+
+# However, they kept the following 4 files version controlled
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.history/*
+__pycache__
