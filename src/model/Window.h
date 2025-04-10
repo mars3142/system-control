@@ -10,7 +10,7 @@ public:
 
     [[nodiscard]] auto window() const -> SDL_Window*;
 
-    [[nodiscard]] auto renderer() const -> SDL_Renderer *;
+    [[nodiscard]] auto renderer() const -> SDL_Renderer*;
 
 private:
     SDL_Window* m_window = nullptr;

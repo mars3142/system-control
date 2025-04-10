@@ -21,8 +21,10 @@ Button::Button(
 }
 
 void Button::render() const {
-    const auto button = ResourceManager::getInstance().get_texture(get_context()->renderer(), "assets/button_normal.png");
-    const auto overlay =ResourceManager::getInstance().get_texture(get_context()->renderer(), "assets/button_pressed_overlay.png");
+    const auto button = ResourceManager::getInstance().get_texture(
+        get_context()->renderer(), "assets/button_normal.png");
+    const auto overlay = ResourceManager::getInstance().get_texture(
+        get_context()->renderer(), "assets/button_pressed_overlay.png");
 
     const auto dst = SDL_FRect(m_x, m_y, m_width, m_width);
     SDL_RenderTexture(get_context()->renderer(), button, nullptr, &dst);

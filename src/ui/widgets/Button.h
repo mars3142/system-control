@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../UIWidget.h"
+#include "ui/UIWidget.h"
 
 #include <functional>
 

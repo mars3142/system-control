@@ -45,14 +45,14 @@ include_dependency(u8g2 https://github.com/olikraus/u8g2 1e92781)
 add_subdirectory(components)
 
 configure_file(
-        "${PROJECT_SOURCE_DIR}/include/Version.h.in"
-        "${PROJECT_BINARY_DIR}/include/Version.h"
+        "${CMAKE_SOURCE_DIR}/Version.h.in"
+        "${CMAKE_SOURCE_DIR}/Version.h"
 )
 
 include_directories(
         ${CMAKE_INCLUDE_PATH}
         ${CMAKE_SOURCE_DIR}
-        ${PROJECT_BINARY_DIR}/include
+        ${PROJECT_BINARY_DIR}/src
 )
 
 add_executable(${PROJECT_NAME}

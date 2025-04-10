@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "UIWidget.h"
-#include "../model/AppContext.h"
+#include "model/AppContext.h"
 #include "common/Widget.h"
 
 class Device final : public UIWidget {

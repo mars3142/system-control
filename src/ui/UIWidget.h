@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../model/AppContext.h"
+#include "model/AppContext.h"
 
 class UIWidget {
 public:

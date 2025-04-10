@@ -1,7 +1,6 @@
 #pragma once
 
 #include "functional"
-
 #include "ui/UIWidget.h"
 
 #define DPAD_WIDTH (105)
