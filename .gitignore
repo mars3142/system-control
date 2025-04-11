@@ -37,3 +37,4 @@ _deps/
 bin/
 components/**/*.a
 *.ninja
+Testing/*
