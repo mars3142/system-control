@@ -1,5 +1,6 @@
 #include "button_handling.h"
 
+#include "sdkconfig.h"
 #include <stdio.h>
 #include <string.h>
 #include "driver/gpio.h"
@@ -7,6 +8,7 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_timer.h"
+#include "esp_mac.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/task.h"
