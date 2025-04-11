@@ -28,7 +28,7 @@ std::vector<std::shared_ptr<UIWidget>> widgets;
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     if(SDL_Init(SDL_INIT_VIDEO) == false) {
         SDL_LogError(
-            SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL! -> $s", SDL_GetError());
+            SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL! -> %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
