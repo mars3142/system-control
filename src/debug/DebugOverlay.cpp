@@ -58,8 +58,9 @@ void render(const AppContext* context) {
         if(ImGui::BeginMenu("Help")) {
             ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
             ImGui::SeparatorText("App Info");
-            ImGui::Text("Project: %s", MY_PROJECT);
-            ImGui::Text("Version: %s", MY_VERSION);
+            ImGui::Text("Project: %s", MyProject.c_str());
+            ImGui::Text("Version: %s", MyProjectVersion.c_str());
+            ImGui::Text("Build Date: %s", MyProjectBuildDate.c_str());
             ImGui::Text("ImGui Version: %s", ImGui::GetVersion());
 
             ImGui::EndMenu();

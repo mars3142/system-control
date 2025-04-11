@@ -1,7 +1,10 @@
 #pragma once
 
-#define MY_VERSION "@PROJECT_VERSION@"
-#define MY_PROJECT "@PROJECT_NAME@"
-#define MY_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
-#define MY_VERSION_MINOR @PROJECT_VERSION_MINOR@
-#define MY_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#include "string"
+
+const std::string MyProject = "@PROJECT_NAME@";
+const std::string MyProjectVersion = "@PROJECT_VERSION@";
+constexpr uint8_t MyProjectVersionMajor = @PROJECT_VERSION_MAJOR@;
+constexpr uint8_t MyProjectVersionMinor = @PROJECT_VERSION_MINOR@;
+constexpr uint8_t MyProjectVersionPatch = @PROJECT_VERSION_PATCH@;
+const std::string MyProjectBuildDate = "@PROJECT_BUILD_DATE@";

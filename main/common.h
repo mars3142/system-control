@@ -1,0 +1,8 @@
+#pragma once
+
+#define BUTTON_UP     GPIO_NUM_1
+#define BUTTON_DOWN   GPIO_NUM_6
+#define BUTTON_LEFT   GPIO_NUM_3
+#define BUTTON_RIGHT  GPIO_NUM_5
+#define BUTTON_SELECT GPIO_NUM_18
+#define BUTTON_BACK   GPIO_NUM_16

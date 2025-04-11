@@ -31,3 +31,9 @@ compile_commands.json
 !.vscode/extensions.json
 .history/*
 __pycache__
+_deps/
+.cmake/
+.ninja_*
+bin/
+components/**/*.a
+*.ninja

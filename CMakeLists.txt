@@ -40,7 +40,7 @@ endfunction()
 include_dependency(SDL3 https://github.com/libsdl-org/SDL release-3.2.8)
 include_dependency(SDL_image https://github.com/libsdl-org/SDL_image release-3.2.4)
 include_dependency(SDL_ttf https://github.com/libsdl-org/SDL_ttf release-3.2.0)
-include_dependency(u8g2 https://github.com/olikraus/u8g2 1e92781)
+include_dependency(u8g2 https://github.com/olikraus/u8g2 82efd57)
 
 add_subdirectory(components)
 

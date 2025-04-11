@@ -18,7 +18,8 @@
 #include "ui/widgets/D_Pad.h"
 
 constexpr unsigned int WINDOW_WIDTH =
-    (U8G2_SCREEN_WIDTH * U8G2_SCREEN_FACTOR + 3 * U8G2_SCREEN_PADDING + 2 * BUTTON_WIDTH + DPAD_WIDTH + 2 * U8G2_SCREEN_PADDING);
+    (U8G2_SCREEN_WIDTH * U8G2_SCREEN_FACTOR + 3 * U8G2_SCREEN_PADDING + 2 * BUTTON_WIDTH +
+     DPAD_WIDTH + 2 * U8G2_SCREEN_PADDING);
 constexpr unsigned int WINDOW_HEIGHT = (U8G2_SCREEN_HEIGHT * U8G2_SCREEN_FACTOR + 50);
 
 std::shared_ptr<Device> device;
@@ -26,19 +27,21 @@ std::vector<std::shared_ptr<UIWidget>> widgets;
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     if(SDL_Init(SDL_INIT_VIDEO) == false) {
-        SDL_ShowSimpleMessageBox(
-            SDL_MESSAGEBOX_ERROR, "Couldn't initialize SDL!", SDL_GetError(), nullptr);
+        SDL_LogError(
+            SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL! -> $s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
     if(TTF_Init() == false) {
-        SDL_ShowSimpleMessageBox(
-            SDL_MESSAGEBOX_ERROR, "Couldn't initialize TTF", SDL_GetError(), nullptr);
+        SDL_LogError(
+            SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize TTF! -> %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
     const auto win = createWindow("System Control (Simulator)", WINDOW_WIDTH, WINDOW_HEIGHT);
     if(!win) {
+        SDL_LogError(
+            SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window! -> %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
     SDL_SetRenderVSync(win->renderer(), SDL_RENDERER_VSYNC_ADAPTIVE);
@@ -100,6 +103,9 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
         case SDLK_BACKSPACE:
             device->onButtonClicked(BUTTON_BACK);
             break;
+
+        default:
+            break;
         }
         break;
 
@@ -115,7 +121,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
 
     default: {
         if(DebugOverlay::show_unhandled_events) {
-            SDL_Log("Unused event: %d", event->type);
+            SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Unused event: %d", event->type);
         }
     } break;
     }

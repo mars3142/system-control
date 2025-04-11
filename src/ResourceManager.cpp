@@ -3,6 +3,7 @@
 #include <memory>
 #include <iostream>
 #include <SDL3_image/SDL_image.h>
+#include <ranges>
 
 ResourceManager& ResourceManager::getInstance() {
     static ResourceManager instance;
@@ -10,13 +11,13 @@ ResourceManager& ResourceManager::getInstance() {
 }
 
 ResourceManager::ResourceManager() {
-    SDL_Log("ResourceManager instance created.");
+    SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "ResourceManager instance created.");
 }
 
 ResourceManager::~ResourceManager() {
-    for(const auto& pair : m_textures) {
-        if(pair.second != nullptr) {
-            SDL_DestroyTexture(pair.second);
+    for(const auto& texture : m_textures | std::views::values) {
+        if(texture != nullptr) {
+            SDL_DestroyTexture(texture);
         }
     }
     m_textures.clear();
@@ -32,11 +33,14 @@ SDL_Texture* ResourceManager::get_texture(SDL_Renderer* renderer, const std::str
     SDL_Texture* texture = IMG_LoadTexture(renderer, path.c_str());
 
     if(!texture) {
-        std::cerr << "ResourceManager Fehler: Konnte Textur nicht laden '" << path << std::endl;
+        SDL_LogError(
+            SDL_LOG_CATEGORY_APPLICATION,
+            "Could not load %s -> %s",
+            path.c_str(),
+            SDL_GetError());
         return nullptr;
     }
 
     m_textures[path] = texture;
     return texture;
 }
-
