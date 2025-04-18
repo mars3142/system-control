@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 
 #include "u8g2.h"
 #include "common/Widget.h"
