@@ -1,5 +1,9 @@
 name: Lolin ESP32-S3 Mini
 
+permissions:
+  contents: read
+  pull-requests: write
+
 on:
   push:
   pull_request:
