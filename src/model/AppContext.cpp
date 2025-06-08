@@ -2,42 +2,53 @@
 
 #include "ui/Matrix.h"
 
-auto AppContext::window() const -> SDL_Window* {
+auto AppContext::MainWindow() const -> SDL_Window *
+{
     return m_window->window();
 }
 
-auto AppContext::renderer() const -> SDL_Renderer* {
+auto AppContext::MainRenderer() const -> SDL_Renderer *
+{
     return m_window->renderer();
 }
 
-auto AppContext::surface() const -> SDL_Surface* {
+auto AppContext::MainSurface() const -> SDL_Surface *
+{
     return SDL_GetWindowSurface(m_window->window());
 }
 
-void AppContext::setMatrix(Matrix* matrix) {
+void AppContext::SetMatrix(Matrix *matrix)
+{
     m_matrix = matrix;
 }
 
-auto AppContext::matrix() const -> Matrix* {
+auto AppContext::LedMatrix() const -> Matrix *
+{
     return m_matrix;
 }
 
-auto AppContext::matrix_window() const -> SDL_Window* {
-    if(m_matrix && m_matrix->window()) {
+auto AppContext::LedMatrixWindow() const -> SDL_Window *
+{
+    if (m_matrix && m_matrix->window())
+    {
         return m_matrix->window()->window();
     }
     return nullptr;
 }
 
-auto AppContext::matrix_renderer() const -> SDL_Renderer* {
-    if(m_matrix && m_matrix->window()) {
+auto AppContext::LedMatrixRenderer() const -> SDL_Renderer *
+{
+    if (m_matrix && m_matrix->window())
+    {
         return m_matrix->window()->renderer();
     }
     return nullptr;
 }
 
-void AppContext::matrix_render() const {
-    if(m_matrix && m_matrix->window()) {
-        m_matrix->render();
+void AppContext::Render() const
+{
+    if (m_matrix && m_matrix->window())
+    {
+        m_matrix->Render();
     }
 }

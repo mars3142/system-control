@@ -1,6 +1,6 @@
 if (DEFINED ENV{IDF_PATH})
-return()
-endif()
+    return()
+endif ()
 
 cmake_minimum_required(VERSION 3.30)
 project(ImGui)

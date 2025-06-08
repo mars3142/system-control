@@ -1,23 +1,17 @@
 #include "data/MenuItem.h"
 
 MenuItem::MenuItem(const uint8_t type, std::string text, std::function<void(uint8_t)> callback)
-    : m_type(type)
-    , m_text(std::move(text))
-    , m_callback(std::move(callback)) {
+    : m_type(type), m_text(std::move(text)), m_callback(std::move(callback))
+{
 }
 
-MenuItem::MenuItem(
-    const uint8_t type,
-    std::string text,
-    std::string value,
-    std::function<void(uint8_t)> callback)
-    : m_type(type)
-    , m_text(std::move(text))
-    , m_value(std::move(value))
-    , m_callback(std::move(callback)) {
+MenuItem::MenuItem(const uint8_t type, std::string text, std::string value, std::function<void(uint8_t)> callback)
+    : m_type(type), m_text(std::move(text)), m_value(std::move(value)), m_callback(std::move(callback))
+{
 }
 
-uint8_t MenuItem::getType() const {
+uint8_t MenuItem::getType() const
+{
     return m_type;
 }
 

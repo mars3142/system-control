@@ -2,15 +2,22 @@
 
 #include "model/AppContext.h"
 
-class UIWidget {
+class UIWidget
+{
 public:
     explicit UIWidget(void *appstate);
 
     virtual ~UIWidget();
 
-    virtual void render() const = 0;
+    virtual void Render() const = 0;
 
-    [[nodiscard]] AppContext *get_context() const;
+    [[nodiscard]] virtual bool IsHit(int mouse_x, int mouse_y) const = 0;
+
+    virtual void OnTap(int mouse_x, int mouse_y) = 0;
+
+    virtual void ReleaseTap(int mouse_x, int mouse_y) = 0;
+
+    [[nodiscard]] AppContext *GetContext() const;
 
 private:
     AppContext *m_context{};

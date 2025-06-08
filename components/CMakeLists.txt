@@ -1,6 +1,6 @@
 if (DEFINED ENV{IDF_PATH})
-return()
-endif()
+    return()
+endif ()
 
 add_library(components INTERFACE)
 

@@ -5,38 +5,44 @@
 #include <vector>
 
 #include "UIWidget.h"
-#include "model/AppContext.h"
 #include "common/Widget.h"
+#include "model/AppContext.h"
 
-class Device final : public UIWidget {
-public:
-    explicit Device(void* appstate);
+class Device final : public UIWidget
+{
+  public:
+    explicit Device(void *appstate);
 
-    void render() const override;
+    void Render() const override;
 
-    void hit_test(SDL_MouseMotionEvent* event) const;
+    void HandleTap(const SDL_MouseButtonEvent *event) const;
 
-    void onButtonClicked(uint8_t button) const;
+    void ReleaseTap(const SDL_MouseButtonEvent *event) const;
 
-private:
-    void draw_background() const;
+    void OnButtonClicked(uint8_t button) const;
 
-    void draw_screen() const;
+    [[nodiscard]] bool IsHit(int mouse_x, int mouse_y) const override;
 
-    void draw_text() const;
+    void OnTap(int mouse_x, int mouse_y) override;
 
-    void render_u8g2() const;
+    void ReleaseTap(int mouse_x, int mouse_y) override;
 
-    void setScreen(const std::shared_ptr<Widget>& screen);
+  private:
+    void DrawBackground() const;
 
-    void pushScreen(const std::shared_ptr<Widget>& screen);
+    void DrawScreen() const;
 
-    void popScreen();
+    void RenderU8G2() const;
 
-    static void pushKey(SDL_Keycode key);
+    void SetScreen(const std::shared_ptr<Widget> &screen);
+
+    void PushScreen(const std::shared_ptr<Widget> &screen);
+
+    void PopScreen();
+
+    static void PushKey(SDL_Keycode key);
 
     std::vector<std::shared_ptr<UIWidget>> m_children{};
-
     std::shared_ptr<Widget> widget;
     std::vector<std::shared_ptr<Widget>> history;
 };

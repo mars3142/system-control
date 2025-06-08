@@ -4,16 +4,17 @@
 #include "ui/LightMenu.h"
 #include "ui/SettingsMenu.h"
 
-MainMenu::MainMenu(menu_options_t* options)
-    : PSMenu(options)
-    , m_options(options) {
+MainMenu::MainMenu(menu_options_t *options) : PSMenu(options), m_options(options)
+{
     addText("Lichtsteuerung", [this](const uint8_t button) { onSelect(button); });
     addText("Einstellungen", [this](const uint8_t button) { onSelect(button); });
 }
 
-void MainMenu::onSelect(const uint8_t id) const {
+void MainMenu::onSelect(const uint8_t id) const
+{
     std::shared_ptr<Widget> widget;
-    switch(id) {
+    switch (id)
+    {
     case 0:
         widget = std::make_shared<LightMenu>(m_options);
         break;
@@ -21,7 +22,8 @@ void MainMenu::onSelect(const uint8_t id) const {
         widget = std::make_shared<SettingsMenu>(m_options);
         break;
     }
-    if(m_options && m_options->pushScreen) {
+    if (m_options && m_options->pushScreen)
+    {
         m_options->pushScreen(widget);
     }
 }

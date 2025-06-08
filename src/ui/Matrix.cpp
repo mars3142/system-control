@@ -1,22 +1,30 @@
 #include "ui/Matrix.h"
 
-Matrix::Matrix(Window *window): m_window(window) {
+Matrix::Matrix(Window *window) : m_window(window)
+{
 }
 
-Window *Matrix::window() const {
+Window *Matrix::window() const
+{
     return m_window;
 }
 
-void Matrix::draw_colored_grid(const int rows, const int cols, const float cellSize, const float spacing) const {
+void Matrix::DrawColoredGrid(const int rows, const int cols, const float cellSize, const float spacing) const
+{
     int i = 0;
-    for (int w = 0; w < cols; w++) {
+    for (int w = 0; w < cols; w++)
+    {
         const auto phase = w % (2 * rows);
 
-        for (int h_raw = 0; h_raw < rows; h_raw++) {
+        for (int h_raw = 0; h_raw < rows; h_raw++)
+        {
             int h;
-            if (phase < rows) {
+            if (phase < rows)
+            {
                 h = h_raw;
-            } else {
+            }
+            else
+            {
                 h = rows - 1 - h_raw;
             }
 
@@ -37,11 +45,12 @@ void Matrix::draw_colored_grid(const int rows, const int cols, const float cellS
     }
 }
 
-void Matrix::render() const {
+void Matrix::Render() const
+{
     SDL_SetRenderDrawColor(m_window->renderer(), 0, 0, 0, 255);
     SDL_RenderClear(m_window->renderer());
 
-    draw_colored_grid(8, 32, 50.0f, 1.0f);
+    DrawColoredGrid(8, 32, 50.0f, 1.0f);
 
     SDL_RenderPresent(m_window->renderer());
 }

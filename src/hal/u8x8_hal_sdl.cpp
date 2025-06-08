@@ -3,8 +3,10 @@
 #include <SDL3/SDL.h>
 #include <cstdint>
 
-uint8_t u8x8_byte_sdl_hw_spi(u8x8_t* u8x8, uint8_t msg, uint8_t arg_int, void* arg_ptr) {
-    switch(msg) {
+uint8_t u8x8_byte_sdl_hw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+{
+    switch (msg)
+    {
     case U8X8_MSG_BYTE_SEND:
     case U8X8_MSG_BYTE_INIT:
     case U8X8_MSG_BYTE_SET_DC:
@@ -18,8 +20,10 @@ uint8_t u8x8_byte_sdl_hw_spi(u8x8_t* u8x8, uint8_t msg, uint8_t arg_int, void* a
     return 1;
 }
 
-uint8_t u8x8_gpio_and_delay_sdl(u8x8_t* u8x8, uint8_t msg, uint8_t arg_int, void* arg_ptr) {
-    switch(msg) {
+uint8_t u8x8_gpio_and_delay_sdl(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+{
+    switch (msg)
+    {
     case U8X8_MSG_DELAY_MILLI:
         SDL_Delay(arg_int);
         break;

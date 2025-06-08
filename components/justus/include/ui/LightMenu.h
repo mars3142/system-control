@@ -4,6 +4,6 @@
 
 class LightMenu : public PSMenu
 {
-public:
-    explicit LightMenu(menu_options_t* options);
+  public:
+    explicit LightMenu(menu_options_t *options);
 };

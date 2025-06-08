@@ -1,9 +1,10 @@
 #pragma once
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
-void setupButtons(void);
+    void setupButtons(void);
 #ifdef __cplusplus
 }
 #endif

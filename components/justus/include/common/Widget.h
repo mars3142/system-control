@@ -4,9 +4,10 @@
 
 #include "u8g2.h"
 
-class Widget {
-public:
-    explicit Widget(u8g2_t* u8g2);
+class Widget
+{
+  public:
+    explicit Widget(u8g2_t *u8g2);
 
     virtual ~Widget() = default;
 
@@ -16,6 +17,6 @@ public:
 
     virtual void onButtonClicked(uint8_t button);
 
-protected:
-    u8g2_t* u8g2;
+  protected:
+    u8g2_t *u8g2;
 };

@@ -10,16 +10,18 @@
 
 uint64_t counter = 0;
 
-SplashScreen::SplashScreen(menu_options_t* options)
-    : Widget(options->u8g2)
-    , m_options(options) {
+SplashScreen::SplashScreen(menu_options_t *options) : Widget(options->u8g2), m_options(options)
+{
 }
 
-void SplashScreen::update(const uint64_t dt) {
+void SplashScreen::update(const uint64_t dt)
+{
     counter += dt;
-    if(counter > 200000) {
+    if (counter > 200000)
+    {
         counter = 0;
-        if(m_options && m_options->setScreen) {
+        if (m_options && m_options->setScreen)
+        {
             m_options->setScreen(std::make_shared<MainMenu>(m_options));
         }
     }
@@ -28,7 +30,8 @@ void SplashScreen::update(const uint64_t dt) {
 #endif
 }
 
-void SplashScreen::render() {
+void SplashScreen::render()
+{
     u8g2_SetFont(u8g2, u8g2_font_DigitalDisco_tr);
     u8g2_DrawStr(u8g2, 28, u8g2->height / 2 - 10, "HO Anlage");
     u8g2_DrawStr(u8g2, 30, u8g2->height / 2 + 5, "Axel Janz");

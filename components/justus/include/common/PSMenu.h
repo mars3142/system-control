@@ -8,19 +8,20 @@
 
 typedef std::function<void(uint8_t)> MenuCallback;
 
-class PSMenu : public Widget {
-public:
-    explicit PSMenu(menu_options_t* options);
+class PSMenu : public Widget
+{
+  public:
+    explicit PSMenu(menu_options_t *options);
     ~PSMenu() override;
 
     void render() override;
     void onButtonClicked(uint8_t button) override;
 
-    void addText(const std::string& text, const MenuCallback& callback);
-    void addSwitch(const std::string& text, std::string& value, const MenuCallback& callback);
-    void addNumber(const std::string& text, std::string& value, const MenuCallback& callback);
+    void addText(const std::string &text, const MenuCallback &callback);
+    void addSwitch(const std::string &text, std::string &value, const MenuCallback &callback);
+    void addNumber(const std::string &text, std::string &value, const MenuCallback &callback);
 
-private:
+  private:
     void onPressedDown();
     void onPressedUp();
     void onPressedLeft();

@@ -1,21 +1,23 @@
 #include "common/PSMenu.h"
 
-#include "u8g2.h"
-#include "common/ScrollBar.h"
 #include "PushButton.h"
+#include "common/ScrollBar.h"
+#include "u8g2.h"
 
-PSMenu::PSMenu(menu_options_t* options)
-    : Widget(options->u8g2)
-    , m_options(options) {
+PSMenu::PSMenu(menu_options_t *options) : Widget(options->u8g2), m_options(options)
+{
     m_options->onButtonClicked = [this](const uint8_t button) { onButtonClicked(button); };
 }
 
-PSMenu::~PSMenu() {
+PSMenu::~PSMenu()
+{
     m_options->onButtonClicked = nullptr;
 }
 
-void PSMenu::render() {
-    if(m_selected_item < 0) {
+void PSMenu::render()
+{
+    if (m_selected_item < 0)
+    {
         onPressedDown();
     }
 
@@ -29,31 +31,24 @@ void PSMenu::render() {
 
     int x = 8; // sure?
     auto widget = m_items.at(m_selected_item);
-    renderWidget(
-        widget.getType(), u8g2_font_helvB08_tr, x, u8g2->height / 2 + 3, widget.getText().c_str());
+    renderWidget(widget.getType(), u8g2_font_helvB08_tr, x, u8g2->height / 2 + 3, widget.getText().c_str());
 
-    if(m_selected_item > 0) {
+    if (m_selected_item > 0)
+    {
         auto item = m_items.at(m_selected_item - 1);
         renderWidget(item.getType(), u8g2_font_haxrcorp4089_tr, x, 14, item.getText().c_str());
     }
-    if(m_selected_item < m_items.size() - 1) {
+    if (m_selected_item < m_items.size() - 1)
+    {
         auto item = m_items.at(m_selected_item + 1);
-        renderWidget(
-            item.getType(),
-            u8g2_font_haxrcorp4089_tr,
-            x,
-            u8g2->height - 10,
-            item.getText().c_str());
+        renderWidget(item.getType(), u8g2_font_haxrcorp4089_tr, x, u8g2->height - 10, item.getText().c_str());
     }
 }
 
-void PSMenu::renderWidget(
-    const uint8_t type,
-    const uint8_t* font,
-    const int x,
-    const int y,
-    const char* text) const {
-    switch(type) {
+void PSMenu::renderWidget(const uint8_t type, const uint8_t *font, const int x, const int y, const char *text) const
+{
+    switch (type)
+    {
     case 0: // text
         u8g2_SetFont(u8g2, font);
         u8g2_DrawStr(u8g2, x, y, text);
@@ -64,8 +59,10 @@ void PSMenu::renderWidget(
     }
 }
 
-void PSMenu::onButtonClicked(uint8_t button) {
-    switch(button) {
+void PSMenu::onButtonClicked(uint8_t button)
+{
+    switch (button)
+    {
     case BUTTON_UP:
         onPressedUp();
         break;
@@ -95,59 +92,77 @@ void PSMenu::onButtonClicked(uint8_t button) {
     }
 }
 
-void PSMenu::onPressedDown() {
-    if(m_selected_item == m_items.size() - 1) {
+void PSMenu::onPressedDown()
+{
+    if (m_selected_item == m_items.size() - 1)
+    {
         m_selected_item = 0;
-    } else {
+    }
+    else
+    {
         m_selected_item++;
     }
 }
 
-void PSMenu::onPressedUp() {
-    if(m_selected_item == 0) {
+void PSMenu::onPressedUp()
+{
+    if (m_selected_item == 0)
+    {
         m_selected_item = m_items.size() - 1;
-    } else {
+    }
+    else
+    {
         m_selected_item--;
     }
 }
 
-void PSMenu::onPressedLeft() {
+void PSMenu::onPressedLeft()
+{
     //
 }
 
-void PSMenu::onPressedRight() {
+void PSMenu::onPressedRight()
+{
     ///
 }
 
-void PSMenu::onPressedSelect() const {
+void PSMenu::onPressedSelect() const
+{
     m_items.at(m_selected_item).callback(m_selected_item);
 }
 
-void PSMenu::onPressedBack() const {
-    if(m_options && m_options->popScreen) {
+void PSMenu::onPressedBack() const
+{
+    if (m_options && m_options->popScreen)
+    {
         m_options->popScreen();
     }
 }
 
-void PSMenu::addText(const std::string& text, const MenuCallback& callback) {
+void PSMenu::addText(const std::string &text, const MenuCallback &callback)
+{
     m_items.emplace_back(0, text, callback);
 }
 
-void PSMenu::addSwitch(const std::string& text, std::string& value, const MenuCallback& callback) {
+void PSMenu::addSwitch(const std::string &text, std::string &value, const MenuCallback &callback)
+{
     m_items.emplace_back(1, text, value, callback);
 }
 
-void PSMenu::addNumber(const std::string& text, std::string& value, const MenuCallback& callback) {
+void PSMenu::addNumber(const std::string &text, std::string &value, const MenuCallback &callback)
+{
     m_items.emplace_back(2, text, value, callback);
 }
 
-void PSMenu::drawScrollBar() const {
+void PSMenu::drawScrollBar() const
+{
     ScrollBar scrollBar(m_options, u8g2->width - 3, 3, 1, u8g2->height - 6);
     scrollBar.refresh(m_selected_item, m_items.size());
     scrollBar.render();
 }
 
-void PSMenu::drawSelectionBox() const {
+void PSMenu::drawSelectionBox() const
+{
     const auto displayHeight = u8g2->height;
     const auto displayWidth = u8g2->width;
     constexpr auto rightPadding = 8;

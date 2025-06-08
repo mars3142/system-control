@@ -4,16 +4,17 @@
 
 #include "model/AppContext.h"
 
-namespace DebugOverlay {
+namespace DebugOverlay
+{
 inline bool show_debug_window = false;
 inline bool show_unhandled_events = false;
-inline bool show_led_matrix = true;
+inline bool show_led_matrix = false;
 
-void init(const AppContext* context);
+void Init(const AppContext *context);
 
-void update(AppContext* context, const SDL_Event* event);
+void Update(AppContext *context, const SDL_Event *event);
 
-void render(const AppContext* context);
+void Render(const AppContext *context);
 
-void cleanup();
+void Cleanup();
 }

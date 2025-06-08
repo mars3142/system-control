@@ -1,10 +1,11 @@
 #pragma once
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
-void setup(void);
-void loop(void);
+    void setup(void);
+    void loop(void);
 #ifdef __cplusplus
 }
 #endif
