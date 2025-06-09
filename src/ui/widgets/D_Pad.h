@@ -24,6 +24,7 @@ public:
 private:
     float m_x, m_y, m_width;
     std::function<void(Direction)> m_callback;
+    Direction m_isPressed = Direction::NONE;
 
     [[nodiscard]] Direction GetDirectionFromTap(float local_x, float local_y) const;
 };

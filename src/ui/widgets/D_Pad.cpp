@@ -13,8 +13,38 @@ void D_Pad::Render() const
     const auto dPad =
         ResourceManager::Instance().GetTextureByName(GetContext()->MainRenderer(), "d-pad_normal.png");
 
-    const auto dst = SDL_FRect(m_x, m_y, m_width, m_width);
+    auto dst = SDL_FRect(m_x, m_y, m_width, m_width);
     SDL_RenderTexture(GetContext()->MainRenderer(), dPad, nullptr, &dst);
+    SDL_DestroyTexture(dPad);
+
+    if (m_isPressed != Direction::NONE)
+    {
+        const auto overlay =
+            ResourceManager::Instance().GetTextureByName(GetContext()->MainRenderer(), "button_pressed_overlay.png");
+        switch (m_isPressed)
+        {
+        case Direction::UP:
+            dst = SDL_FRect(m_x + m_width / 3.0f, m_y, m_width / 3.0f, m_width / 3.0f);
+            break;
+
+        case Direction::DOWN:
+            dst = SDL_FRect(m_x + m_width / 3.0f, m_y + 2 * m_width / 3.0f, m_width / 3.0f, m_width / 3.0f);
+            break;
+
+        case Direction::LEFT:
+            dst = SDL_FRect(m_x, m_y + m_width / 3.0f, m_width / 3.0f, m_width / 3.0f);
+            break;
+
+        case Direction::RIGHT:
+            dst = SDL_FRect(m_x + 2 * m_width / 3.0f, m_y + m_width / 3.0f, m_width / 3.0f, m_width / 3.0f);
+            break;
+
+        case Direction::NONE:
+            break;
+        }
+        SDL_RenderTexture(GetContext()->MainRenderer(), overlay, nullptr, &dst);
+        SDL_DestroyTexture(overlay);
+    }
 }
 
 bool D_Pad::IsHit(const int mouse_x, const int mouse_y) const
@@ -66,17 +96,17 @@ void D_Pad::OnTap(const int mouse_x, const int mouse_y)
     if (m_callback)
     {
         const auto local_x = static_cast<float>(mouse_x) - m_x;
-        const auto local_y = static_cast<float>(mouse_y) - m_y;
 
-        if (local_x >= 0 && local_x <= m_width && local_y >= 0 && local_y <= m_width)
+        if (const auto local_y = static_cast<float>(mouse_y) - m_y;
+            local_x >= 0 && local_x <= m_width && local_y >= 0 && local_y <= m_width)
         {
-            const auto dir = GetDirectionFromTap(local_x, local_y);
-            m_callback(dir);
+            m_isPressed = GetDirectionFromTap(local_x, local_y);
+            m_callback(m_isPressed);
         }
     }
 }
 
 void D_Pad::ReleaseTap(const int mouse_x, const int mouse_y)
 {
-    ///
+    m_isPressed = Direction::NONE;
 }

@@ -231,11 +231,7 @@ void Device::ReleaseTap(const SDL_MouseButtonEvent *event) const
 
     for (const auto &child : m_children)
     {
-        if (child->IsHit(static_cast<int>(event->x), static_cast<int>(event->y)))
-        {
-            child->ReleaseTap(static_cast<int>(event->x), static_cast<int>(event->y));
-            break;
-        }
+        child->ReleaseTap(static_cast<int>(event->x), static_cast<int>(event->y));
     }
 }
 
