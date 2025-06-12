@@ -14,7 +14,7 @@ if (DEFINED ENV{IDF_PATH})
 endif ()
 
 cmake_minimum_required(VERSION 3.30)
-project(justus)
+project(insa)
 
 add_library(${PROJECT_NAME} STATIC
         src/common/PSMenu.cpp
@@ -33,5 +33,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         u8g2
-        peter
+        ruth
 )

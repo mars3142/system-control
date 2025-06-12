@@ -96,8 +96,8 @@ else ()
 
     target_link_libraries(${PROJECT_NAME} PRIVATE
             ImGui
-            justus
-            peter
+            insa
+            ruth
             SDL3::SDL3
             SDL3_image::SDL3_image
             SDL3_ttf::SDL3_ttf

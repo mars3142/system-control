@@ -7,7 +7,7 @@ if (DEFINED ENV{IDF_PATH})
 endif ()
 
 cmake_minimum_required(VERSION 3.30)
-project(peter)
+project(ruth)
 
 add_library(${PROJECT_NAME} STATIC
         PushButton.cpp
