@@ -1,4 +1,4 @@
-name: Lolin ESP32-S3 Mini
+name: ESP-IDF Build
 
 permissions:
   contents: read

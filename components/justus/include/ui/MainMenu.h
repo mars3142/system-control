@@ -4,11 +4,11 @@
 
 class MainMenu final : public PSMenu
 {
-  public:
+public:
     explicit MainMenu(menu_options_t *options);
 
-  private:
-    void onSelect(uint8_t id) const;
+private:
+    void onButtonPressed(uint8_t id, ButtonType button) const;
 
     menu_options_t *m_options;
 };

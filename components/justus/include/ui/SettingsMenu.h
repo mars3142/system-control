@@ -2,7 +2,7 @@
 
 #include "common/PSMenu.h"
 
-class SettingsMenu : public PSMenu
+class SettingsMenu final : public PSMenu
 {
   public:
     explicit SettingsMenu(menu_options_t *options);

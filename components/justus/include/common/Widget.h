@@ -6,7 +6,7 @@
 
 class Widget
 {
-  public:
+public:
     explicit Widget(u8g2_t *u8g2);
 
     virtual ~Widget() = default;
@@ -17,6 +17,6 @@ class Widget
 
     virtual void onButtonClicked(uint8_t button);
 
-  protected:
+protected:
     u8g2_t *u8g2;
 };

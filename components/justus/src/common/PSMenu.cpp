@@ -6,7 +6,9 @@
 
 PSMenu::PSMenu(menu_options_t *options) : Widget(options->u8g2), m_options(options)
 {
-    m_options->onButtonClicked = [this](const uint8_t button) { onButtonClicked(button); };
+    m_options->onButtonClicked = [this](const uint8_t button) {
+        onButtonClicked(button);
+    };
 }
 
 PSMenu::~PSMenu()
@@ -31,35 +33,54 @@ void PSMenu::render()
 
     int x = 8; // sure?
     auto widget = m_items.at(m_selected_item);
-    renderWidget(widget.getType(), u8g2_font_helvB08_tr, x, u8g2->height / 2 + 3, widget.getText().c_str());
+    renderWidget(&widget, u8g2_font_helvB08_tr, x, u8g2->height / 2 + 3);
 
     if (m_selected_item > 0)
     {
         auto item = m_items.at(m_selected_item - 1);
-        renderWidget(item.getType(), u8g2_font_haxrcorp4089_tr, x, 14, item.getText().c_str());
+        renderWidget(&item, u8g2_font_haxrcorp4089_tr, x, 14);
     }
     if (m_selected_item < m_items.size() - 1)
     {
         auto item = m_items.at(m_selected_item + 1);
-        renderWidget(item.getType(), u8g2_font_haxrcorp4089_tr, x, u8g2->height - 10, item.getText().c_str());
+        renderWidget(&item, u8g2_font_haxrcorp4089_tr, x, u8g2->height - 10);
     }
 }
 
-void PSMenu::renderWidget(const uint8_t type, const uint8_t *font, const int x, const int y, const char *text) const
+void PSMenu::renderWidget(const MenuItem *item, const uint8_t *font, const int x, const int y) const
 {
-    switch (type)
+    u8g2_SetFont(u8g2, font);
+    u8g2_DrawStr(u8g2, x, y, item->getText().c_str());
+    switch (item->getType())
     {
-    case 0: // text
-        u8g2_SetFont(u8g2, font);
-        u8g2_DrawStr(u8g2, x, y, text);
+    case 1: // Selection
+    {
+        std::string value = "< ";
+        value += item->getValue();
+        value += " >";
+        const u8g2_uint_t w = u8g2_GetStrWidth(u8g2, value.c_str());
+        u8g2_DrawStr(u8g2, u8g2->width - w - 10, y, value.c_str());
         break;
+    }
+
+    case 3: // toggle
+    {
+        u8g2_DrawFrame(u8g2, u8g2->width - 24, y - 11, 14, 14);
+        if (strcmp(item->getValue().c_str(), "true") == 0)
+        {
+            u8g2_DrawLine(u8g2, u8g2->width - 22, y - 9, u8g2->width - 13, y);
+            u8g2_DrawLine(u8g2, u8g2->width - 22, y, u8g2->width - 13, y - 9);
+        }
+        break;
+    }
 
     default:
-        break;
+
+
     }
 }
 
-void PSMenu::onButtonClicked(uint8_t button)
+void PSMenu::onButtonClicked(const uint8_t button)
 {
     switch (button)
     {
@@ -116,19 +137,22 @@ void PSMenu::onPressedUp()
     }
 }
 
-void PSMenu::onPressedLeft()
+void PSMenu::onPressedLeft() const
 {
-    //
+    const auto item = m_items.at(m_selected_item);
+    item.onButtonPressed(item.getId(), ButtonType::LEFT);
 }
 
-void PSMenu::onPressedRight()
+void PSMenu::onPressedRight() const
 {
-    ///
+    const auto item = m_items.at(m_selected_item);
+    item.onButtonPressed(item.getId(), ButtonType::RIGHT);
 }
 
 void PSMenu::onPressedSelect() const
 {
-    m_items.at(m_selected_item).callback(m_selected_item);
+    const auto item = m_items.at(m_selected_item);
+    item.onButtonPressed(item.getId(), ButtonType::SELECT);
 }
 
 void PSMenu::onPressedBack() const
@@ -139,19 +163,26 @@ void PSMenu::onPressedBack() const
     }
 }
 
-void PSMenu::addText(const std::string &text, const MenuCallback &callback)
+void PSMenu::addText(uint8_t id, const std::string &text, const ButtonCallback &callback)
 {
-    m_items.emplace_back(0, text, callback);
+    m_items.emplace_back(id, 0, text, callback);
 }
 
-void PSMenu::addSwitch(const std::string &text, std::string &value, const MenuCallback &callback)
+void PSMenu::addSelection(uint8_t id, const std::string &text, std::string &value,
+                          const std::vector<std::string> &values,
+                          const ButtonCallback &callback)
 {
-    m_items.emplace_back(1, text, value, callback);
+    m_items.emplace_back(id, 1, text, value, values, callback);
 }
 
-void PSMenu::addNumber(const std::string &text, std::string &value, const MenuCallback &callback)
+void PSMenu::addNumber(uint8_t id, const std::string &text, std::string &value, const ButtonCallback &callback)
 {
-    m_items.emplace_back(2, text, value, callback);
+    m_items.emplace_back(id, 2, text, value, callback);
+}
+
+void PSMenu::addToggle(uint8_t id, const std::string &text, bool selected, const ButtonCallback &callback)
+{
+    m_items.emplace_back(id, 3, text, selected, callback);
 }
 
 void PSMenu::drawScrollBar() const
