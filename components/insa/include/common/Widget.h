@@ -1,52 +1,114 @@
+/**
+ * @file Widget.h
+ * @brief Base widget class for UI components in the INSA system
+ * @details This header defines the Widget base class that serves as the foundation
+ *          for all UI components in the system. It provides a standardized interface
+ *          for rendering, updating, and handling user input using the u8g2 graphics library.
+ * @author System Control Team
+ * @date 2025-06-14
+ */
+
 #pragma once
 
 #include "u8g2.h"
 
+#include "common/Common.h"
+
 /**
- * Base class for UI widgets that can be rendered and interact with user input.
- * This class provides a common interface for all widgets in the system.
+ * @class Widget
+ * @brief Base class for UI widgets that can be rendered and interact with user input
+ * @details This abstract base class provides a common interface for all widgets in the system.
+ *          It manages the u8g2 display context and defines the core methods that all widgets
+ *          must implement or can override. The class follows the template method pattern,
+ *          allowing derived classes to customize behavior while maintaining a consistent
+ *          interface for the UI system.
+ * 
+ * @note All widgets should inherit from this class to ensure compatibility with
+ *       the UI management system.
+ * 
+ * @see u8g2_t
+ * @see ButtonType
  */
 class Widget
 {
 public:
     /**
-     * Constructs a widget with the given u8g2 display context.
-     * @param u8g2 Pointer to the u8g2 display context used for rendering
+     * @brief Constructs a widget with the given u8g2 display context
+     * @param u8g2 Pointer to the u8g2 display context used for rendering operations
+     * 
+     * @pre u8g2 must not be nullptr
+     * @post Widget is initialized with the provided display context
+     * 
+     * @note The widget does not take ownership of the u8g2 context and assumes
+     *       it remains valid for the lifetime of the widget.
      */
     explicit Widget(u8g2_t *u8g2);
 
     /**
-     * Virtual destructor to ensure proper cleanup of derived classes.
+     * @brief Virtual destructor to ensure proper cleanup of derived classes
+     * @details Ensures that derived class destructors are called correctly when
+     *          a widget is destroyed through a base class pointer.
      */
     virtual ~Widget() = default;
 
     /**
-     * Updates the widget's internal state based on elapsed time.
-     * This method is called once per frame to handle animations,
-     * timers, or other time-dependent behavior.
-     * @param dt Delta time in milliseconds since last update
+     * @brief Updates the widget's internal state based on elapsed time
+     * @param dt Delta time in milliseconds since the last update call
+     * 
+     * @details This method is called once per frame by the UI system to handle
+     *          animations, timers, state transitions, or other time-dependent behavior.
+     *          The base implementation is empty, allowing derived classes to override
+     *          only if time-based updates are needed.
+     * 
+     * @note Override this method in derived classes to implement time-based behavior
+     *       such as animations, blinking effects, or timeout handling.
      */
     virtual void update(uint64_t dt);
 
     /**
-     * Renders the widget to the display.
-     * This method should be overridden by derived classes to implement
-     * their specific rendering logic using the u8g2 display context.
+     * @brief Renders the widget to the display
+     * @details This method should be overridden by derived classes to implement
+     *          their specific rendering logic using the u8g2 display context.
+     *          The base implementation is empty, requiring derived classes to
+     *          provide their own rendering code.
+     * 
+     * @pre u8g2 context must be initialized and ready for drawing operations
+     * @post Widget's visual representation is drawn to the display buffer
+     * 
+     * @note This method is called during the rendering phase of each frame.
+     *       Derived classes should use the u8g2 member variable to perform
+     *       drawing operations.
      */
     virtual void render();
 
     /**
-     * Handles button click events.
-     * This method is called when a button is pressed and allows
-     * the widget to respond to user input.
-     * @param button The identifier of the button that was clicked
+     * @brief Handles button press events
+     * @param button The type of button that was pressed
+     * 
+     * @details This method is called when a button press event occurs and allows
+     *          the widget to respond to user input. The base implementation is empty,
+     *          allowing derived classes to override only if input handling is needed.
+     * 
+     * @note Override this method in derived classes to implement button-specific
+     *       behavior such as navigation, selection, or state changes.
+     * 
+     * @see ButtonType for available button types
      */
-    virtual void onButtonClicked(uint8_t button);
+    virtual void onButtonClicked(ButtonType button);
 
 protected:
     /**
-     * Pointer to the u8g2 display context used for rendering operations.
-     * This provides access to drawing functions for text, graphics, and other UI elements.
+     * @brief Pointer to the u8g2 display context used for rendering operations
+     * @details This member provides access to the u8g2 graphics library functions
+     *          for drawing text, shapes, bitmaps, and other UI elements. It is
+     *          initialized during construction and remains valid for the widget's lifetime.
+     * 
+     * @note This member is protected to allow derived classes direct access while
+     *       preventing external modification. Derived classes should use this
+     *       context for all rendering operations.
+     * 
+     * @warning Do not modify or delete this pointer. The widget does not own
+     *          the u8g2 context and assumes it is managed externally.
      */
     u8g2_t *u8g2;
 };

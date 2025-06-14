@@ -1,28 +1,31 @@
 #include "ui/LightMenu.h"
 
-LightMenu::LightMenu(menu_options_t *options) : PSMenu(options), m_options(options)
+#include "ui/LightSettingsMenu.h"
+
+namespace LightMenuItem
+{
+constexpr uint8_t MODE = 1;
+constexpr uint8_t TOGGLE = 2;
+constexpr uint8_t LED_SETTINGS = 3;
+}
+
+LightMenu::LightMenu(menu_options_t *options) : Menu(options), m_options(options)
 {
     std::vector<std::string> values;
     values.emplace_back("Tag");
     values.emplace_back("Nacht");
-    addSelection(1, "Modus", values.front(), values, [this](const uint8_t id, const ButtonType button) {
-        onButtonPressed(id, button);
-    });
+    addSelection(LightMenuItem::MODE, "Modus", values, 0);
 
-    addText(2, "LED Einstellungen", [this](const uint8_t id, const ButtonType button) {
-        onButtonPressed(id, button);
-    });
-
-    addToggle(3, "Toggle", false, nullptr);
+    addText(LightMenuItem::LED_SETTINGS, "LED Einstellungen");
 }
 
-void LightMenu::onButtonPressed(const uint8_t id, const ButtonType button) const
+void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType button)
 {
     std::shared_ptr<Widget> widget;
-    switch (id)
+    switch (menuItem.getId())
     {
-    case 2:
-        widget = std::make_shared<LightMenu>(m_options);
+    case LightMenuItem::LED_SETTINGS:
+        widget = std::make_shared<LightSettingsMenu>(m_options);
         break;
 
     default:

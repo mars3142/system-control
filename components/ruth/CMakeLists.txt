@@ -1,6 +1,6 @@
 if (DEFINED ENV{IDF_PATH})
     idf_component_register(SRCS
-            PushButton.cpp
+            persistence.c
             INCLUDE_DIRS "include"
     )
     return()
@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.30)
 project(ruth)
 
 add_library(${PROJECT_NAME} STATIC
-        PushButton.cpp
+        persistence.c
 )
 
 include_directories(include)

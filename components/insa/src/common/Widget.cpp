@@ -12,6 +12,6 @@ void Widget::render()
 {
 }
 
-void Widget::onButtonClicked(uint8_t button)
+void Widget::onButtonClicked(ButtonType button)
 {
 }

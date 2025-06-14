@@ -8,7 +8,7 @@
 #include "debug/DebugOverlay.h"
 #include "hal/u8g2_hal_sdl.h"
 #include "model/AppContext.h"
-#include "PushButton.h"
+#include "common/Common.h"
 #include "ui/Device.h"
 #include "ui/UIWidget.h"
 #include "ui/widgets/Button.h"
@@ -82,27 +82,27 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             return SDL_APP_SUCCESS;
 
         case SDLK_UP:
-            device->OnButtonClicked(BUTTON_UP);
+            device->OnButtonClicked(ButtonType::UP);
             break;
 
         case SDLK_DOWN:
-            device->OnButtonClicked(BUTTON_DOWN);
+            device->OnButtonClicked(ButtonType::DOWN);
             break;
 
         case SDLK_LEFT:
-            device->OnButtonClicked(BUTTON_LEFT);
+            device->OnButtonClicked(ButtonType::LEFT);
             break;
 
         case SDLK_RIGHT:
-            device->OnButtonClicked(BUTTON_RIGHT);
+            device->OnButtonClicked(ButtonType::RIGHT);
             break;
 
         case SDLK_RETURN:
-            device->OnButtonClicked(BUTTON_SELECT);
+            device->OnButtonClicked(ButtonType::SELECT);
             break;
 
         case SDLK_BACKSPACE:
-            device->OnButtonClicked(BUTTON_BACK);
+            device->OnButtonClicked(ButtonType::BACK);
             break;
 
         default:

@@ -5,12 +5,14 @@
 #include <vector>
 
 #include "UIWidget.h"
+#include "persistence.h"
+#include "common/Common.h"
 #include "common/Widget.h"
 #include "model/AppContext.h"
 
 class Device final : public UIWidget
 {
-  public:
+public:
     explicit Device(void *appstate);
 
     void Render() const override;
@@ -19,7 +21,7 @@ class Device final : public UIWidget
 
     void ReleaseTap(const SDL_MouseButtonEvent *event) const;
 
-    void OnButtonClicked(uint8_t button) const;
+    void OnButtonClicked(ButtonType button) const;
 
     [[nodiscard]] bool IsHit(int mouse_x, int mouse_y) const override;
 
@@ -27,7 +29,7 @@ class Device final : public UIWidget
 
     void ReleaseTap(int mouse_x, int mouse_y) override;
 
-  private:
+private:
     void DrawBackground() const;
 
     void DrawScreen() const;
@@ -42,7 +44,10 @@ class Device final : public UIWidget
 
     static void PushKey(SDL_Keycode key);
 
+    static void savePersistence(const char *key, const char *value);
+
     std::vector<std::shared_ptr<UIWidget>> m_children{};
-    std::shared_ptr<Widget> widget;
-    std::vector<std::shared_ptr<Widget>> history;
+    std::shared_ptr<Widget> m_widget;
+    std::vector<std::shared_ptr<Widget>> m_history;
+    persistence_t m_persistence{};
 };

@@ -68,6 +68,12 @@ Device::Device(void *appstate) : UIWidget(appstate)
     u8g2_Setup_sh1106_128x64_noname_f(&u8g2, U8G2_R0, u8x8_byte_sdl_hw_spi, u8x8_gpio_and_delay_sdl);
     u8x8_InitDisplay(u8g2_GetU8x8(&u8g2));
 
+    static char device_storage_name[] = "device_storage";
+    m_persistence = {
+        .name = device_storage_name,
+        .save = savePersistence
+    };
+
     options = {
         .u8g2 = &u8g2,
         .setScreen = [this](const std::shared_ptr<Widget> &screen) {
@@ -79,17 +85,18 @@ Device::Device(void *appstate) : UIWidget(appstate)
         .popScreen = [this]() {
             this->PopScreen();
         },
+        .persistence = &m_persistence,
     };
-    widget = std::make_shared<SplashScreen>(&options);
+    m_widget = std::make_shared<SplashScreen>(&options);
 }
 
 void Device::SetScreen(const std::shared_ptr<Widget> &screen)
 {
     if (screen != nullptr)
     {
-        widget = screen;
-        history.clear();
-        history.emplace_back(widget);
+        m_widget = screen;
+        m_history.clear();
+        m_history.emplace_back(m_widget);
     }
 }
 
@@ -97,17 +104,17 @@ void Device::PushScreen(const std::shared_ptr<Widget> &screen)
 {
     if (screen != nullptr)
     {
-        widget = screen;
-        history.emplace_back(widget);
+        m_widget = screen;
+        m_history.emplace_back(m_widget);
     }
 }
 
 void Device::PopScreen()
 {
-    if (history.size() >= 2)
+    if (m_history.size() >= 2)
     {
-        history.pop_back();
-        widget = history.back();
+        m_history.pop_back();
+        m_widget = m_history.back();
     }
 }
 
@@ -117,6 +124,11 @@ void Device::PushKey(const SDL_Keycode key)
     ev.type = SDL_EVENT_KEY_DOWN;
     ev.key.key = key;
     SDL_PushEvent(&ev);
+}
+
+void Device::savePersistence(const char *key, const char *value)
+{
+    SDL_Log("Saving: %s = %s", key, value);
 }
 
 void Device::RenderU8G2() const
@@ -191,10 +203,10 @@ void Device::DrawScreen() const
 {
     u8g2_ClearBuffer(&u8g2);
 
-    if (widget != nullptr)
+    if (m_widget != nullptr)
     {
-        widget->update(SDL_GetTicks());
-        widget->render();
+        m_widget->update(SDL_GetTicks());
+        m_widget->render();
     }
 
     RenderU8G2();
@@ -236,11 +248,11 @@ void Device::ReleaseTap(const SDL_MouseButtonEvent *event) const
 }
 
 
-void Device::OnButtonClicked(const uint8_t button) const
+void Device::OnButtonClicked(const ButtonType button) const
 {
-    if (widget != nullptr)
+    if (m_widget != nullptr)
     {
-        widget->onButtonClicked(button);
+        m_widget->onButtonClicked(button);
     }
 }
 

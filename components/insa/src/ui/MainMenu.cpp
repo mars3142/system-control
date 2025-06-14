@@ -4,23 +4,17 @@
 #include "ui/LightMenu.h"
 #include "ui/SettingsMenu.h"
 
-MainMenu::MainMenu(menu_options_t *options) : PSMenu(options), m_options(options)
+MainMenu::MainMenu(menu_options_t *options) : Menu(options), m_options(options)
 {
-    addText(1, "Lichtsteuerung", [this](const uint8_t id, const ButtonType button) {
-        onButtonPressed(id, button);
-    });
-    addText(2, "externe Geraete", [this](const uint8_t id, const ButtonType button) {
-        onButtonPressed(id, button);
-    });
-    addText(3, "Einstellungen", [this](const uint8_t id, const ButtonType button) {
-        onButtonPressed(id, button);
-    });
+    addText(1, "Lichtsteuerung");
+    addText(2, "externe Geraete");
+    addText(3, "Einstellungen");
 }
 
-void MainMenu::onButtonPressed(const uint8_t id, const ButtonType button) const
+void MainMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType button)
 {
     std::shared_ptr<Widget> widget;
-    switch (id)
+    switch (menuItem.getId())
     {
     case 1:
         widget = std::make_shared<LightMenu>(m_options);
