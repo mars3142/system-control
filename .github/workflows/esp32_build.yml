@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         idf_ver: [release-v5.4, latest]
-        idf_target: [esp32s3]
+        idf_target: [esp32c3, esp32s3, esp32p4]
 
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -31,8 +31,12 @@ jobs:
         with:
           submodules: "recursive"
 
+      - name: Delete CMakeLists.txt in components (only used for simulator build)
+        run: rm components/CMakeLists.txt
+
       - name: ESP-IDF build
         uses: espressif/esp-idf-ci-action@v1
         with:
           esp_idf_version: ${{ matrix.idf_ver }}
           target: ${{ matrix.idf_target }}
+          command: idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.release" build
