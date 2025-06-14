@@ -4,8 +4,30 @@
 #include "common/ScrollBar.h"
 #include "u8g2.h"
 
+// Menu item type constants for better readability
+namespace MenuItemTypes {
+    constexpr uint8_t TEXT = 0;
+    constexpr uint8_t SELECTION = 1;
+    constexpr uint8_t NUMBER = 2;
+    constexpr uint8_t TOGGLE = 3;
+}
+
+// UI layout constants
+namespace UIConstants {
+    constexpr int LEFT_MARGIN = 8;
+    constexpr int RIGHT_PADDING = 8;
+    constexpr int SCROLLBAR_WIDTH = 3;
+    constexpr int FRAME_BOX_SIZE = 14;
+    constexpr int FRAME_OFFSET = 11;
+    constexpr int SELECTION_MARGIN = 10;
+    constexpr int CORNER_RADIUS = 3;
+    constexpr int LINE_SPACING = 14;
+    constexpr int BOTTOM_OFFSET = 10;
+}
+
 PSMenu::PSMenu(menu_options_t *options) : Widget(options->u8g2), m_options(options)
 {
+    // Set up button callback using lambda to forward to member function
     m_options->onButtonClicked = [this](const uint8_t button) {
         onButtonClicked(button);
     };
@@ -13,195 +35,226 @@ PSMenu::PSMenu(menu_options_t *options) : Widget(options->u8g2), m_options(optio
 
 PSMenu::~PSMenu()
 {
-    m_options->onButtonClicked = nullptr;
+    // Clean up callback to prevent dangling pointer
+    if (m_options) {
+        m_options->onButtonClicked = nullptr;
+    }
 }
 
 void PSMenu::render()
 {
-    if (m_selected_item < 0)
-    {
-        onPressedDown();
+    // Initialize selection if not set
+    if (m_selected_item >= m_items.size() && !m_items.empty()) {
+        m_selected_item = 0;
+    }
+    
+    // Early return if no items to render
+    if (m_items.empty()) {
+        return;
     }
 
+    // Clear screen with black background
     u8g2_SetDrawColor(u8g2, 0);
     u8g2_DrawBox(u8g2, 0, 0, u8g2->width, u8g2->height);
 
+    // Set white foreground color for drawing
     u8g2_SetDrawColor(u8g2, 1);
 
+    // Draw UI components
     drawScrollBar();
     drawSelectionBox();
 
-    int x = 8; // sure?
-    auto widget = m_items.at(m_selected_item);
-    renderWidget(&widget, u8g2_font_helvB08_tr, x, u8g2->height / 2 + 3);
+    // Calculate center position for main item
+    const int centerY = u8g2->height / 2 + 3;
+    
+    // Render the currently selected item (main/center item)
+    const auto& selectedItem = m_items[m_selected_item];
+    renderWidget(&selectedItem, u8g2_font_helvB08_tr, UIConstants::LEFT_MARGIN, centerY);
 
-    if (m_selected_item > 0)
-    {
-        auto item = m_items.at(m_selected_item - 1);
-        renderWidget(&item, u8g2_font_haxrcorp4089_tr, x, 14);
+    // Render previous item (above) if available
+    if (m_selected_item > 0) {
+        const auto& prevItem = m_items[m_selected_item - 1];
+        renderWidget(&prevItem, u8g2_font_haxrcorp4089_tr, UIConstants::LEFT_MARGIN, UIConstants::LINE_SPACING);
     }
-    if (m_selected_item < m_items.size() - 1)
-    {
-        auto item = m_items.at(m_selected_item + 1);
-        renderWidget(&item, u8g2_font_haxrcorp4089_tr, x, u8g2->height - 10);
+    
+    // Render next item (below) if available
+    if (m_selected_item < m_items.size() - 1) {
+        const auto& nextItem = m_items[m_selected_item + 1];
+        renderWidget(&nextItem, u8g2_font_haxrcorp4089_tr, UIConstants::LEFT_MARGIN, u8g2->height - UIConstants::BOTTOM_OFFSET);
     }
 }
 
 void PSMenu::renderWidget(const MenuItem *item, const uint8_t *font, const int x, const int y) const
 {
+    // Set font and draw main text
     u8g2_SetFont(u8g2, font);
     u8g2_DrawStr(u8g2, x, y, item->getText().c_str());
-    switch (item->getType())
-    {
-    case 1: // Selection
-    {
-        std::string value = "< ";
-        value += item->getValue();
-        value += " >";
-        const u8g2_uint_t w = u8g2_GetStrWidth(u8g2, value.c_str());
-        u8g2_DrawStr(u8g2, u8g2->width - w - 10, y, value.c_str());
-        break;
-    }
-
-    case 3: // toggle
-    {
-        u8g2_DrawFrame(u8g2, u8g2->width - 24, y - 11, 14, 14);
-        if (strcmp(item->getValue().c_str(), "true") == 0)
-        {
-            u8g2_DrawLine(u8g2, u8g2->width - 22, y - 9, u8g2->width - 13, y);
-            u8g2_DrawLine(u8g2, u8g2->width - 22, y, u8g2->width - 13, y - 9);
+    
+    // Render type-specific elements
+    switch (item->getType()) {
+        case MenuItemTypes::SELECTION: {
+            // Format selection value with angle brackets
+            const std::string formattedValue = "< " + item->getValue() + " >";
+            const u8g2_uint_t textWidth = u8g2_GetStrWidth(u8g2, formattedValue.c_str());
+            u8g2_DrawStr(u8g2, u8g2->width - textWidth - UIConstants::SELECTION_MARGIN, y, formattedValue.c_str());
+            break;
         }
-        break;
-    }
-
-    default:
-
-
+        
+        case MenuItemTypes::TOGGLE: {
+            // Draw checkbox frame
+            const int frameX = u8g2->width - UIConstants::FRAME_BOX_SIZE - UIConstants::SELECTION_MARGIN;
+            const int frameY = y - UIConstants::FRAME_OFFSET;
+            u8g2_DrawFrame(u8g2, frameX, frameY, UIConstants::FRAME_BOX_SIZE, UIConstants::FRAME_BOX_SIZE);
+            
+            // Draw checkmark (X) if toggle is true
+            if (item->getValue() == "true") {
+                const int checkX1 = frameX + 2;
+                const int checkY1 = frameY + 2;
+                const int checkX2 = frameX + UIConstants::FRAME_BOX_SIZE - 3;
+                const int checkY2 = frameY + UIConstants::FRAME_BOX_SIZE - 3;
+                
+                // Draw X pattern for checked state
+                u8g2_DrawLine(u8g2, checkX1, checkY1, checkX2, checkY2);
+                u8g2_DrawLine(u8g2, checkX1, checkY2, checkX2, checkY1);
+            }
+            break;
+        }
+        
+        case MenuItemTypes::TEXT:
+        case MenuItemTypes::NUMBER:
+        default:
+            // No additional rendering needed for text and number types
+            break;
     }
 }
 
 void PSMenu::onButtonClicked(const uint8_t button)
 {
-    switch (button)
-    {
-    case BUTTON_UP:
-        onPressedUp();
-        break;
+    // Map button input to navigation functions
+    switch (button) {
+        case BUTTON_UP:
+            onPressedUp();
+            break;
 
-    case BUTTON_DOWN:
-        onPressedDown();
-        break;
+        case BUTTON_DOWN:
+            onPressedDown();
+            break;
 
-    case BUTTON_LEFT:
-        onPressedLeft();
-        break;
+        case BUTTON_LEFT:
+            onPressedLeft();
+            break;
 
-    case BUTTON_RIGHT:
-        onPressedRight();
-        break;
+        case BUTTON_RIGHT:
+            onPressedRight();
+            break;
 
-    case BUTTON_SELECT:
-        onPressedSelect();
-        break;
+        case BUTTON_SELECT:
+            onPressedSelect();
+            break;
 
-    case BUTTON_BACK:
-        onPressedBack();
-        break;
+        case BUTTON_BACK:
+            onPressedBack();
+            break;
 
-    default:
-        break;
+        default:
+            // Ignore unknown button inputs
+            break;
     }
 }
 
 void PSMenu::onPressedDown()
 {
-    if (m_selected_item == m_items.size() - 1)
-    {
-        m_selected_item = 0;
-    }
-    else
-    {
-        m_selected_item++;
-    }
+    if (m_items.empty()) return;
+    
+    // Wrap around to first item when at the end
+    m_selected_item = (m_selected_item + 1) % m_items.size();
 }
 
 void PSMenu::onPressedUp()
 {
-    if (m_selected_item == 0)
-    {
-        m_selected_item = m_items.size() - 1;
-    }
-    else
-    {
-        m_selected_item--;
-    }
+    if (m_items.empty()) return;
+    
+    // Wrap around to last item when at the beginning
+    m_selected_item = (m_selected_item == 0) ? m_items.size() - 1 : m_selected_item - 1;
 }
 
 void PSMenu::onPressedLeft() const
 {
-    const auto item = m_items.at(m_selected_item);
-    item.onButtonPressed(item.getId(), ButtonType::LEFT);
+    if (m_selected_item < m_items.size()) {
+        const auto& item = m_items[m_selected_item];
+        item.onButtonPressed(item.getId(), ButtonType::LEFT);
+    }
 }
 
 void PSMenu::onPressedRight() const
 {
-    const auto item = m_items.at(m_selected_item);
-    item.onButtonPressed(item.getId(), ButtonType::RIGHT);
+    if (m_selected_item < m_items.size()) {
+        const auto& item = m_items[m_selected_item];
+        item.onButtonPressed(item.getId(), ButtonType::RIGHT);
+    }
 }
 
 void PSMenu::onPressedSelect() const
 {
-    const auto item = m_items.at(m_selected_item);
-    item.onButtonPressed(item.getId(), ButtonType::SELECT);
+    if (m_selected_item < m_items.size()) {
+        const auto& item = m_items[m_selected_item];
+        item.onButtonPressed(item.getId(), ButtonType::SELECT);
+    }
 }
 
 void PSMenu::onPressedBack() const
 {
-    if (m_options && m_options->popScreen)
-    {
+    // Navigate back to previous screen if callback is available
+    if (m_options && m_options->popScreen) {
         m_options->popScreen();
     }
 }
 
 void PSMenu::addText(uint8_t id, const std::string &text, const ButtonCallback &callback)
 {
-    m_items.emplace_back(id, 0, text, callback);
+    m_items.emplace_back(id, MenuItemTypes::TEXT, text, callback);
 }
 
 void PSMenu::addSelection(uint8_t id, const std::string &text, std::string &value,
                           const std::vector<std::string> &values,
                           const ButtonCallback &callback)
 {
-    m_items.emplace_back(id, 1, text, value, values, callback);
+    m_items.emplace_back(id, MenuItemTypes::SELECTION, text, value, values, callback);
 }
 
 void PSMenu::addNumber(uint8_t id, const std::string &text, std::string &value, const ButtonCallback &callback)
 {
-    m_items.emplace_back(id, 2, text, value, callback);
+    m_items.emplace_back(id, MenuItemTypes::NUMBER, text, value, callback);
 }
 
 void PSMenu::addToggle(uint8_t id, const std::string &text, bool selected, const ButtonCallback &callback)
 {
-    m_items.emplace_back(id, 3, text, selected, callback);
+    m_items.emplace_back(id, MenuItemTypes::TOGGLE, text, selected, callback);
 }
 
 void PSMenu::drawScrollBar() const
 {
-    ScrollBar scrollBar(m_options, u8g2->width - 3, 3, 1, u8g2->height - 6);
+    // Create scrollbar instance
+    ScrollBar scrollBar(m_options, u8g2->width - UIConstants::SCROLLBAR_WIDTH, 3, 1, u8g2->height - 6);
     scrollBar.refresh(m_selected_item, m_items.size());
     scrollBar.render();
 }
 
 void PSMenu::drawSelectionBox() const
 {
+    // Calculate dimensions for the selection box
     const auto displayHeight = u8g2->height;
     const auto displayWidth = u8g2->width;
-    constexpr auto rightPadding = 8;
     const auto boxHeight = displayHeight / 3;
     const auto y = boxHeight * 2 - 2;
-    const auto x = displayWidth - rightPadding;
+    const auto x = displayWidth - UIConstants::RIGHT_PADDING;
 
-    u8g2_DrawRFrame(u8g2, 2, boxHeight, displayWidth - rightPadding, boxHeight, 3);
-    u8g2_DrawLine(u8g2, 4, y, displayWidth - rightPadding, y);
+    // Draw the rounded frame for the selection box
+    u8g2_DrawRFrame(u8g2, 2, boxHeight, displayWidth - UIConstants::RIGHT_PADDING, boxHeight, UIConstants::CORNER_RADIUS);
+    
+    // Draw horizontal line separator
+    u8g2_DrawLine(u8g2, 4, y, displayWidth - UIConstants::RIGHT_PADDING, y);
+    
+    // Draw vertical line on the right side
     u8g2_DrawLine(u8g2, x, y - boxHeight + 3, x, y - 1);
 }

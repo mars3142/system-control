@@ -9,19 +9,17 @@ ScrollBar::ScrollBar(const menu_options_t *options, const size_t x, const size_t
 
 void ScrollBar::render()
 {
-    if (1 == m_max)
+    // Early return if scrollbar is not needed (only one item)
+    if (m_max <= 1) {
         return;
-
-    // draw dotted line
-    for (size_t y = m_y; y < m_y + m_height; y++)
-    {
-        if (y % 2 == 0)
-        {
-            u8g2_DrawPixel(u8g2, m_x, y);
-        }
     }
 
-    // draw thumb
+    // Draw dotted track line for visual reference
+    for (size_t y = m_y; y < m_y + m_height; y += 2) {
+        u8g2_DrawPixel(u8g2, m_x, y);
+    }
+
+    // Draw scroll thumb to indicate current position
     u8g2_DrawBox(u8g2, u8g2->width - 4, m_thumbY, 3, m_thumbHeight);
 }
 
