@@ -25,11 +25,12 @@ LightMenu::LightMenu(menu_options_t *options) : Menu(options), m_options(options
     addSelection(LightMenuItem::MODE, "Modus", values, 0);
 
     // Add menu item for accessing LED settings submenu
-    addText(LightMenuItem::LED_SETTINGS, "LED Einstellungen");
+    addText(LightMenuItem::LED_SETTINGS, "Einstellungen");
 }
 
 void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType button)
 {
+    MenuItem item = menuItem;
     std::shared_ptr<Widget> widget;
     
     // Handle different menu items based on their ID
@@ -41,12 +42,25 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
         {
             toggle(menuItem);
         }
+        if (m_options && m_options->persistence && m_options->persistence->save)
+        {
+            const auto value = getItem(item.getId()).getValue();
+            m_options->persistence->save("light_activated", value.c_str());
+        }
         break;
     }
 
     case LightMenuItem::MODE: {
         // Switch between day/night modes using left/right buttons
-        switchValue(menuItem, button);
+        item = switchValue(menuItem, button);
+        if (button == ButtonType::LEFT || button == ButtonType::RIGHT)
+        {
+            if (m_options && m_options->persistence && m_options->persistence->save)
+            {
+                const auto value = std::to_string(getItem(item.getId()).getIndex());
+                m_options->persistence->save("light_mode", value.c_str());
+            }
+        }
         break;
     }
 

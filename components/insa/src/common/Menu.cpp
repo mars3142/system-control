@@ -58,7 +58,7 @@ void Menu::setItemSize(const size_t size)
     {
         for (size_t i = m_items.size() - 1; i < size; i++)
         {
-            auto caption = std::string("Section ") + std::to_string(i + 1);
+            auto caption = std::string("Bereich ") + std::to_string(i + 1);
             addSelection(i + 1, caption, m_items.at(0).getValues(), 0);
         }
     }
@@ -75,20 +75,21 @@ void Menu::toggle(const MenuItem &menuItem)
     replaceItem(menuItem.getId(), item);
 }
 
-void Menu::switchValue(const MenuItem& menuItem, ButtonType button)
+MenuItem Menu::switchValue(const MenuItem &menuItem, ButtonType button)
 {
+    MenuItem result = menuItem;
     switch (button)
     {
     case ButtonType::LEFT:
         if (menuItem.getIndex() > 0)
         {
             const auto item = menuItem.copyWith(menuItem.getIndex() - 1);
-            replaceItem(menuItem.getId(), item);
+            result = replaceItem(menuItem.getId(), item);
         }
         else
         {
             const auto item = menuItem.copyWith(menuItem.getItemCount() - 1);
-            replaceItem(menuItem.getId(), item);
+            result = replaceItem(menuItem.getId(), item);
         }
         break;
 
@@ -96,23 +97,26 @@ void Menu::switchValue(const MenuItem& menuItem, ButtonType button)
         if (menuItem.getIndex() < menuItem.getItemCount() - 1)
         {
             const auto item = menuItem.copyWith(menuItem.getIndex() + 1);
-            replaceItem(menuItem.getId(), item);
+            result = replaceItem(menuItem.getId(), item);
         }
         else
         {
             const auto item = menuItem.copyWith(0);
-            replaceItem(menuItem.getId(), item);
+            result = replaceItem(menuItem.getId(), item);
         }
         break;
 
     default:
         break;
     }
+
+    return result;
 }
 
-void Menu::replaceItem(const int index, const MenuItem &item)
+MenuItem Menu::replaceItem(const int index, const MenuItem &item)
 {
     m_items.at(index) = item;
+    return item;
 }
 
 void Menu::render()
@@ -172,6 +176,13 @@ void Menu::renderWidget(const MenuItem *item, const uint8_t *font, const int x, 
     // Render type-specific elements
     switch (item->getType())
     {
+    case MenuItemTypes::TEXT: {
+        const std::string formattedValue = ">";
+        const u8g2_uint_t textWidth = u8g2_GetStrWidth(u8g2, formattedValue.c_str());
+        u8g2_DrawStr(u8g2, u8g2->width - textWidth - UIConstants::SELECTION_MARGIN, y, formattedValue.c_str());
+        break;
+    }
+
     case MenuItemTypes::SELECTION: {
         // Format selection value with angle brackets
         const std::string formattedValue = "< " + item->getValue() + " >";
@@ -201,7 +212,6 @@ void Menu::renderWidget(const MenuItem *item, const uint8_t *font, const int x, 
         break;
     }
 
-    case MenuItemTypes::TEXT:
     default:
         // No additional rendering needed for text and number types
         break;

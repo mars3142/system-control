@@ -187,10 +187,10 @@ class Menu : public Widget
      *
      * @note The modified item replaces the original in the menu's item collection
      */
-    void switchValue(const MenuItem &menuItem, ButtonType button);
+    MenuItem switchValue(const MenuItem &menuItem, ButtonType button);
 
   private:
-    void replaceItem(int index, const MenuItem &item);
+    MenuItem replaceItem(int index, const MenuItem &item);
 
     void render() override;
 
