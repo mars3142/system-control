@@ -1,14 +1,5 @@
-#include "freertos/idf_additions.h"
-#include "setup.h"
-
-void app_task(void *param)
-{
-    setup();
-    while (1)
-    {
-        loop();
-    }
-}
+#include "app_task.h"
+#include "freertos/FreeRTOS.h"
 
 #ifdef __cplusplus
 extern "C"

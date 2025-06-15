@@ -10,6 +10,9 @@ if (DEFINED ENV{IDF_PATH})
             src/ui/SettingsMenu.cpp
             src/ui/SplashScreen.cpp
             INCLUDE_DIRS "include"
+            PRIV_REQUIRES
+                ruth
+                u8g2
     )
     return()
 endif ()

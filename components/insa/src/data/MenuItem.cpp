@@ -7,8 +7,7 @@ MenuItem::MenuItem(const uint8_t id, const uint8_t type, std::string text, Butto
 }
 
 // Constructor for menu items with a single value (toggles)
-MenuItem::MenuItem(const uint8_t id, const uint8_t type, std::string text, std::string value,
-                   ButtonCallback callback)
+MenuItem::MenuItem(const uint8_t id, const uint8_t type, std::string text, std::string value, ButtonCallback callback)
     : m_id(id), m_type(type), m_text(std::move(text)), m_value(std::move(value)), m_callback(std::move(callback))
 {
 }
@@ -93,12 +92,8 @@ MenuItem MenuItem::copyWith(const size_t index) const
 {
     // Create a copy of this menu item with a new selected index
     MenuItem copy = *this;
-    
+
     // Check for potential overflow when converting size_t to int
-    if (index > std::numeric_limits<int>::max())
-    {
-        throw std::overflow_error("index is too large");
-    }
     copy.m_index = static_cast<int>(index);
     return copy;
 }

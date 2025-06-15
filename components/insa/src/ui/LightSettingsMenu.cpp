@@ -17,7 +17,7 @@ LightSettingsMenu::LightSettingsMenu(menu_options_t *options) : Menu(options), m
     {
         values.emplace_back(std::to_string(i));
     }
-    
+
     // Add section counter selection (allows choosing number of sections)
     addSelection(LightSettingsMenuItem::SECTION_COUNTER, "Sektionen", values, 7);
 
@@ -36,7 +36,7 @@ void LightSettingsMenu::onButtonPressed(const MenuItem &menuItem, const ButtonTy
     if (m_options && m_options->persistence && m_options->persistence->save)
     {
         const auto key = "section_" + std::to_string(menuItem.getId());
-        const auto &value = getItem(menuItem.getId()).getValue();
+        const auto value = getItem(menuItem.getId()).getValue();
         m_options->persistence->save(key.c_str(), value.c_str());
     }
 }
