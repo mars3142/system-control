@@ -4,7 +4,8 @@
 extern "C"
 {
 #endif
-    void setupButtons(void);
+    void setup_buttons(void);
+    void cleanup_buttons(void);
 #ifdef __cplusplus
 }
 #endif

@@ -9,12 +9,12 @@ namespace MainMenuItem
 constexpr uint8_t LIGHT = 0;
 constexpr uint8_t EXTERNAL_DEVICES = 1;
 constexpr uint8_t SETTINGS = 2;
-}
+} // namespace MainMenuItem
 
 MainMenu::MainMenu(menu_options_t *options) : Menu(options), m_options(options)
 {
     addText(MainMenuItem::LIGHT, "Lichtsteuerung");
-    addText(MainMenuItem::EXTERNAL_DEVICES, "externe Geraete");
+    addText(MainMenuItem::EXTERNAL_DEVICES, "Externe Geraete");
     addText(MainMenuItem::SETTINGS, "Einstellungen");
 }
 

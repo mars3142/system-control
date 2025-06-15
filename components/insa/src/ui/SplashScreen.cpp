@@ -2,8 +2,7 @@
 
 #include "ui/MainMenu.h"
 
-#ifdef ESP32
-#else
+#ifndef ESP32
 #include <chrono>
 #include <thread>
 #endif
@@ -17,7 +16,11 @@ SplashScreen::SplashScreen(menu_options_t *options) : Widget(options->u8g2), m_o
 void SplashScreen::update(const uint64_t dt)
 {
     counter += dt;
+#ifndef ESP32
     if (counter > 200000)
+#else
+    if (counter > 10)
+#endif
     {
         counter = 0;
         if (m_options && m_options->setScreen)
