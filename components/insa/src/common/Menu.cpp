@@ -67,6 +67,7 @@ void Menu::setItemSize(const size_t size)
         m_items.erase(m_items.begin() + static_cast<int>(size + 1), m_items.end());
     }
 }
+
 void Menu::toggle(const MenuItem &menuItem)
 {
     const auto item =
@@ -312,7 +313,7 @@ void Menu::addSelection(uint8_t id, const std::string &text, const std::vector<s
     m_items.emplace_back(id, MenuItemTypes::SELECTION, text, values, index, callback);
 }
 
-void Menu::addToggle(uint8_t id, const std::string &text, bool selected)
+void Menu::addToggle(uint8_t id, const std::string &text, const bool selected)
 {
     auto callback = [this](const MenuItem &menuItem, const ButtonType button) -> void {
         onButtonPressed(menuItem, button);

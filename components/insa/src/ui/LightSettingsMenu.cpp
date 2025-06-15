@@ -19,10 +19,9 @@ LightSettingsMenu::LightSettingsMenu(menu_options_t *options) : Menu(options), m
     }
     
     // Add section counter selection (allows choosing number of sections)
-    addSelection(LightSettingsMenuItem::SECTION_COUNTER, "Sektionen", values, 0);
+    addSelection(LightSettingsMenuItem::SECTION_COUNTER, "Sektionen", values, 7);
 
-    // Add first section configuration item
-    addSelection(1, "Sektion 1", values, 0);
+    setItemSize(std::stoull(getItem(0).getValue()));
 }
 
 void LightSettingsMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType button)
