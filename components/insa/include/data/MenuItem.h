@@ -143,35 +143,6 @@ public:
              ButtonCallback callback);
 
     /**
-     * @brief Constructs a boolean/toggle menu item with on/off state
-     * @param id Unique identifier for this menu item within its parent menu
-     * @param type Type identifier defining the item's behavior and visual appearance
-     * @param text Display text shown to the user for this menu item
-     * @param selected Whether this item is currently selected/enabled/checked
-     * @param callback Function to call when the item is activated
-     * 
-     * @pre id must be unique within the parent menu context
-     * @pre text should not be empty for proper user interface display
-     * @pre callback should be a valid callable object
-     * @post MenuItem is initialized as a boolean toggle item
-     * 
-     * @details Creates a menu item that represents a boolean state (on/off, enabled/disabled,
-     *          checked/unchecked). This type is ideal for settings that have binary states
-     *          and need to show their current status visually.
-     * 
-     * Typical use cases include:
-     * - Feature toggles (e.g., "Auto-save: ON")
-     * - Enable/disable settings (e.g., "Sound: ENABLED")
-     * - Checkbox-style options (e.g., "Show notifications: ✓")
-     * - Boolean configurations (e.g., "Dark mode: OFF")
-     * 
-     * @note The selected state is converted to a string value internally for
-     *       consistent value handling across all menu item types.
-     * @note The callback typically implements toggle logic to switch between states.
-     */
-    MenuItem(uint8_t id, uint8_t type, std::string text, bool selected, ButtonCallback callback);
-
-    /**
      * @brief Gets the unique identifier of this menu item
      * @return The menu item's unique ID as assigned during construction
      * 
@@ -282,9 +253,11 @@ public:
 
     [[nodiscard]] int getIndex() const;
 
-    std::vector<std::string> getValues() const;
+    [[nodiscard]] std::vector<std::string> getValues() const;
 
     [[nodiscard]] size_t getItemCount() const;
+
+    [[nodiscard]] MenuItem copyWith(const std::string &value) const;
 
     [[nodiscard]] MenuItem copyWith(size_t index) const;
 

@@ -67,6 +67,47 @@ void Menu::setItemSize(const size_t size)
         m_items.erase(m_items.begin() + static_cast<int>(size + 1), m_items.end());
     }
 }
+void Menu::toggle(const MenuItem &menuItem)
+{
+    const auto item =
+        menuItem.copyWith(menuItem.getValue() == std::to_string(true) ? std::to_string(false) : std::to_string(true));
+    replaceItem(menuItem.getId(), item);
+}
+
+void Menu::switchValue(const MenuItem& menuItem, ButtonType button)
+{
+    switch (button)
+    {
+    case ButtonType::LEFT:
+        if (menuItem.getIndex() > 0)
+        {
+            const auto item = menuItem.copyWith(menuItem.getIndex() - 1);
+            replaceItem(menuItem.getId(), item);
+        }
+        else
+        {
+            const auto item = menuItem.copyWith(menuItem.getItemCount() - 1);
+            replaceItem(menuItem.getId(), item);
+        }
+        break;
+
+    case ButtonType::RIGHT:
+        if (menuItem.getIndex() < menuItem.getItemCount() - 1)
+        {
+            const auto item = menuItem.copyWith(menuItem.getIndex() + 1);
+            replaceItem(menuItem.getId(), item);
+        }
+        else
+        {
+            const auto item = menuItem.copyWith(0);
+            replaceItem(menuItem.getId(), item);
+        }
+        break;
+
+    default:
+        break;
+    }
+}
 
 void Menu::replaceItem(const int index, const MenuItem &item)
 {
@@ -145,7 +186,7 @@ void Menu::renderWidget(const MenuItem *item, const uint8_t *font, const int x, 
         u8g2_DrawFrame(u8g2, frameX, frameY, UIConstants::FRAME_BOX_SIZE, UIConstants::FRAME_BOX_SIZE);
 
         // Draw checkmark (X) if toggle is true
-        if (item->getValue() == "true")
+        if (item->getValue() == std::to_string(true))
         {
             const int checkX1 = frameX + 2;
             const int checkY1 = frameY + 2;
@@ -276,7 +317,7 @@ void Menu::addToggle(uint8_t id, const std::string &text, bool selected)
     auto callback = [this](const MenuItem &menuItem, const ButtonType button) -> void {
         onButtonPressed(menuItem, button);
     };
-    m_items.emplace_back(id, MenuItemTypes::TOGGLE, text, selected, callback);
+    m_items.emplace_back(id, MenuItemTypes::TOGGLE, text, std::to_string(selected), callback);
 }
 
 void Menu::drawScrollBar() const

@@ -1,61 +1,39 @@
 #include "ui/LightSettingsMenu.h"
 
+/**
+ * @namespace LightSettingsMenuItem
+ * @brief Constants for light settings menu item identifiers
+ */
 namespace LightSettingsMenuItem
 {
-constexpr uint8_t SECTION_COUNTER = 0;
+constexpr uint8_t SECTION_COUNTER = 0; ///< ID for the section counter menu item
 }
 
 LightSettingsMenu::LightSettingsMenu(menu_options_t *options) : Menu(options), m_options(options)
 {
+    // Create values vector for section counts (1-99)
     std::vector<std::string> values;
     for (size_t i = 1; i <= 99; i++)
     {
         values.emplace_back(std::to_string(i));
     }
+    
+    // Add section counter selection (allows choosing number of sections)
     addSelection(LightSettingsMenuItem::SECTION_COUNTER, "Sektionen", values, 0);
 
+    // Add first section configuration item
     addSelection(1, "Sektion 1", values, 0);
 }
 
 void LightSettingsMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType button)
 {
-    /// change visible counter
-    switch (button)
-    {
-    case ButtonType::LEFT:
-        if (menuItem.getIndex() > 0)
-        {
-            const auto item = menuItem.copyWith(menuItem.getIndex() - 1);
-            replaceItem(menuItem.getId(), item);
-        }
-        else
-        {
-            const auto item = menuItem.copyWith(menuItem.getItemCount() - 1);
-            replaceItem(menuItem.getId(), item);
-        }
-        break;
+    // Handle value switching for the current menu item
+    switchValue(menuItem, button);
 
-    case ButtonType::RIGHT:
-        if (menuItem.getIndex() < menuItem.getItemCount() - 1)
-        {
-            const auto item = menuItem.copyWith(menuItem.getIndex() + 1);
-            replaceItem(menuItem.getId(), item);
-        }
-        else
-        {
-            const auto item = menuItem.copyWith(0);
-            replaceItem(menuItem.getId(), item);
-        }
-        break;
-
-    default:
-        break;
-    }
-
-    /// change section list
+    // Update the section list size based on the section counter value
     setItemSize(std::stoull(getItem(0).getValue()));
 
-    /// persist section values
+    // Persist the changed section values if persistence is available
     if (m_options && m_options->persistence && m_options->persistence->save)
     {
         const auto key = "section_" + std::to_string(menuItem.getId());
