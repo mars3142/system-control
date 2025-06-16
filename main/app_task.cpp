@@ -9,8 +9,14 @@
 #include "button_handling.h"
 #include "ui/SplashScreen.h"
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
 #define PIN_SDA GPIO_NUM_35
 #define PIN_SCL GPIO_NUM_36
+#else
+/// just dummy pins, because of compile check
+#define PIN_SDA GPIO_NUM_20
+#define PIN_SCL GPIO_NUM_21
+#endif
 #define PIN_RST GPIO_NUM_NC
 
 static const char *TAG = "app_task";
