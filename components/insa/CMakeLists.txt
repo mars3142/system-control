@@ -1,5 +1,6 @@
 if (DEFINED ENV{IDF_PATH})
     idf_component_register(SRCS
+            src/common/InactivityTracker.cpp
             src/common/Menu.cpp
             src/common/ScrollBar.cpp
             src/common/Widget.cpp
@@ -7,6 +8,7 @@ if (DEFINED ENV{IDF_PATH})
             src/ui/LightMenu.cpp
             src/ui/LightSettingsMenu.cpp
             src/ui/MainMenu.cpp
+            src/ui/ScreenSaver.cpp
             src/ui/SettingsMenu.cpp
             src/ui/SplashScreen.cpp
             INCLUDE_DIRS "include"
@@ -21,6 +23,7 @@ cmake_minimum_required(VERSION 3.30)
 project(insa)
 
 add_library(${PROJECT_NAME} STATIC
+        src/common/InactivityTracker.cpp
         src/common/Menu.cpp
         src/common/ScrollBar.cpp
         src/common/Widget.cpp
@@ -28,6 +31,7 @@ add_library(${PROJECT_NAME} STATIC
         src/ui/LightMenu.cpp
         src/ui/LightSettingsMenu.cpp
         src/ui/MainMenu.cpp
+        src/ui/ScreenSaver.cpp
         src/ui/SettingsMenu.cpp
         src/ui/SplashScreen.cpp
 )

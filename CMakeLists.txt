@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.30)
 
 if (DEFINED ENV{IDF_PATH})
     include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-    project(espidf_system_control)
+    project(system_control)
     return()
 else ()
     set(MAJOR_VERSION 0)

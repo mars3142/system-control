@@ -7,6 +7,8 @@
 #include "u8g2.h"
 
 #include "button_handling.h"
+#include "common/InactivityTracker.h"
+#include "ui/ScreenSaver.h"
 #include "ui/SplashScreen.h"
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3)
@@ -28,6 +30,7 @@ uint8_t received_signal;
 
 std::shared_ptr<Widget> m_widget;
 std::vector<std::shared_ptr<Widget>> m_history;
+std::unique_ptr<InactivityTracker> m_inactivityTracker;
 
 extern QueueHandle_t buttonQueue;
 
@@ -88,10 +91,16 @@ static void init_ui(void)
         .persistence = nullptr,
     };
     m_widget = std::make_shared<SplashScreen>(&options);
+    m_inactivityTracker = std::make_unique<InactivityTracker>(60000, []() {
+        auto screensaver = std::make_shared<ScreenSaver>(&options);
+        options.pushScreen(screensaver);
+    });
 }
 
 static void handle_button(uint8_t button)
 {
+    m_inactivityTracker->reset();
+
     if (m_widget)
     {
         switch (button)
@@ -133,19 +142,24 @@ void app_task(void *args)
     setup_buttons();
     init_ui();
 
+    auto oldTime = esp_timer_get_time();
+
     while (true)
     {
         u8g2_ClearBuffer(&u8g2);
 
-        auto oldTime = esp_timer_get_time();
         if (m_widget != nullptr)
         {
             auto currentTime = esp_timer_get_time();
             auto delta = currentTime - oldTime;
             oldTime = currentTime;
 
-            m_widget->update(delta);
+            uint64_t deltaMs = delta / 1000;
+
+            m_widget->update(deltaMs);
             m_widget->render();
+
+            m_inactivityTracker->update(deltaMs);
         }
 
         u8g2_SendBuffer(&u8g2);

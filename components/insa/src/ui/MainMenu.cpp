@@ -14,7 +14,7 @@ constexpr uint8_t SETTINGS = 2;
 MainMenu::MainMenu(menu_options_t *options) : Menu(options), m_options(options)
 {
     addText(MainMenuItem::LIGHT, "Lichtsteuerung");
-    addText(MainMenuItem::EXTERNAL_DEVICES, "Externe Geraete");
+    addTextCounter(MainMenuItem::EXTERNAL_DEVICES, "ext. Geraete", 0);
     addText(MainMenuItem::SETTINGS, "Einstellungen");
 }
 

@@ -72,6 +72,8 @@ class Menu : public Widget
      */
     void addText(uint8_t id, const std::string &text);
 
+    void addTextCounter(uint8_t id, const std::string &text, const uint8_t value);
+
     /**
      * @brief Adds a selection menu item (dropdown/list selection) to the menu
      * @param id Unique identifier for this menu item (must be unique within the menu)

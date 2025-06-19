@@ -17,7 +17,7 @@ void SplashScreen::update(const uint64_t dt)
 {
     counter += dt;
 #ifndef ESP32
-    if (counter > 20)
+    if (counter > 3000)
 #else
     if (counter > 10)
 #endif

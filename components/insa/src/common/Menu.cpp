@@ -9,7 +9,8 @@ namespace MenuItemTypes
 constexpr uint8_t TEXT = 0;
 constexpr uint8_t SELECTION = 1;
 constexpr uint8_t TOGGLE = 2;
-}
+constexpr uint8_t TEXT_COUNTER = 3;
+} // namespace MenuItemTypes
 
 // UI layout constants
 namespace UIConstants
@@ -23,14 +24,12 @@ constexpr int SELECTION_MARGIN = 10;
 constexpr int CORNER_RADIUS = 3;
 constexpr int LINE_SPACING = 14;
 constexpr int BOTTOM_OFFSET = 10;
-}
+} // namespace UIConstants
 
 Menu::Menu(menu_options_t *options) : Widget(options->u8g2), m_options(options)
 {
     // Set up button callback using lambda to forward to member function
-    m_options->onButtonClicked = [this](const ButtonType button) {
-        onButtonClicked(button);
-    };
+    m_options->onButtonClicked = [this](const ButtonType button) { onButtonClicked(button); };
 }
 
 Menu::~Menu()
@@ -183,6 +182,13 @@ void Menu::renderWidget(const MenuItem *item, const uint8_t *font, const int x, 
         break;
     }
 
+    case MenuItemTypes::TEXT_COUNTER: {
+        const std::string formattedValue = "(" + item->getValue() + ") >";
+        const u8g2_uint_t textWidth = u8g2_GetStrWidth(u8g2, formattedValue.c_str());
+        u8g2_DrawStr(u8g2, u8g2->width - textWidth - UIConstants::SELECTION_MARGIN, y, formattedValue.c_str());
+        break;
+    }
+
     case MenuItemTypes::SELECTION: {
         // Format selection value with angle brackets
         const std::string formattedValue = "< " + item->getValue() + " >";
@@ -309,10 +315,22 @@ void Menu::onPressedBack() const
 
 void Menu::addText(uint8_t id, const std::string &text)
 {
+    addTextCounter(id, text, 0);
+}
+
+void Menu::addTextCounter(uint8_t id, const std::string &text, const uint8_t value)
+{
     auto callback = [this](const MenuItem &menuItem, const ButtonType button) -> void {
         onButtonPressed(menuItem, button);
     };
-    m_items.emplace_back(id, MenuItemTypes::TEXT, text, callback);
+    if (value > 0)
+    {
+        m_items.emplace_back(id, MenuItemTypes::TEXT_COUNTER, text, std::to_string(value), callback);
+    }
+    else
+    {
+        m_items.emplace_back(id, MenuItemTypes::TEXT, text, callback);
+    }
 }
 
 void Menu::addSelection(uint8_t id, const std::string &text, const std::vector<std::string> &values, const int index)
