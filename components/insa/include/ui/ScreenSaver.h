@@ -2,7 +2,6 @@
 
 #include "MenuOptions.h"
 #include "common/Widget.h"
-#include <cstdlib>
 #include <vector>
 
 class ScreenSaver final : public Widget

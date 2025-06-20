@@ -21,6 +21,8 @@ constexpr unsigned int WINDOW_HEIGHT = (U8G2_SCREEN_HEIGHT * U8G2_SCREEN_FACTOR 
 std::shared_ptr<Device> device;
 std::vector<std::shared_ptr<UIWidget>> widgets;
 
+static uint64_t lastFrameTime = 0;
+
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     if (SDL_Init(SDL_INIT_VIDEO) == false)
@@ -154,9 +156,17 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_SetRenderDrawColor(context->MainRenderer(), 0, 0, 0, 255);
     SDL_RenderClear(context->MainRenderer());
 
+    const uint64_t currentTime = SDL_GetTicks();
+    uint64_t dt = 0;
+
+    if (lastFrameTime > 0) {
+        dt = currentTime - lastFrameTime;
+    }
+    lastFrameTime = currentTime;
+
     for (const auto &widget : widgets)
     {
-        widget->Render();
+        widget->Render(dt);
     }
     DebugOverlay::Render(context);
 

@@ -9,7 +9,7 @@ Button::Button(void *appState, const float x, const float y, const float width, 
 {
 }
 
-void Button::Render() const
+void Button::Render(const uint64_t dt) const
 {
     const auto button =
         ResourceManager::Instance().GetTextureByName(GetContext()->MainRenderer(), "button_normal.png");

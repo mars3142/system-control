@@ -9,7 +9,7 @@ public:
 
     virtual ~UIWidget();
 
-    virtual void Render() const = 0;
+    virtual void Render(uint64_t dt) const = 0;
 
     [[nodiscard]] virtual bool IsHit(int mouse_x, int mouse_y) const = 0;
 

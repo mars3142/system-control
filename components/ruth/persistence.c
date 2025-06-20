@@ -1,5 +1,25 @@
 #include "persistence.h"
+#include "stddef.h"
 
+void *persistence_init(const char *namespace_name)
+{
+    return NULL;
+}
+
+void persistence_save(persistence_value_t value_type, const char *key, const void *value)
+{
+}
+
+void *persistence_load(persistence_value_t value_type, const char *key, void *out)
+{
+    return NULL;
+}
+
+void persistence_deinit()
+{
+}
+
+/*
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_mac.h"
@@ -114,3 +134,4 @@ void persistence_deinit()
 
     nvs_close(persistence_handle);
 }
+*/

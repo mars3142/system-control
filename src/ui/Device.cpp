@@ -4,12 +4,15 @@
 #include <u8g2.h>
 
 #include "MenuOptions.h"
+#include "common/InactivityTracker.h"
+#include "ui/ScreenSaver.h"
 #include "ui/SplashScreen.h"
 #include "ui/widgets/Button.h"
 #include "ui/widgets/D_Pad.h"
 
 u8g2_t u8g2;
 menu_options_t options;
+std::unique_ptr<InactivityTracker> m_inactivityTracker;
 
 static void set_pixel_rgba(const SDL_Surface *surface, const int x, const int y, const uint32_t pixel_color)
 {
@@ -52,15 +55,11 @@ Device::Device(void *appstate) : UIWidget(appstate)
     m_children.push_back(std::make_shared<Button>(
         GetContext(), U8G2_SCREEN_WIDTH * U8G2_SCREEN_FACTOR + 3 * U8G2_SCREEN_PADDING + DPAD_WIDTH,
         U8G2_SCREEN_HEIGHT * U8G2_SCREEN_FACTOR + U8G2_SCREEN_PADDING - BUTTON_WIDTH, BUTTON_WIDTH,
-        []() {
-            PushKey(SDLK_RETURN);
-        }));
+        []() { PushKey(SDLK_RETURN); }));
     m_children.push_back(std::make_shared<Button>(
         GetContext(), U8G2_SCREEN_WIDTH * U8G2_SCREEN_FACTOR + 4 * U8G2_SCREEN_PADDING + DPAD_WIDTH + BUTTON_WIDTH,
         U8G2_SCREEN_HEIGHT * U8G2_SCREEN_FACTOR + U8G2_SCREEN_PADDING - 2 * BUTTON_WIDTH, BUTTON_WIDTH,
-        []() {
-            PushKey(SDLK_BACKSPACE);
-        }));
+        []() { PushKey(SDLK_BACKSPACE); }));
     m_children.push_back(std::make_shared<D_Pad>(
         GetContext(), U8G2_SCREEN_WIDTH * U8G2_SCREEN_FACTOR + 2 * U8G2_SCREEN_PADDING,
         U8G2_SCREEN_HEIGHT * U8G2_SCREEN_FACTOR + U8G2_SCREEN_PADDING - DPAD_WIDTH, DPAD_WIDTH, dpad_callback));
@@ -68,26 +67,20 @@ Device::Device(void *appstate) : UIWidget(appstate)
     u8g2_Setup_sh1106_128x64_noname_f(&u8g2, U8G2_R0, u8x8_byte_sdl_hw_spi, u8x8_gpio_and_delay_sdl);
     u8x8_InitDisplay(u8g2_GetU8x8(&u8g2));
 
-    static char device_storage_name[] = "device_storage";
-    m_persistence = {
-        .name = device_storage_name,
-        .save = savePersistence
-    };
+    m_persistence = {.save = savePersistence};
 
     options = {
         .u8g2 = &u8g2,
-        .setScreen = [this](const std::shared_ptr<Widget> &screen) {
-            this->SetScreen(screen);
-        },
-        .pushScreen = [this](const std::shared_ptr<Widget> &screen) {
-            this->PushScreen(screen);
-        },
-        .popScreen = [this]() {
-            this->PopScreen();
-        },
+        .setScreen = [this](const std::shared_ptr<Widget> &screen) { this->SetScreen(screen); },
+        .pushScreen = [this](const std::shared_ptr<Widget> &screen) { this->PushScreen(screen); },
+        .popScreen = [this]() { this->PopScreen(); },
         .persistence = &m_persistence,
     };
     m_widget = std::make_shared<SplashScreen>(&options);
+    m_inactivityTracker = std::make_unique<InactivityTracker>(60000, []() {
+        const auto screensaver = std::make_shared<ScreenSaver>(&options);
+        options.pushScreen(screensaver);
+    });
 }
 
 void Device::SetScreen(const std::shared_ptr<Widget> &screen)
@@ -199,28 +192,30 @@ void Device::DrawBackground() const
     SDL_RenderFillRect(GetContext()->MainRenderer(), &rect);
 }
 
-void Device::DrawScreen() const
+void Device::DrawScreen(const uint64_t dt) const
 {
     u8g2_ClearBuffer(&u8g2);
 
     if (m_widget != nullptr)
     {
-        m_widget->update(SDL_GetTicks());
+        m_widget->update(dt);
         m_widget->render();
     }
 
     RenderU8G2();
 }
 
-void Device::Render() const
+void Device::Render(const uint64_t dt) const
 {
     DrawBackground();
-    DrawScreen();
+    DrawScreen(dt);
 
     for (const auto &child : m_children)
     {
-        child->Render();
+        child->Render(dt);
     }
+
+    m_inactivityTracker->update(dt);
 }
 
 void Device::HandleTap(const SDL_MouseButtonEvent *event) const
@@ -240,6 +235,7 @@ void Device::HandleTap(const SDL_MouseButtonEvent *event) const
 void Device::ReleaseTap(const SDL_MouseButtonEvent *event) const
 {
     // SDL_Log("ReleaseTap: x=%f, y=%f, button=%d", event->x, event->y, event->button);
+    m_inactivityTracker->reset();
 
     for (const auto &child : m_children)
     {
@@ -247,9 +243,10 @@ void Device::ReleaseTap(const SDL_MouseButtonEvent *event) const
     }
 }
 
-
 void Device::OnButtonClicked(const ButtonType button) const
 {
+    m_inactivityTracker->reset();
+
     if (m_widget != nullptr)
     {
         m_widget->onButtonClicked(button);

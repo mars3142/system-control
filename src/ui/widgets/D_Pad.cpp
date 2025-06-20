@@ -8,7 +8,7 @@ D_Pad::D_Pad(void *appState, const float x, const float y, const float width, st
 {
 }
 
-void D_Pad::Render() const
+void D_Pad::Render(const uint64_t dt) const
 {
     const auto dPad =
         ResourceManager::Instance().GetTextureByName(GetContext()->MainRenderer(), "d-pad_normal.png");

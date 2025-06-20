@@ -15,7 +15,7 @@ class Device final : public UIWidget
 public:
     explicit Device(void *appstate);
 
-    void Render() const override;
+    void Render(uint64_t dt) const override;
 
     void HandleTap(const SDL_MouseButtonEvent *event) const;
 
@@ -32,7 +32,7 @@ public:
 private:
     void DrawBackground() const;
 
-    void DrawScreen() const;
+    void DrawScreen(uint64_t dt) const;
 
     void RenderU8G2() const;
 

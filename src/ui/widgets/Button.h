@@ -11,7 +11,7 @@ class Button final : public UIWidget
   public:
     Button(void *appState, float x, float y, float width, std::function<void()> callback);
 
-    void Render() const override;
+    void Render(uint64_t dt) const override;
 
     [[nodiscard]] bool IsHit(int mouse_x, int mouse_y) const override;
 
