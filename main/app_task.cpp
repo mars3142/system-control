@@ -99,7 +99,6 @@ static void init_ui(void)
         .pushScreen = [](const std::shared_ptr<Widget> &screen) { pushScreen(screen); },
         .popScreen = []() { popScreen(); },
         .onButtonClicked = nullptr,
-        .persistence = nullptr,
     };
     m_widget = std::make_shared<SplashScreen>(&options);
     m_inactivityTracker = std::make_unique<InactivityTracker>(60000, []() {

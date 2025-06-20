@@ -3,7 +3,6 @@
 #include <hal/u8g2_hal_sdl.h>
 #include <u8g2.h>
 
-#include "persistence.h"
 #include "MenuOptions.h"
 #include "common/InactivityTracker.h"
 #include "ui/ScreenSaver.h"
@@ -72,8 +71,6 @@ Device::Device(void *appstate) : UIWidget(appstate)
     u8g2_Setup_sh1106_128x64_noname_f(&u8g2, U8G2_R0, u8x8_byte_sdl_hw_spi, u8x8_gpio_and_delay_sdl);
     u8x8_InitDisplay(u8g2_GetU8x8(&u8g2));
 
-    m_persistence.save = persistence_save;
-
     options = {
         .u8g2 = &u8g2,
         .setScreen = [this](const std::shared_ptr<Widget> &screen) {
@@ -85,7 +82,6 @@ Device::Device(void *appstate) : UIWidget(appstate)
         .popScreen = [this]() {
             this->PopScreen();
         },
-        .persistence = &m_persistence,
     };
     m_widget = std::make_shared<SplashScreen>(&options);
     m_inactivityTracker = std::make_unique<InactivityTracker>(60000, []() {

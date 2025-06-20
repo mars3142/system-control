@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "UIWidget.h"
-#include "persistence.h"
 #include "common/Common.h"
 #include "common/Widget.h"
 #include "model/AppContext.h"
@@ -47,5 +46,4 @@ private:
     std::vector<std::shared_ptr<UIWidget>> m_children{};
     std::shared_ptr<Widget> m_widget;
     std::vector<std::shared_ptr<Widget>> m_history;
-    persistence_t m_persistence{};
 };

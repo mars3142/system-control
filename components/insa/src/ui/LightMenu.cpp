@@ -30,7 +30,6 @@ LightMenu::LightMenu(menu_options_t *options) : Menu(options), m_options(options
 
 void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType button)
 {
-    MenuItem item = menuItem;
     std::shared_ptr<Widget> widget;
     
     // Handle different menu items based on their ID
@@ -42,25 +41,12 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
         {
             toggle(menuItem);
         }
-        if (m_options && m_options->persistence && m_options->persistence->save)
-        {
-            const auto value = getItem(item.getId()).getValue();
-            m_options->persistence->save(VALUE_TYPE_STRING, "light_activated", value.c_str());
-        }
         break;
     }
 
     case LightMenuItem::MODE: {
         // Switch between day/night modes using left/right buttons
-        item = switchValue(menuItem, button);
-        if (button == ButtonType::LEFT || button == ButtonType::RIGHT)
-        {
-            if (m_options && m_options->persistence && m_options->persistence->save)
-            {
-                const auto value = getItem(item.getId()).getIndex();
-                m_options->persistence->save(VALUE_TYPE_INT32, "light_mode", &value);
-            }
-        }
+        switchValue(menuItem, button);
         break;
     }
 

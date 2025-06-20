@@ -16,7 +16,6 @@
 #include <memory>
 
 // Project-specific headers
-#include "persistence.h"
 #include "common/Widget.h"
 #include "u8g2.h"
 
@@ -124,6 +123,4 @@ typedef struct
      * @see Widget::onButtonClicked for widget-specific button handling
      */
     std::function<void(ButtonType button)> onButtonClicked;
-
-    persistence_t *persistence;
 } menu_options_t;

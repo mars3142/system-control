@@ -3,7 +3,6 @@ if (NOT DEFINED ENV{IDF_PATH})
 
     add_subdirectory(imgui)
     add_subdirectory(insa)
-    add_subdirectory(ruth)
 
     target_link_libraries(components INTERFACE ImGui)
 endif ()
