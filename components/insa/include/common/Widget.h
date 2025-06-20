@@ -51,9 +51,58 @@ class Widget
      */
     virtual ~Widget() = default;
 
+    /**
+     * @brief Called when the widget becomes active or enters the foreground
+     * @details This method is invoked when the widget transitions from inactive
+     *          to active state, such as when it becomes the current screen or
+     *          gains focus. Derived classes can override this method to perform
+     *          initialization tasks, reset state, or prepare for user interaction.
+     *
+     * @note The base implementation is empty, allowing derived classes to override
+     *       only if entry behavior is needed.
+     * @note This method is typically called by the UI management system during
+     *       screen transitions or focus changes.
+     */
     virtual void enter();
+
+    /**
+     * @brief Called when the widget is temporarily paused or loses focus
+     * @details This method is invoked when the widget needs to suspend its
+     *          operations temporarily, such as when another widget takes focus
+     *          or the system enters a paused state. Derived classes can override
+     *          this method to pause animations, save state, or reduce resource usage.
+     *
+     * @note The base implementation is empty, allowing derived classes to override
+     *       only if pause behavior is needed.
+     * @note The widget should be prepared to resume from this state when resume() is called.
+     */
     virtual void pause();
+
+    /**
+     * @brief Called when the widget resumes from a paused state
+     * @details This method is invoked when the widget transitions from paused
+     *          to active state, typically after a previous pause() call. Derived
+     *          classes can override this method to restore animations, reload
+     *          resources, or continue interrupted operations.
+     *
+     * @note The base implementation is empty, allowing derived classes to override
+     *       only if resume behavior is needed.
+     * @note This method should restore the widget to the state it was in before pause() was called.
+     */
     virtual void resume();
+
+    /**
+     * @brief Called when the widget is being destroyed or exits the system
+     * @details This method is invoked when the widget is about to be removed
+     *          from the system or transitions to an inactive state permanently.
+     *          Derived classes can override this method to perform cleanup tasks,
+     *          save final state, or release resources that are not automatically freed.
+     *
+     * @note The base implementation is empty, allowing derived classes to override
+     *       only if exit behavior is needed.
+     * @note This method is called before the widget's destructor and provides
+     *       an opportunity for controlled shutdown of widget-specific resources.
+     */
     virtual void exit();
 
     /**
