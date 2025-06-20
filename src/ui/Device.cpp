@@ -5,6 +5,7 @@
 
 #include "MenuOptions.h"
 #include "common/InactivityTracker.h"
+#include "manager/PersistenceManager.h"
 #include "ui/ScreenSaver.h"
 #include "ui/SplashScreen.h"
 #include "ui/widgets/Button.h"
@@ -82,7 +83,10 @@ Device::Device(void *appstate) : UIWidget(appstate)
         .popScreen = [this]() {
             this->PopScreen();
         },
+        .persistenceManager = std::make_shared<PersistenceManager>(),
     };
+    options.persistenceManager->Load();
+
     m_widget = std::make_shared<SplashScreen>(&options);
     m_inactivityTracker = std::make_unique<InactivityTracker>(60000, []() {
         const auto screensaver = std::make_shared<ScreenSaver>(&options);

@@ -16,7 +16,10 @@ set(SOURCE_FILES
 if (DEFINED ENV{IDF_PATH})
     idf_component_register(SRCS
             ${SOURCE_FILES}
+            src/common/PersistenceManager.cpp
             INCLUDE_DIRS "include"
+            REQUIRES
+                nvs_flash
             PRIV_REQUIRES
                 u8g2
     )

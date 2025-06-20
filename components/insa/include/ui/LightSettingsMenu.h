@@ -29,5 +29,7 @@ private:
      */
     void onButtonPressed(const MenuItem& menuItem, ButtonType button) override;
 
+    static std::string CreateKey(int index);
+
     menu_options_t *m_options; ///< Pointer to menu configuration options
 };

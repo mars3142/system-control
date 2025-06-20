@@ -3,11 +3,11 @@
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "hal/u8g2_esp32_hal.h"
-#include "string"
 #include "u8g2.h"
 
 #include "button_handling.h"
 #include "common/InactivityTracker.h"
+#include "common/PersistenceManager.h"
 #include "ui/ScreenSaver.h"
 #include "ui/SplashScreen.h"
 
@@ -99,7 +99,9 @@ static void init_ui(void)
         .pushScreen = [](const std::shared_ptr<Widget> &screen) { pushScreen(screen); },
         .popScreen = []() { popScreen(); },
         .onButtonClicked = nullptr,
+        .persistenceManager = std::make_shared<PersistenceManager>(),
     };
+    options.persistenceManager->Load();
     m_widget = std::make_shared<SplashScreen>(&options);
     m_inactivityTracker = std::make_unique<InactivityTracker>(60000, []() {
         auto screensaver = std::make_shared<ScreenSaver>(&options);

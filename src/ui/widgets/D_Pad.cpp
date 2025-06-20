@@ -1,7 +1,7 @@
 #include "D_Pad.h"
 #include "ui/widgets/D_Pad.h"
 
-#include "ResourceManager.h"
+#include "../../manager/ResourceManager.h"
 
 D_Pad::D_Pad(void *appState, const float x, const float y, const float width, std::function<void(Direction)> callback)
     : UIWidget(appState), m_x(x), m_y(y), m_width(width), m_callback(std::move(callback))

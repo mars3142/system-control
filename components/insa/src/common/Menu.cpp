@@ -58,7 +58,15 @@ void Menu::setItemSize(const size_t size)
         for (size_t i = m_items.size() - 1; i < size; i++)
         {
             auto caption = std::string("Bereich ") + std::to_string(i + 1);
-            addSelection(i + 1, caption, m_items.at(0).getValues(), 0);
+            auto index = 0;
+            if (m_options && m_options->persistenceManager)
+            {
+                constexpr int key_length = 20;
+                char key[key_length] = "";
+                snprintf(key, key_length, "section_%zu", i + 1);
+                index = m_options->persistenceManager->GetValue(key, index);
+            }
+            addSelection(i + 1, caption, m_items.at(0).getValues(), index);
         }
     }
     else

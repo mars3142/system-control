@@ -1,6 +1,6 @@
 #include "ui/widgets/Button.h"
 
-#include "ResourceManager.h"
+#include "../../manager/ResourceManager.h"
 #include <functional>
 #include <utility>
 
