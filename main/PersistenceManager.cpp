@@ -1,5 +1,4 @@
-#ifdef ESP_PLATFORM
-#include "common/PersistenceManager.h"
+#include "PersistenceManager.h"
 #include <cstring>
 #include <esp_log.h>
 
@@ -291,5 +290,3 @@ std::string PersistenceManager::GetValueImpl(const std::string &key, const std::
 
     return value;
 }
-
-#endif // ESP32

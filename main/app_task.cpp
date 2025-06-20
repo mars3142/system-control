@@ -7,7 +7,7 @@
 
 #include "button_handling.h"
 #include "common/InactivityTracker.h"
-#include "common/PersistenceManager.h"
+#include "PersistenceManager.h"
 #include "ui/ScreenSaver.h"
 #include "ui/SplashScreen.h"
 
