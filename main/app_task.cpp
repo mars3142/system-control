@@ -59,6 +59,7 @@ void setScreen(const std::shared_ptr<Widget> &screen)
         m_widget = screen;
         m_history.clear();
         m_history.emplace_back(m_widget);
+        m_widget->enter();
     }
 }
 
@@ -66,7 +67,12 @@ void pushScreen(const std::shared_ptr<Widget> &screen)
 {
     if (screen != nullptr)
     {
+        if (m_widget)
+        {
+            m_widget->pause();
+        }
         m_widget = screen;
+        m_widget->enter();
         m_history.emplace_back(m_widget);
     }
 }
@@ -76,7 +82,12 @@ void popScreen()
     if (m_history.size() >= 2)
     {
         m_history.pop_back();
+        if (m_widget)
+        {
+            m_widget->exit();
+        }
         m_widget = m_history.back();
+        m_widget->resume();
     }
 }
 

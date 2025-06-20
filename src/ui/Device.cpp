@@ -3,6 +3,7 @@
 #include <hal/u8g2_hal_sdl.h>
 #include <u8g2.h>
 
+#include "persistence.h"
 #include "MenuOptions.h"
 #include "common/InactivityTracker.h"
 #include "ui/ScreenSaver.h"
@@ -55,11 +56,15 @@ Device::Device(void *appstate) : UIWidget(appstate)
     m_children.push_back(std::make_shared<Button>(
         GetContext(), U8G2_SCREEN_WIDTH * U8G2_SCREEN_FACTOR + 3 * U8G2_SCREEN_PADDING + DPAD_WIDTH,
         U8G2_SCREEN_HEIGHT * U8G2_SCREEN_FACTOR + U8G2_SCREEN_PADDING - BUTTON_WIDTH, BUTTON_WIDTH,
-        []() { PushKey(SDLK_RETURN); }));
+        []() {
+            PushKey(SDLK_RETURN);
+        }));
     m_children.push_back(std::make_shared<Button>(
         GetContext(), U8G2_SCREEN_WIDTH * U8G2_SCREEN_FACTOR + 4 * U8G2_SCREEN_PADDING + DPAD_WIDTH + BUTTON_WIDTH,
         U8G2_SCREEN_HEIGHT * U8G2_SCREEN_FACTOR + U8G2_SCREEN_PADDING - 2 * BUTTON_WIDTH, BUTTON_WIDTH,
-        []() { PushKey(SDLK_BACKSPACE); }));
+        []() {
+            PushKey(SDLK_BACKSPACE);
+        }));
     m_children.push_back(std::make_shared<D_Pad>(
         GetContext(), U8G2_SCREEN_WIDTH * U8G2_SCREEN_FACTOR + 2 * U8G2_SCREEN_PADDING,
         U8G2_SCREEN_HEIGHT * U8G2_SCREEN_FACTOR + U8G2_SCREEN_PADDING - DPAD_WIDTH, DPAD_WIDTH, dpad_callback));
@@ -67,13 +72,19 @@ Device::Device(void *appstate) : UIWidget(appstate)
     u8g2_Setup_sh1106_128x64_noname_f(&u8g2, U8G2_R0, u8x8_byte_sdl_hw_spi, u8x8_gpio_and_delay_sdl);
     u8x8_InitDisplay(u8g2_GetU8x8(&u8g2));
 
-    m_persistence = {.save = savePersistence};
+    m_persistence.save = persistence_save;
 
     options = {
         .u8g2 = &u8g2,
-        .setScreen = [this](const std::shared_ptr<Widget> &screen) { this->SetScreen(screen); },
-        .pushScreen = [this](const std::shared_ptr<Widget> &screen) { this->PushScreen(screen); },
-        .popScreen = [this]() { this->PopScreen(); },
+        .setScreen = [this](const std::shared_ptr<Widget> &screen) {
+            this->SetScreen(screen);
+        },
+        .pushScreen = [this](const std::shared_ptr<Widget> &screen) {
+            this->PushScreen(screen);
+        },
+        .popScreen = [this]() {
+            this->PopScreen();
+        },
         .persistence = &m_persistence,
     };
     m_widget = std::make_shared<SplashScreen>(&options);
@@ -90,6 +101,7 @@ void Device::SetScreen(const std::shared_ptr<Widget> &screen)
         m_widget = screen;
         m_history.clear();
         m_history.emplace_back(m_widget);
+        m_widget->enter();
     }
 }
 
@@ -97,8 +109,13 @@ void Device::PushScreen(const std::shared_ptr<Widget> &screen)
 {
     if (screen != nullptr)
     {
+        if (m_widget)
+        {
+            m_widget->pause();
+        }
         m_widget = screen;
         m_history.emplace_back(m_widget);
+        m_widget->enter();
     }
 }
 
@@ -106,8 +123,13 @@ void Device::PopScreen()
 {
     if (m_history.size() >= 2)
     {
+        if (m_widget)
+        {
+            m_widget->exit();
+        }
         m_history.pop_back();
         m_widget = m_history.back();
+        m_widget->resume();
     }
 }
 
@@ -117,11 +139,6 @@ void Device::PushKey(const SDL_Keycode key)
     ev.type = SDL_EVENT_KEY_DOWN;
     ev.key.key = key;
     SDL_PushEvent(&ev);
-}
-
-void Device::savePersistence(const char *key, const char *value)
-{
-    SDL_Log("Saving: %s = %s", key, value);
 }
 
 void Device::RenderU8G2() const

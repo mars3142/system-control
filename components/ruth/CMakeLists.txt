@@ -1,6 +1,6 @@
 if (DEFINED ENV{IDF_PATH})
     idf_component_register(SRCS
-                persistence.c
+                espressif/persistence.c
             INCLUDE_DIRS "include"
             PRIV_REQUIRES
                 nvs_flash

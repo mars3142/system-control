@@ -44,8 +44,6 @@ private:
 
     static void PushKey(SDL_Keycode key);
 
-    static void savePersistence(const char *key, const char *value);
-
     std::vector<std::shared_ptr<UIWidget>> m_children{};
     std::shared_ptr<Widget> m_widget;
     std::vector<std::shared_ptr<Widget>> m_history;

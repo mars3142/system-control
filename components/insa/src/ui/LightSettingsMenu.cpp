@@ -37,6 +37,6 @@ void LightSettingsMenu::onButtonPressed(const MenuItem &menuItem, const ButtonTy
     {
         const auto key = "section_" + std::to_string(menuItem.getId());
         const auto value = getItem(menuItem.getId()).getValue();
-        m_options->persistence->save(key.c_str(), value.c_str());
+        m_options->persistence->save(VALUE_TYPE_STRING, key.c_str(), value.c_str());
     }
 }

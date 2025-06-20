@@ -22,23 +22,23 @@
  *          must implement or can override. The class follows the template method pattern,
  *          allowing derived classes to customize behavior while maintaining a consistent
  *          interface for the UI system.
- * 
+ *
  * @note All widgets should inherit from this class to ensure compatibility with
  *       the UI management system.
- * 
+ *
  * @see u8g2_t
  * @see ButtonType
  */
 class Widget
 {
-public:
+  public:
     /**
      * @brief Constructs a widget with the given u8g2 display context
      * @param u8g2 Pointer to the u8g2 display context used for rendering operations
-     * 
+     *
      * @pre u8g2 must not be nullptr
      * @post Widget is initialized with the provided display context
-     * 
+     *
      * @note The widget does not take ownership of the u8g2 context and assumes
      *       it remains valid for the lifetime of the widget.
      */
@@ -51,15 +51,20 @@ public:
      */
     virtual ~Widget() = default;
 
+    virtual void enter();
+    virtual void pause();
+    virtual void resume();
+    virtual void exit();
+
     /**
      * @brief Updates the widget's internal state based on elapsed time
      * @param dt Delta time in milliseconds since the last update call
-     * 
+     *
      * @details This method is called once per frame by the UI system to handle
      *          animations, timers, state transitions, or other time-dependent behavior.
      *          The base implementation is empty, allowing derived classes to override
      *          only if time-based updates are needed.
-     * 
+     *
      * @note Override this method in derived classes to implement time-based behavior
      *       such as animations, blinking effects, or timeout handling.
      */
@@ -71,10 +76,10 @@ public:
      *          their specific rendering logic using the u8g2 display context.
      *          The base implementation is empty, requiring derived classes to
      *          provide their own rendering code.
-     * 
+     *
      * @pre u8g2 context must be initialized and ready for drawing operations
      * @post Widget's visual representation is drawn to the display buffer
-     * 
+     *
      * @note This method is called during the rendering phase of each frame.
      *       Derived classes should use the u8g2 member variable to perform
      *       drawing operations.
@@ -84,29 +89,29 @@ public:
     /**
      * @brief Handles button press events
      * @param button The type of button that was pressed
-     * 
+     *
      * @details This method is called when a button press event occurs and allows
      *          the widget to respond to user input. The base implementation is empty,
      *          allowing derived classes to override only if input handling is needed.
-     * 
+     *
      * @note Override this method in derived classes to implement button-specific
      *       behavior such as navigation, selection, or state changes.
-     * 
+     *
      * @see ButtonType for available button types
      */
     virtual void onButtonClicked(ButtonType button);
 
-protected:
+  protected:
     /**
      * @brief Pointer to the u8g2 display context used for rendering operations
      * @details This member provides access to the u8g2 graphics library functions
      *          for drawing text, shapes, bitmaps, and other UI elements. It is
      *          initialized during construction and remains valid for the widget's lifetime.
-     * 
+     *
      * @note This member is protected to allow derived classes direct access while
      *       preventing external modification. Derived classes should use this
      *       context for all rendering operations.
-     * 
+     *
      * @warning Do not modify or delete this pointer. The widget does not own
      *          the u8g2 context and assumes it is managed externally.
      */

@@ -45,7 +45,7 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
         if (m_options && m_options->persistence && m_options->persistence->save)
         {
             const auto value = getItem(item.getId()).getValue();
-            m_options->persistence->save("light_activated", value.c_str());
+            m_options->persistence->save(VALUE_TYPE_STRING, "light_activated", value.c_str());
         }
         break;
     }
@@ -57,8 +57,8 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
         {
             if (m_options && m_options->persistence && m_options->persistence->save)
             {
-                const auto value = std::to_string(getItem(item.getId()).getIndex());
-                m_options->persistence->save("light_mode", value.c_str());
+                const auto value = getItem(item.getId()).getIndex();
+                m_options->persistence->save(VALUE_TYPE_INT32, "light_mode", &value);
             }
         }
         break;

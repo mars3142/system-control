@@ -9,10 +9,17 @@ typedef enum
 typedef struct
 {
     void *handle;
-    void (*save)(const char *key, const char *value);
+    void (*save)(persistence_value_t value_type, const char *key, const void *value);
 } persistence_t;
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 void *persistence_init(const char *namespace_name);
 void persistence_save(persistence_value_t value_type, const char *key, const void *value);
 void *persistence_load(persistence_value_t value_type, const char *key, void *out);
 void persistence_deinit();
+#ifdef __cplusplus
+}
+#endif
