@@ -1,5 +1,6 @@
 #include "ui/LightMenu.h"
 
+#include "led_manager.h"
 #include "ui/LightSettingsMenu.h"
 
 /**
@@ -8,8 +9,8 @@
  */
 namespace LightMenuItem
 {
-constexpr uint8_t ACTIVATE = 0; ///< ID for the light activation toggle
-constexpr uint8_t MODE = 1; ///< ID for the light mode selection
+constexpr uint8_t ACTIVATE = 0;     ///< ID for the light activation toggle
+constexpr uint8_t MODE = 1;         ///< ID for the light mode selection
 constexpr uint8_t LED_SETTINGS = 2; ///< ID for the LED settings menu item
 } // namespace LightMenuItem
 
@@ -17,7 +18,7 @@ namespace LightMenuOptions
 {
 constexpr std::string LIGHT_ACTIVE = "light_active";
 constexpr std::string LIGHT_MODE = "light_mode";
-}
+} // namespace LightMenuOptions
 
 LightMenu::LightMenu(menu_options_t *options) : Menu(options), m_options(options)
 {
@@ -31,7 +32,7 @@ LightMenu::LightMenu(menu_options_t *options) : Menu(options), m_options(options
 
     // Create mode selection options (Day/Night modes)
     std::vector<std::string> values;
-    values.emplace_back("Tag"); // Day mode
+    values.emplace_back("Tag");   // Day mode
     values.emplace_back("Nacht"); // Night mode
     int mode_value = 0;
     if (m_options && m_options->persistenceManager)
@@ -56,6 +57,16 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
         if (button == ButtonType::SELECT)
         {
             toggle(menuItem);
+            if (getItem(menuItem.getId()).getValue() == "1")
+            {
+                led_event_data_t payload = {.value = 42};
+                send_event(EVENT_LED_ON, &payload);
+            }
+            else
+            {
+                led_event_data_t payload = {.value = 0};
+                send_event(EVENT_LED_OFF, &payload);
+            }
             if (m_options && m_options->persistenceManager)
             {
                 const auto value = getItem(menuItem.getId()).getValue() == "1";

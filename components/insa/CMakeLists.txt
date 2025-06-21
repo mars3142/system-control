@@ -19,6 +19,7 @@ if (DEFINED ENV{IDF_PATH})
             INCLUDE_DIRS "include"
             PRIV_REQUIRES
                 u8g2
+                led-manager
     )
     return()
 endif ()
@@ -36,4 +37,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
         u8g2
+        led-manager
 )

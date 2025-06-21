@@ -1,0 +1,7 @@
+menu "Warnemuende Lighthouse"
+    config WLED_DIN_PIN
+        int "WLED Data In Pin"
+        default 14
+        help
+            The number of the WLED data in pin.
+endmenu
