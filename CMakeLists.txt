@@ -58,14 +58,13 @@ else ()
             WIN32 MACOSX_BUNDLE
             ${CMAKE_SOURCE_DIR}/main.cpp
             ${CMAKE_SOURCE_DIR}/Common.cpp
-            ${CMAKE_SOURCE_DIR}/debug/DebugOverlay.cpp
+            ${CMAKE_SOURCE_DIR}/debug/debug_overlay.cpp
             ${CMAKE_SOURCE_DIR}/hal/u8x8_hal_sdl.cpp
             ${CMAKE_SOURCE_DIR}/manager/PersistenceManager.cpp
             ${CMAKE_SOURCE_DIR}/manager/ResourceManager.cpp
             ${CMAKE_SOURCE_DIR}/model/AppContext.cpp
             ${CMAKE_SOURCE_DIR}/model/Window.cpp
             ${CMAKE_SOURCE_DIR}/ui/Device.cpp
-            ${CMAKE_SOURCE_DIR}/ui/Matrix.cpp
             ${CMAKE_SOURCE_DIR}/ui/UIWidget.cpp
             ${CMAKE_SOURCE_DIR}/ui/widgets/Button.cpp
             ${CMAKE_SOURCE_DIR}/ui/widgets/D_Pad.cpp

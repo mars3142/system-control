@@ -1,10 +1,10 @@
-#include "debug/DebugOverlay.h"
+#include "debug/debug_overlay.h"
 
 #include "Common.h"
+#include "Matrix.h"
 #include "Version.h"
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
-#include "ui/Matrix.h"
 #include <imgui_impl_sdlrenderer3.h>
 
 namespace DebugOverlay
@@ -29,22 +29,38 @@ void Update(AppContext *context, const SDL_Event *event)
 
     if (show_led_matrix)
     {
-        if (context->LedMatrixWindow() == nullptr)
+        if (!context->LedMatrixRenderer())
         {
-            const auto win = CreateWindow("LED Matrix", 32 * 50, 8 * 50);
+            const auto win = CreateWindow("LED Matrix", width * 50, height * 50);
             SDL_SetWindowFocusable(win->window(), false);
             SDL_SetRenderVSync(win->renderer(), SDL_RENDERER_VSYNC_ADAPTIVE);
             SDL_SetWindowPosition(win->window(), 0, 0);
             SDL_ShowWindow(win->window());
 
-            context->SetMatrix(new Matrix(win));
+            const auto windowId = SDL_GetWindowID(win->window());
+            context->SetMatrix(new Matrix(windowId, win->renderer(), width, height));
         }
     }
     else
     {
-        if (context->LedMatrixWindow() != nullptr)
+        if (context->LedMatrixRenderer())
         {
-            SDL_DestroyWindow(context->LedMatrixWindow());
+            int window_count = 0;
+            if (SDL_Window **windows = SDL_GetWindows(&window_count))
+            {
+                for (int i = 0; i < window_count; ++i)
+                {
+                    if (SDL_Window *window = windows[i]; context->LedMatrixId() == SDL_GetWindowID(window))
+                    {
+                        SDL_DestroyRenderer(context->LedMatrixRenderer());
+                        SDL_DestroyWindow(window);
+                        break;
+                    }
+                }
+                SDL_free(windows);
+            }
+
+            SDL_DestroyRenderer(context->LedMatrixRenderer());
 
             context->SetMatrix(nullptr);
         }

@@ -30,7 +30,7 @@ class AppContext
 
     [[nodiscard]] auto LedMatrix() const -> Matrix *;
 
-    [[nodiscard]] auto LedMatrixWindow() const -> SDL_Window *;
+    [[nodiscard]] auto LedMatrixId() const -> SDL_WindowID;
 
     [[nodiscard]] auto LedMatrixRenderer() const -> SDL_Renderer *;
 

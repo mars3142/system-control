@@ -14,8 +14,13 @@ project(led-manager)
 
 add_library(${PROJECT_NAME} STATIC
         src/hal_native/led_manager.cpp
+        src/hal_native/Matrix.cpp
 )
 
 include_directories(include)
 
 target_include_directories(${PROJECT_NAME} PUBLIC include)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+        SDL3::SDL3
+)

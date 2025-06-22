@@ -5,10 +5,10 @@
 #include <u8g2.h>
 
 #include "Common.h"
-#include "debug/DebugOverlay.h"
+#include "common/Common.h"
+#include "debug/debug_overlay.h"
 #include "hal/u8g2_hal_sdl.h"
 #include "model/AppContext.h"
-#include "common/Common.h"
 #include "ui/Device.h"
 #include "ui/UIWidget.h"
 #include "ui/widgets/Button.h"

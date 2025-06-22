@@ -1,6 +1,6 @@
 #include "model/AppContext.h"
 
-#include "ui/Matrix.h"
+#include "Matrix.h"
 
 auto AppContext::MainWindow() const -> SDL_Window *
 {
@@ -27,27 +27,27 @@ auto AppContext::LedMatrix() const -> Matrix *
     return m_matrix;
 }
 
-auto AppContext::LedMatrixWindow() const -> SDL_Window *
+auto AppContext::LedMatrixId() const -> SDL_WindowID
 {
-    if (m_matrix && m_matrix->window())
+    if (m_matrix)
     {
-        return m_matrix->window()->window();
+        return m_matrix->windowId();
     }
-    return nullptr;
+    return 0;
 }
 
 auto AppContext::LedMatrixRenderer() const -> SDL_Renderer *
 {
-    if (m_matrix && m_matrix->window())
+    if (m_matrix && m_matrix->renderer())
     {
-        return m_matrix->window()->renderer();
+        return m_matrix->renderer();
     }
     return nullptr;
 }
 
 void AppContext::Render() const
 {
-    if (m_matrix && m_matrix->window())
+    if (m_matrix && m_matrix->renderer())
     {
         m_matrix->Render();
     }
