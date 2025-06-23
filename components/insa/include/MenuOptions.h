@@ -17,7 +17,7 @@
 
 // Project-specific headers
 #include "common/Widget.h"
-#include "common/IPersistenceManager.h"
+#include "../../persistence-manager/include/IPersistenceManager.h"
 #include "u8g2.h"
 
 class MenuItem;

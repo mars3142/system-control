@@ -5,7 +5,7 @@
 
 #include "MenuOptions.h"
 #include "common/InactivityTracker.h"
-#include "manager/PersistenceManager.h"
+#include "hal_native/PersistenceManager.h"
 #include "ui/ScreenSaver.h"
 #include "ui/SplashScreen.h"
 #include "ui/widgets/Button.h"

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "SDL3/SDL_render.h"
 
 #include <cstdint>
@@ -12,7 +13,7 @@ class Matrix
 
     void Render() const;
 
-    SDL_WindowID windowId() const;
+    [[nodiscard]] SDL_WindowID windowId() const;
 
   private:
     void DrawColoredGrid() const;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../components/insa/include/common/IPersistenceManager.h"
+#include "IPersistenceManager.h"
 #include <string>
 #include <unordered_map>
 
@@ -14,7 +14,7 @@
  *          in flash memory, providing a platform-optimized solution for
  *          embedded systems.
  */
-class PersistenceManager : public IPersistenceManager
+class PersistenceManager final : public IPersistenceManager
 {
   private:
     nvs_handle_t nvs_handle_;
@@ -25,7 +25,6 @@ class PersistenceManager : public IPersistenceManager
     explicit PersistenceManager(const std::string &nvs_namespace = "config");
     ~PersistenceManager() override;
 
-    // IPersistenceManager implementation
     bool HasKey(const std::string &key) const override;
     void RemoveKey(const std::string &key) override;
     void Clear() override;
@@ -34,7 +33,6 @@ class PersistenceManager : public IPersistenceManager
     bool Save() override;
     bool Load() override;
 
-    // ESP32-specific methods
     bool Initialize();
     void Deinitialize();
     bool IsInitialized() const
@@ -43,7 +41,6 @@ class PersistenceManager : public IPersistenceManager
     }
 
   protected:
-    // Template-spezifische Implementierungen
     void SetValueImpl(const std::string &key, bool value) override;
     void SetValueImpl(const std::string &key, int value) override;
     void SetValueImpl(const std::string &key, float value) override;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "stdint.h"
+#include <cstdint>
 
 enum
 {
@@ -15,8 +15,8 @@ typedef struct
     int value;
 } led_event_data_t;
 
-uint64_t wled_init(void);
+uint64_t wled_init();
 
-uint64_t register_handler(void);
+uint64_t register_handler();
 
 uint64_t send_event(uint32_t event, led_event_data_t *payload);

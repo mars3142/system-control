@@ -60,7 +60,6 @@ else ()
             ${CMAKE_SOURCE_DIR}/Common.cpp
             ${CMAKE_SOURCE_DIR}/debug/debug_overlay.cpp
             ${CMAKE_SOURCE_DIR}/hal/u8x8_hal_sdl.cpp
-            ${CMAKE_SOURCE_DIR}/manager/PersistenceManager.cpp
             ${CMAKE_SOURCE_DIR}/manager/ResourceManager.cpp
             ${CMAKE_SOURCE_DIR}/model/AppContext.cpp
             ${CMAKE_SOURCE_DIR}/model/Window.cpp
@@ -98,6 +97,7 @@ else ()
             ImGui
             insa
             led-manager
+            persistence-manager
             SDL3::SDL3
             SDL3_image::SDL3_image
             SDL3_ttf::SDL3_ttf

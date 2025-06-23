@@ -1,4 +1,4 @@
-#include "../../include/Matrix.h"
+#include "Matrix.h"
 
 #include "SDL3/SDL.h"
 
@@ -36,7 +36,7 @@ void Matrix::DrawColoredGrid() const
                 h = m_rows - 1 - h_raw;
             }
 
-            const auto rectSize = cellSize - 2.0f * spacing;
+            constexpr auto rectSize = cellSize - 2.0f * spacing;
 
             const auto x = static_cast<float>(w) * cellSize + spacing;
             const auto y = static_cast<float>(h) * cellSize + spacing;

@@ -35,49 +35,21 @@ public:
      * @brief Template method for type-safe retrieval of values
      * @tparam T The type of value to retrieve
      * @param key The key to look up
-     * @param defaultValue The default value to return if key is not found
-     * @return The stored value or default value if key doesn't exist
+     * @param defaultValue The default value to return if the key is not found
+     * @return The stored value or default value if the key doesn't exist
      */
     template<typename T>
-    T GetValue(const std::string& key, const T& defaultValue = T{}) const {
+    [[nodiscard]] T GetValue(const std::string& key, const T& defaultValue = T{}) const {
         return GetValueImpl<T>(key, defaultValue);
-    }
-
-    /**
-     * @brief Convenience methods for setting specific types
-     */
-    void SetBool(const std::string& key, bool value) { SetValue(key, value); }
-    void SetInt(const std::string& key, int value) { SetValue(key, value); }
-    void SetFloat(const std::string& key, float value) { SetValue(key, value); }
-    void SetDouble(const std::string& key, double value) { SetValue(key, value); }
-    void SetString(const std::string& key, const std::string& value) { SetValue(key, value); }
-
-    /**
-     * @brief Convenience methods for getting specific types with default values
-     */
-    bool GetBool(const std::string& key, bool defaultValue = false) const { 
-        return GetValue(key, defaultValue); 
-    }
-    int GetInt(const std::string& key, int defaultValue = 0) const { 
-        return GetValue(key, defaultValue); 
-    }
-    float GetFloat(const std::string& key, float defaultValue = 0.0f) const { 
-        return GetValue(key, defaultValue); 
-    }
-    double GetDouble(const std::string& key, double defaultValue = 0.0) const { 
-        return GetValue(key, defaultValue); 
-    }
-    std::string GetString(const std::string& key, const std::string& defaultValue = "") const { 
-        return GetValue(key, defaultValue); 
     }
 
     /**
      * @brief Utility methods for key management
      */
-    virtual bool HasKey(const std::string& key) const = 0; ///< Check if a key exists
+    [[nodiscard]] virtual bool HasKey(const std::string& key) const = 0; ///< Check if a key exists
     virtual void RemoveKey(const std::string& key) = 0; ///< Remove a key-value pair
     virtual void Clear() = 0; ///< Clear all stored data
-    virtual size_t GetKeyCount() const = 0; ///< Get the number of stored keys
+    [[nodiscard]] virtual size_t GetKeyCount() const = 0; ///< Get the number of stored keys
 
     /**
      * @brief Persistence operations
@@ -96,11 +68,11 @@ protected:
     virtual void SetValueImpl(const std::string& key, double value) = 0;
     virtual void SetValueImpl(const std::string& key, const std::string& value) = 0;
 
-    virtual bool GetValueImpl(const std::string& key, bool defaultValue) const = 0;
-    virtual int GetValueImpl(const std::string& key, int defaultValue) const = 0;
-    virtual float GetValueImpl(const std::string& key, float defaultValue) const = 0;
-    virtual double GetValueImpl(const std::string& key, double defaultValue) const = 0;
-    virtual std::string GetValueImpl(const std::string& key, const std::string& defaultValue) const = 0;
+    [[nodiscard]] virtual bool GetValueImpl(const std::string& key, bool defaultValue) const = 0;
+    [[nodiscard]] virtual int GetValueImpl(const std::string& key, int defaultValue) const = 0;
+    [[nodiscard]] virtual float GetValueImpl(const std::string& key, float defaultValue) const = 0;
+    [[nodiscard]] virtual double GetValueImpl(const std::string& key, double defaultValue) const = 0;
+    [[nodiscard]] virtual std::string GetValueImpl(const std::string& key, const std::string& defaultValue) const = 0;
 
 private:
     /**
@@ -111,18 +83,18 @@ private:
      * @return The retrieved value or default if not found
      */
     template<typename T>
-    T GetValueImpl(const std::string& key, const T& defaultValue) const
+    [[nodiscard]] T GetValueImpl(const std::string& key, const T& defaultValue) const
     {
         if constexpr (std::is_same_v<T, bool>) {
-            return GetValueImpl(key, defaultValue);
+            return GetValueImpl(key, static_cast<bool>(defaultValue));
         } else if constexpr (std::is_same_v<T, int>) {
-            return GetValueImpl(key, defaultValue);
+            return GetValueImpl(key, static_cast<int>(defaultValue));
         } else if constexpr (std::is_same_v<T, float>) {
-            return GetValueImpl(key, defaultValue);
+            return GetValueImpl(key, static_cast<float>(defaultValue));
         } else if constexpr (std::is_same_v<T, double>) {
-            return GetValueImpl(key, defaultValue);
+            return GetValueImpl(key, static_cast<double>(defaultValue));
         } else if constexpr (std::is_same_v<T, std::string>) {
-            return GetValueImpl(key, defaultValue);
+            return GetValueImpl(key, static_cast<const std::string&>(defaultValue));
         } else {
             static_assert(std::is_same_v<T, bool> || 
                          std::is_same_v<T, int> || 
@@ -130,7 +102,7 @@ private:
                          std::is_same_v<T, double> || 
                          std::is_same_v<T, std::string>,
                          "Unsupported type for IPersistenceManager");
-            return defaultValue; // This line will never be reached, but satisfies compiler
+            return defaultValue; // This line will never be reached, but satisfies the compiler
         }
     }
 };
