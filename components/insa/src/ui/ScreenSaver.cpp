@@ -1,86 +1,284 @@
 #include "ui/ScreenSaver.h"
-#include <cmath>
+#include <cstdlib>
+#include "data/roads.h"
+#include "data/vehicles.h"
 
-ScreenSaver::ScreenSaver(menu_options_t *options) : Widget(options->u8g2), m_options(options), m_animationCounter(0)
+ScreenSaver::ScreenSaver(menu_options_t *options)
+    : Widget(options->u8g2),
+      m_options(options),
+      m_animationCounter(0),
+      m_lastSpawnTime(0),
+      m_leftVehicleCount(0),
+      m_rightVehicleCount(0)
 {
-    initStars();
+    initVehicles();
 }
 
-void ScreenSaver::initStars()
+void ScreenSaver::initVehicles()
 {
-    m_stars.resize(NUM_STARS);
+    m_vehicles.resize(MAX_VEHICLES);
 
-    for (auto &star : m_stars)
+    for (auto &vehicle : m_vehicles)
     {
-        resetStar(star);
-        star.z = Z_NEAR + (static_cast<float>(rand()) / RAND_MAX) * (Z_FAR - Z_NEAR);
+        vehicle.active = false;
     }
-}
-
-void ScreenSaver::resetStar(Star &star)
-{
-    star.x = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 2.0f;
-    star.y = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 2.0f;
-    star.z = Z_FAR;
-    star.speed = 0.5f + (static_cast<float>(rand()) / RAND_MAX) * 1.5f;
 }
 
 void ScreenSaver::update(const uint64_t dt)
 {
     m_animationCounter += dt;
+    m_lastSpawnTime += dt;
+    m_sceneShiftTimer += dt;
 
-    if (m_animationCounter > 8)
+    // Shift entire scene every 30 seconds
+    if (m_sceneShiftTimer > 30000)
+    {
+        m_sceneOffsetX = (random() % 7) - 3; // -3 to +3 pixels
+        m_sceneOffsetY = (random() % 7) - 3; // -3 to +3 pixels
+        m_sceneShiftTimer = 0;
+    }
+
+    // Try to spawn a new vehicle every few seconds
+    if (m_lastSpawnTime > VEHICLE_SPAWN_DELAY)
+    {
+        trySpawnVehicle();
+        m_lastSpawnTime = 0;
+    }
+
+    // Update vehicle positions
+    if (m_animationCounter > 16) // ~60 FPS
     {
         m_animationCounter = 0;
 
-        for (auto &star : m_stars)
+        for (auto &vehicle : m_vehicles)
         {
-            star.z -= star.speed * SPEED_MULTIPLIER;
+            if (!vehicle.active)
+                continue;
 
-            if (star.z < Z_NEAR)
+            // Move vehicle
+            if (vehicle.direction == Direction::LEFT)
             {
-                resetStar(star);
+                vehicle.x -= static_cast<int>(vehicle.speed);
+
+                // Remove the vehicle if it goes off-screen
+                if (vehicle.x <= -32) // Allow for largest vehicle width
+                {
+                    vehicle.active = false;
+                    m_leftVehicleCount--;
+                }
+            }
+            else // Direction::RIGHT
+            {
+                vehicle.x += static_cast<int>(vehicle.speed);
+
+                // Remove the vehicle if it goes off-screen
+                if (vehicle.x >= (u8g2->width + 32)) // Allow for largest vehicle width
+                {
+                    vehicle.active = false;
+                    m_rightVehicleCount--;
+                }
             }
         }
     }
 }
 
+void ScreenSaver::trySpawnVehicle()
+{
+    // Check if we can spawn a new vehicle
+    int activeVehicles = 0;
+    int availableSlot = -1;
+
+    for (int i = 0; i < MAX_VEHICLES; i++)
+    {
+        if (m_vehicles[i].active)
+        {
+            activeVehicles++;
+        }
+        else if (availableSlot == -1)
+        {
+            availableSlot = i;
+        }
+    }
+
+    // Don't spawn if we're at max capacity or no slot available
+    if (activeVehicles >= MAX_VEHICLES || availableSlot == -1)
+    {
+        return;
+    }
+
+    Direction direction = getRandomDirection();
+
+    // Check direction constraints
+    if ((direction == Direction::LEFT && m_leftVehicleCount >= MAX_LEFT_VEHICLES) ||
+        (direction == Direction::RIGHT && m_rightVehicleCount >= MAX_RIGHT_VEHICLES))
+    {
+        return;
+    }
+
+    // Create new vehicle
+    Vehicle &newVehicle = m_vehicles[availableSlot];
+    newVehicle.type = getRandomVehicleType();
+    newVehicle.direction = direction;
+    newVehicle.speed = MIN_SPEED + (static_cast<float>(random()) / RAND_MAX) * (MAX_SPEED - MIN_SPEED);
+
+    // Set Y position based on direction (simulate opposing traffic lanes)
+    const int halfHeight = u8g2->height / 2;
+    if (direction == Direction::RIGHT)
+    {
+        // Vehicles going LEFT use bottom half of screen
+        newVehicle.y = halfHeight + 8 + (random() % (halfHeight - 24));
+        m_rightVehicleCount++;
+    }
+    else // Direction::RIGHT
+    {
+        // Vehicles going RIGHT use top half of screen
+        newVehicle.y = 8 + (random() % (halfHeight - 24));
+        m_leftVehicleCount++;
+    }
+
+    // Set starting X position based on direction
+    if (direction == Direction::LEFT)
+    {
+        // Vehicles going LEFT (from right to left) start from RIGHT side of screen
+        newVehicle.x = u8g2->width + 16;
+    }
+    else // Direction::RIGHT
+    {
+        // Vehicles going RIGHT (from left to right) start from LEFT side of screen
+        newVehicle.x = -32; // Account for largest vehicle width
+    }
+
+    newVehicle.active = true;
+}
+
+ScreenSaver::VehicleType ScreenSaver::getRandomVehicleType()
+{
+    switch (random() % 5)
+    {
+    case 0:
+        return VehicleType::CAR;
+    case 1:
+        return VehicleType::CONVERTABLE;
+    case 2:
+        return VehicleType::SUV;
+    case 3:
+        return VehicleType::LORRY;
+    case 4:
+        return VehicleType::TRUCK;
+    default:
+        return VehicleType::CAR;
+    }
+}
+
+ScreenSaver::Direction ScreenSaver::getRandomDirection()
+{
+    // Simple 50/50 chance for each direction
+    return (random() % 2 == 0) ? Direction::LEFT : Direction::RIGHT;
+}
+
 void ScreenSaver::render()
 {
-    // Verwende Page-Buffer Mode statt Full-Buffer für bessere Performance
-    // Schwarzer Hintergrund
+    // Clear screen with a black background
     u8g2_SetDrawColor(u8g2, 0);
     u8g2_DrawBox(u8g2, 0, 0, u8g2->width, u8g2->height);
     u8g2_SetDrawColor(u8g2, 1);
 
-    const int centerX = u8g2->width / 2;
-    const int centerY = u8g2->height / 2;
-
-    // Zeichne nur sichtbare Sterne (Clipping)
-    for (const auto &star : m_stars)
+    // Calculate offsets
+    const int roadOffset = (m_animationCounter / 100) % road_horizontal_width;
+    
+    // Draw all active vehicles with scene offset
+    for (const auto &vehicle : m_vehicles)
     {
-        // 3D zu 2D Projektion
-        int screenX = centerX + static_cast<int>((star.x / star.z) * centerX);
-        int screenY = centerY + static_cast<int>((star.y / star.z) * centerY);
-
-        // Frühe Prüfung für Performance
-        if (screenX < -5 || screenX >= u8g2->width + 5 || screenY < -5 || screenY >= u8g2->height + 5)
+        if (vehicle.active)
         {
-            continue;
+            Vehicle offsetVehicle = vehicle;
+            offsetVehicle.x += m_sceneOffsetX;
+            offsetVehicle.y += m_sceneOffsetY;
+            drawVehicle(offsetVehicle);
         }
+    }
 
-        // Vereinfachte Sterndarstellung für bessere Performance
-        int size = static_cast<int>((1.0f - (star.z - Z_NEAR) / (Z_FAR - Z_NEAR)) * 2.0f);
+    // Draw road with offsets
+    const int y = u8g2->height / 2 - road_horizontal_height / 2 + m_sceneOffsetY;
+    for (int x = -road_horizontal_width + roadOffset + m_sceneOffsetX; x <= u8g2->width; x += road_horizontal_width)
+    {
+        drawTransparentBitmap(x, y, road_horizontal_width, road_horizontal_height, road_horizontal_bits);
+    }
+}
 
-        if (size <= 0)
+void ScreenSaver::drawVehicle(const Vehicle &vehicle) const
+{
+    int width, height;
+
+    if (const unsigned char *bitmap = getVehicleBitmap(vehicle.type, vehicle.direction, width, height))
+    {
+        drawTransparentBitmap(vehicle.x, vehicle.y, width, height, bitmap);
+        // u8g2_DrawXBM(u8g2, vehicle.x, vehicle.y, width, height, bitmap);
+    }
+}
+
+void ScreenSaver::drawTransparentBitmap(const int x, const int y, const int width, const int height,
+                                        const unsigned char *bitmap) const
+{
+    for (int py = 0; py < height; py++)
+    {
+        for (int px = 0; px < width; px++)
         {
-            u8g2_DrawPixel(u8g2, screenX, screenY);
+            // Calculate byte and a bit of position in bitmap
+            const int byteIndex = (py * ((width + 7) / 8)) + (px / 8);
+
+            // Check if the pixel is set (white)
+            if (const int bitIndex = px % 8; bitmap[byteIndex] & (1 << bitIndex))
+            {
+                // Only draw white pixels, skip black (transparent) pixels
+                const int screenX = x + px;
+
+                // Bounds checking
+                if (const int screenY = y + py; screenX >= 0 && screenX < u8g2->width &&
+                                                screenY >= 0 && screenY < u8g2->height)
+                {
+                    u8g2_DrawPixel(u8g2, screenX, screenY);
+                }
+            }
+            // Black pixels are simply not drawn (transparent)
         }
-        else
-        {
-            // Verwende u8g2_DrawCircle für größere Sterne (schneller)
-            u8g2_DrawCircle(u8g2, screenX, screenY, size, U8G2_DRAW_ALL);
-        }
+    }
+}
+
+const unsigned char *ScreenSaver::getVehicleBitmap(const VehicleType type, const Direction direction, int &width,
+                                                   int &height)
+{
+    switch (type)
+    {
+    case VehicleType::CAR:
+        width = car_width;
+        height = car_height;
+        return (direction == Direction::LEFT) ? car_left_bits : car_right_bits;
+
+    case VehicleType::CONVERTABLE:
+        width = convertable_width;
+        height = convertable_height;
+        return (direction == Direction::LEFT) ? convertable_left_bits : convertable_right_bits;
+
+    case VehicleType::SUV:
+        width = suv_width;
+        height = suv_height;
+        return (direction == Direction::LEFT) ? suv_left_bits : suv_right_bits;
+
+    case VehicleType::LORRY:
+        width = lorry_width;
+        height = lorry_height;
+        return (direction == Direction::LEFT) ? lorry_left_bits : lorry_right_bits;
+
+    case VehicleType::TRUCK:
+        width = truck_width;
+        height = truck_height;
+        return (direction == Direction::LEFT) ? truck_left_bits : truck_right_bits;
+
+    default:
+        width = car_width;
+        height = car_height;
+        return car_left_bits;
     }
 }
 

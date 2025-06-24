@@ -91,7 +91,7 @@ class InactivityTracker
      * });
      * @endcode
      */
-    InactivityTracker(uint64_t timeoutMs, std::function<void()> onTimeout);
+    InactivityTracker(uint64_t timeoutMs, const std::function<void()> &onTimeout);
 
     /**
      * @brief Updates the inactivity timer and checks for timeout conditions

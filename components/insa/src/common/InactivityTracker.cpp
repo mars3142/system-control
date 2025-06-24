@@ -1,6 +1,6 @@
 #include "common/InactivityTracker.h"
 
-InactivityTracker::InactivityTracker(uint64_t timeoutMs, std::function<void()> onTimeout)
+InactivityTracker::InactivityTracker(const uint64_t timeoutMs, const std::function<void()> &onTimeout)
     : m_timeoutMs(timeoutMs), m_elapsedTime(0), m_enabled(true), m_onTimeout(onTimeout)
 {
 }
