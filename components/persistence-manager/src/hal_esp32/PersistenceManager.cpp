@@ -8,6 +8,7 @@ PersistenceManager::PersistenceManager(const std::string &nvs_namespace)
     : namespace_(nvs_namespace), initialized_(false)
 {
     Initialize();
+    Load();
 }
 
 PersistenceManager::~PersistenceManager()

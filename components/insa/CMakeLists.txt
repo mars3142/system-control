@@ -20,6 +20,7 @@ if (DEFINED ENV{IDF_PATH})
             PRIV_REQUIRES
                 u8g2
                 led-manager
+                persistence-manager
     )
     return()
 endif ()
@@ -38,4 +39,5 @@ target_include_directories(${PROJECT_NAME} PUBLIC include)
 target_link_libraries(${PROJECT_NAME} PRIVATE
         u8g2
         led-manager
+        persistence-manager
 )

@@ -9,6 +9,8 @@ PersistenceManager::PersistenceManager(std::string filename) : m_filename(std::m
     {
         SDL_Init(SDL_INIT_EVENTS);
     }
+
+    Load();
 }
 
 PersistenceManager::~PersistenceManager()

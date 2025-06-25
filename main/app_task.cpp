@@ -101,7 +101,6 @@ static void init_ui(void)
         .onButtonClicked = nullptr,
         .persistenceManager = std::make_shared<PersistenceManager>(),
     };
-    options.persistenceManager->Load();
     m_widget = std::make_shared<SplashScreen>(&options);
     m_inactivityTracker = std::make_unique<InactivityTracker>(60000, []() {
         auto screensaver = std::make_shared<ScreenSaver>(&options);
