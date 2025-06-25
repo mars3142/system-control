@@ -88,7 +88,7 @@ Device::Device(void *appstate) : UIWidget(appstate)
     options.persistenceManager->Load();
 
     m_widget = std::make_shared<SplashScreen>(&options);
-    m_inactivityTracker = std::make_unique<InactivityTracker>(6000, []() {
+    m_inactivityTracker = std::make_unique<InactivityTracker>(60000, []() {
         const auto screensaver = std::make_shared<ScreenSaver>(&options);
         options.pushScreen(screensaver);
     });

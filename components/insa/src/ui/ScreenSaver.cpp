@@ -121,7 +121,7 @@ void ScreenSaver::trySpawnVehicle()
     newVehicle.direction = direction;
     newVehicle.speed = MIN_SPEED + (static_cast<float>(random()) / RAND_MAX) * (MAX_SPEED - MIN_SPEED);
 
-    // Set Y position based on direction (simulate opposing traffic lanes)
+    // Set Y position based on a direction (simulate opposing traffic lanes)
     const int halfHeight = u8g2->height / 2;
     if (direction == Direction::RIGHT)
     {
@@ -136,7 +136,7 @@ void ScreenSaver::trySpawnVehicle()
         m_leftVehicleCount++;
     }
 
-    // Set starting X position based on direction
+    // Set the starting X position based on the direction
     if (direction == Direction::LEFT)
     {
         // Vehicles going LEFT (from right to left) start from RIGHT side of screen
@@ -145,7 +145,7 @@ void ScreenSaver::trySpawnVehicle()
     else // Direction::RIGHT
     {
         // Vehicles going RIGHT (from left to right) start from LEFT side of screen
-        newVehicle.x = -32; // Account for largest vehicle width
+        newVehicle.x = -32; // Account for the largest vehicle width
     }
 
     newVehicle.active = true;
@@ -186,7 +186,7 @@ void ScreenSaver::render()
     // Calculate offsets
     const int roadOffset = (m_animationCounter / 100) % road_horizontal_width;
     
-    // Draw all active vehicles with scene offset
+    // Draw all active vehicles with a scene offset
     for (const auto &vehicle : m_vehicles)
     {
         if (vehicle.active)
