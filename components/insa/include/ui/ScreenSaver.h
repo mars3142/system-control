@@ -21,13 +21,13 @@
  */
 class ScreenSaver final : public Widget
 {
-public:
+  public:
     explicit ScreenSaver(menu_options_t *options);
     void update(uint64_t dt) override;
     void render() override;
     void onButtonClicked(ButtonType button) override;
 
-private:
+  private:
     /**
      * @enum VehicleType
      * @brief Types of available vehicles
@@ -57,20 +57,22 @@ private:
      */
     struct Vehicle
     {
-        int x; // X position on screen
-        int y; // Y position on screen
-        float speed; // Movement speed
-        VehicleType type; // Type of vehicle
+        int x;               // X position on screen
+        int y;               // Y position on screen
+        float speed;         // Movement speed
+        VehicleType type;    // Type of vehicle
         Direction direction; // Movement direction
-        bool active; // Whether a vehicle is currently active
+        bool active;         // Whether a vehicle is currently active
     };
 
     static constexpr int MAX_LEFT_VEHICLES = 2;
     static constexpr int MAX_RIGHT_VEHICLES = 2;
     static constexpr int MAX_VEHICLES = MAX_LEFT_VEHICLES + MAX_RIGHT_VEHICLES;
-    static constexpr int VEHICLE_SPAWN_DELAY = 1000; // milliseconds
+    static constexpr int VEHICLE_SPAWN_DELAY = 2500; // milliseconds
     static constexpr float MIN_SPEED = 1.0f;
     static constexpr float MAX_SPEED = 2.0f;
+    static constexpr int MIN_SAME_DIRECTION_DISTANCE = 48; // 32 + 16 pixels
+    static constexpr int MAX_SAME_DIRECTION_DISTANCE = 64; // 32 + 32 pixels
 
     menu_options_t *m_options;
     uint64_t m_animationCounter;
@@ -130,4 +132,11 @@ private:
      * @return Pointer to bitmap data
      */
     static const unsigned char *getVehicleBitmap(VehicleType type, Direction direction, int &width, int &height);
+
+    /**
+     * @brief Check if there's enough distance to spawn a vehicle in a specific direction
+     * @param direction Direction to check
+     * @return true if spawning is allowed
+     */
+    bool canSpawnInDirection(Direction direction) const;
 };

@@ -1,14 +1,10 @@
 #include "ui/ScreenSaver.h"
-#include <cstdlib>
 #include "data/roads.h"
 #include "data/vehicles.h"
+#include <cstdlib>
 
 ScreenSaver::ScreenSaver(menu_options_t *options)
-    : Widget(options->u8g2),
-      m_options(options),
-      m_animationCounter(0),
-      m_lastSpawnTime(0),
-      m_leftVehicleCount(0),
+    : Widget(options->u8g2), m_options(options), m_animationCounter(0), m_lastSpawnTime(0), m_leftVehicleCount(0),
       m_rightVehicleCount(0)
 {
     initVehicles();
@@ -82,6 +78,43 @@ void ScreenSaver::update(const uint64_t dt)
     }
 }
 
+bool ScreenSaver::canSpawnInDirection(Direction direction) const
+{
+    // Minimalen Abstand zwischen 48 und 64 Pixel zufällig wählen
+    int requiredDistance =
+        MIN_SAME_DIRECTION_DISTANCE + (random() % (MAX_SAME_DIRECTION_DISTANCE - MIN_SAME_DIRECTION_DISTANCE + 1));
+
+    for (const auto &vehicle : m_vehicles)
+    {
+        if (!vehicle.active || vehicle.direction != direction)
+            continue;
+
+        // Abstand zum nächsten Fahrzeug in gleicher Richtung prüfen
+        if (direction == Direction::LEFT)
+        {
+            // Fahrzeuge fahren von rechts nach links
+            // Neues Fahrzeug würde bei u8g2->width + 16 starten
+            int newVehicleX = u8g2->width + 16;
+
+            // Prüfen ob genug Abstand zum existierenden Fahrzeug
+            if (newVehicleX - vehicle.x < requiredDistance)
+                return false;
+        }
+        else // Direction::RIGHT
+        {
+            // Fahrzeuge fahren von links nach rechts
+            // Neues Fahrzeug würde bei -32 starten
+            int newVehicleX = -32;
+
+            // Prüfen ob genug Abstand zum existierenden Fahrzeug
+            if (vehicle.x - newVehicleX < requiredDistance)
+                return false;
+        }
+    }
+
+    return true;
+}
+
 void ScreenSaver::trySpawnVehicle()
 {
     // Check if we can spawn a new vehicle
@@ -111,6 +144,11 @@ void ScreenSaver::trySpawnVehicle()
     // Check direction constraints
     if ((direction == Direction::LEFT && m_leftVehicleCount >= MAX_LEFT_VEHICLES) ||
         (direction == Direction::RIGHT && m_rightVehicleCount >= MAX_RIGHT_VEHICLES))
+    {
+        return;
+    }
+
+    if (!canSpawnInDirection(direction))
     {
         return;
     }
@@ -185,7 +223,7 @@ void ScreenSaver::render()
 
     // Calculate offsets
     const int roadOffset = (m_animationCounter / 100) % road_horizontal_width;
-    
+
     // Draw all active vehicles with a scene offset
     for (const auto &vehicle : m_vehicles)
     {
@@ -234,8 +272,8 @@ void ScreenSaver::drawTransparentBitmap(const int x, const int y, const int widt
                 const int screenX = x + px;
 
                 // Bounds checking
-                if (const int screenY = y + py; screenX >= 0 && screenX < u8g2->width &&
-                                                screenY >= 0 && screenY < u8g2->height)
+                if (const int screenY = y + py;
+                    screenX >= 0 && screenX < u8g2->width && screenY >= 0 && screenY < u8g2->height)
                 {
                     u8g2_DrawPixel(u8g2, screenX, screenY);
                 }
