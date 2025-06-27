@@ -3,3 +3,4 @@ dependencies:
     git: https://github.com/olikraus/u8g2.git
 #  u8g2_hal:
 #    git: https://github.com/mkfrey/u8g2-hal-esp-idf.git
+  espressif/button: ^4.1.3
