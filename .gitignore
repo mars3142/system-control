@@ -3,3 +3,4 @@
 jlcpcb/
 .DS_Store
 **/*.bak
+fp-info-cache*
