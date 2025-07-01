@@ -5,3 +5,4 @@ jlcpcb/
 **/*.bak
 fp-info-cache*
 *.lck
+datasheets/
