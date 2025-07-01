@@ -1,3 +1,5 @@
 *-backups/
 *_old
 jlcpcb/
+.DS_Store
+**/*.bak
