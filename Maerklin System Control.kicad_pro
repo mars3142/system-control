@@ -440,8 +440,12 @@
     }
   },
   "libraries": {
-    "pinned_footprint_libs": [],
-    "pinned_symbol_libs": []
+    "pinned_footprint_libs": [
+      "wemos"
+    ],
+    "pinned_symbol_libs": [
+      "wemos"
+    ]
   },
   "meta": {
     "filename": "Maerklin System Control.kicad_pro",
