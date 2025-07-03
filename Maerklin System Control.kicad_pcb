@@ -338,6 +338,18 @@
 				)
 			)
 		)
+		(property "LCSC" "C22464516"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "ce5cb95a-483a-454a-92f1-ba8ea7ff9683")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*")
 		(path "/89b67557-3024-4241-b846-5249959eb0c3")
 		(sheetname "/")
@@ -635,6 +647,18 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "77e750cb-f6b4-42c4-b37b-63fa26d3ef64")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C5137636"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "e9961b16-5707-45df-bbce-48a241f99136")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1346,6 +1370,18 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "32352bf6-6c02-4956-aa81-86329130a677")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C5137636"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "ea534cd3-2843-4892-a1af-1aacae2fcf28")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3143,6 +3179,18 @@
 				)
 			)
 		)
+		(property "LCSC" "C22464516"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "ca230440-3c8f-47f5-b809-bf3533cfc6cc")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "LED*WS2812*PLCC*5.0x5.0mm*P3.2mm*")
 		(path "/0aabf0e2-c878-4b31-9957-9c3af7122e99")
 		(sheetname "/")
@@ -3791,6 +3839,18 @@
 				)
 			)
 		)
+		(property "LCSC" "C5137636"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "fd5db1ca-2376-4671-83a7-8f4209320f2e")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "C_*")
 		(path "/cc7ed52a-3140-421a-b953-b8dcb4678a94")
 		(sheetname "/")
@@ -3985,6 +4045,18 @@
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "03f1e8c8-24bb-40d0-9f0b-c975895bb3b1")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C22464516"
+			(at 0 0 0)
+			(layer "F.SilkS")
+			(hide yes)
+			(uuid "eec491db-d58a-463d-82b4-d72e5f0c8d77")
 			(effects
 				(font
 					(size 1.27 1.27)

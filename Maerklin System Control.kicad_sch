@@ -9,7 +9,8 @@
 		(date "31.12.2025")
 		(rev "MK2")
 		(company "mars3142")
-		(comment 1 "System Control Board for model railway")
+		(comment 3 "System Control Board for model railway")
+		(comment 4 "Author: Peter Siegmund")
 	)
 	(lib_symbols
 		(symbol "Connector:Conn_01x04_Socket"
