@@ -11,9 +11,9 @@
 		(title "System Control")
 		(date "31.12.2025")
 		(rev "MK2.1")
-		(company "mars3142")
-		(comment 3 "System Control Board for model railway")
-		(comment 4 "Author: Peter Siegmund")
+		(company "Peter Siegmund")
+		(comment 1 "kicad@mars3142.org")
+		(comment 2 "https://wiki.mars3142.dev/project/maerklin/system_control/start")
 	)
 	(layers
 		(0 "F.Cu" signal)
