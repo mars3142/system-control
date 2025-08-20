@@ -1,0 +1,8 @@
+*-backups/
+*_old
+jlcpcb/
+.DS_Store
+**/*.bak
+fp-info-cache*
+*.lck
+datasheets/
