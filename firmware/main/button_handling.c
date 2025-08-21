@@ -43,7 +43,7 @@ static void button_event_cb(void *arg, void *usr_data)
     }
 }
 
-static void create_button(uint8_t gpio, int index)
+static void init_button(uint8_t gpio, int index)
 {
     const button_config_t btn_cfg = {0};
     const button_gpio_config_t btn_gpio_cfg = {
@@ -74,7 +74,7 @@ void setup_buttons(void)
     ESP_LOGI(TAG, "Button queue created successfully");
     for (int i = 0; i < sizeof(gpios) / sizeof(gpios[0]); i++)
     {
-        create_button(gpios[i], i);
+        init_button(gpios[i], i);
     }
 }
 

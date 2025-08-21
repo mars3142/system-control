@@ -1,6 +1,7 @@
 if (DEFINED ENV{IDF_PATH})
     idf_component_register(SRCS
                 src/hal_esp32/led_manager.cpp
+                src/hal_esp32/led_status.cpp
             INCLUDE_DIRS "include"
             PRIV_REQUIRES
                 u8g2

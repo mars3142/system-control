@@ -6,6 +6,7 @@
 #include "MenuOptions.h"
 #include "common/InactivityTracker.h"
 #include "hal_native/PersistenceManager.h"
+#include "ui/ClockScreenSaver.h"
 #include "ui/ScreenSaver.h"
 #include "ui/SplashScreen.h"
 #include "ui/widgets/Button.h"
@@ -56,15 +57,11 @@ Device::Device(void *appstate) : UIWidget(appstate)
     m_children.push_back(std::make_shared<Button>(
         GetContext(), U8G2_SCREEN_WIDTH * U8G2_SCREEN_FACTOR + 3 * U8G2_SCREEN_PADDING + DPAD_WIDTH,
         U8G2_SCREEN_HEIGHT * U8G2_SCREEN_FACTOR + U8G2_SCREEN_PADDING - BUTTON_WIDTH, BUTTON_WIDTH,
-        []() {
-            PushKey(SDLK_RETURN);
-        }));
+        []() { PushKey(SDLK_RETURN); }));
     m_children.push_back(std::make_shared<Button>(
         GetContext(), U8G2_SCREEN_WIDTH * U8G2_SCREEN_FACTOR + 4 * U8G2_SCREEN_PADDING + DPAD_WIDTH + BUTTON_WIDTH,
         U8G2_SCREEN_HEIGHT * U8G2_SCREEN_FACTOR + U8G2_SCREEN_PADDING - 2 * BUTTON_WIDTH, BUTTON_WIDTH,
-        []() {
-            PushKey(SDLK_BACKSPACE);
-        }));
+        []() { PushKey(SDLK_BACKSPACE); }));
     m_children.push_back(std::make_shared<D_Pad>(
         GetContext(), U8G2_SCREEN_WIDTH * U8G2_SCREEN_FACTOR + 2 * U8G2_SCREEN_PADDING,
         U8G2_SCREEN_HEIGHT * U8G2_SCREEN_FACTOR + U8G2_SCREEN_PADDING - DPAD_WIDTH, DPAD_WIDTH, dpad_callback));
@@ -74,22 +71,16 @@ Device::Device(void *appstate) : UIWidget(appstate)
 
     options = {
         .u8g2 = &u8g2,
-        .setScreen = [this](const std::shared_ptr<Widget> &screen) {
-            this->SetScreen(screen);
-        },
-        .pushScreen = [this](const std::shared_ptr<Widget> &screen) {
-            this->PushScreen(screen);
-        },
-        .popScreen = [this]() {
-            this->PopScreen();
-        },
+        .setScreen = [this](const std::shared_ptr<Widget> &screen) { this->SetScreen(screen); },
+        .pushScreen = [this](const std::shared_ptr<Widget> &screen) { this->PushScreen(screen); },
+        .popScreen = [this]() { this->PopScreen(); },
         .persistenceManager = std::make_shared<PersistenceManager>(),
     };
     options.persistenceManager->Load();
 
     m_widget = std::make_shared<SplashScreen>(&options);
     m_inactivityTracker = std::make_unique<InactivityTracker>(60000, []() {
-        const auto screensaver = std::make_shared<ScreenSaver>(&options);
+        const auto screensaver = std::make_shared<ClockScreenSaver>(&options);
         options.pushScreen(screensaver);
     });
 }

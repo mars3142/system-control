@@ -8,6 +8,7 @@ set(SOURCE_FILES
     src/ui/LightMenu.cpp
     src/ui/LightSettingsMenu.cpp
     src/ui/MainMenu.cpp
+    src/ui/ClockScreenSaver.cpp
     src/ui/ScreenSaver.cpp
     src/ui/SettingsMenu.cpp
     src/ui/SplashScreen.cpp

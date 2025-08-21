@@ -1,7 +1,14 @@
-menu "Warnemuende Lighthouse"
+menu "System Control"
     config WLED_DIN_PIN
         int "WLED Data In Pin"
         default 14
         help
             The number of the WLED data in pin.
+
+    config STATUS_WLED_PIN
+        int "Status WLED Pin"
+        default 2
+        help
+            The number of the status WLED pin.
+
 endmenu

@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         idf_ver: [release-v5.4, release-v5.5, latest]
-        idf_target: [esp32c3, esp32h2, esp32s3, esp32p4]
+        idf_target: [esp32s3]
 
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -39,4 +39,5 @@ jobs:
         with:
           esp_idf_version: ${{ matrix.idf_ver }}
           target: ${{ matrix.idf_target }}
+          path: firmware
           command: idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.release" build

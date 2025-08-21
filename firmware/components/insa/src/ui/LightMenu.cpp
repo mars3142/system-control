@@ -9,15 +9,15 @@
  */
 namespace LightMenuItem
 {
-constexpr uint8_t ACTIVATE = 0;     ///< ID for the light activation toggle
-constexpr uint8_t MODE = 1;         ///< ID for the light mode selection
-constexpr uint8_t LED_SETTINGS = 2; ///< ID for the LED settings menu item
+constexpr auto ACTIVATE = 0;     ///< ID for the light activation toggle
+constexpr auto MODE = 1;         ///< ID for the light mode selection
+constexpr auto LED_SETTINGS = 2; ///< ID for the LED settings menu item
 } // namespace LightMenuItem
 
 namespace LightMenuOptions
 {
-constexpr std::string LIGHT_ACTIVE = "light_active";
-constexpr std::string LIGHT_MODE = "light_mode";
+constexpr auto LIGHT_ACTIVE = "light_active";
+constexpr auto LIGHT_MODE = "light_mode";
 } // namespace LightMenuOptions
 
 LightMenu::LightMenu(menu_options_t *options) : Menu(options), m_options(options)
@@ -57,7 +57,8 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
         if (button == ButtonType::SELECT)
         {
             toggle(menuItem);
-            if (getItem(menuItem.getId()).getValue() == "1")
+            const auto value = getItem(menuItem.getId()).getValue() == "1";
+            if (value)
             {
                 led_event_data_t payload = {.value = 42};
                 send_event(EVENT_LED_ON, &payload);
@@ -69,7 +70,6 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
             }
             if (m_options && m_options->persistenceManager)
             {
-                const auto value = getItem(menuItem.getId()).getValue() == "1";
                 m_options->persistenceManager->SetValue(LightMenuOptions::LIGHT_ACTIVE, value);
                 m_options->persistenceManager->Save();
             }
@@ -82,9 +82,12 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
         const auto item = switchValue(menuItem, button);
         if (button == ButtonType::LEFT || button == ButtonType::RIGHT)
         {
+            const auto value = getItem(item.getId()).getIndex();
+            led_event_data_t payload = {.value = value};
+            send_event(EVENT_LED_DAY + value, &payload);
+
             if (m_options && m_options->persistenceManager)
             {
-                const auto value = getItem(item.getId()).getIndex();
                 m_options->persistenceManager->SetValue(LightMenuOptions::LIGHT_MODE, value);
                 m_options->persistenceManager->Save();
             }

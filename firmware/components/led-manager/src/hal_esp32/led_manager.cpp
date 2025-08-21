@@ -21,7 +21,7 @@ uint64_t wled_init(void)
     led_strip_config_t strip_config = {.strip_gpio_num = CONFIG_WLED_DIN_PIN,
                                        .max_leds = 64,
                                        .led_model = LED_MODEL_WS2812,
-                                       .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_RGB,
+                                       .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
                                        .flags = {
                                            .invert_out = false,
                                        }};
@@ -35,9 +35,9 @@ uint64_t wled_init(void)
 
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
 
-    for (uint32_t i = 0; i < 64; i++)
+    for (uint32_t i = 0; i < 3; i++)
     {
-        led_strip_set_pixel(led_strip, i, 0, 0, 0);
+        led_strip_set_pixel(led_strip, i, 10, 10, 0);
     }
     led_strip_refresh(led_strip);
 

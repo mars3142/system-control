@@ -8,6 +8,7 @@
 #include "button_handling.h"
 #include "common/InactivityTracker.h"
 #include "hal_esp32/PersistenceManager.h"
+#include "ui/ClockScreenSaver.h"
 #include "ui/ScreenSaver.h"
 #include "ui/SplashScreen.h"
 
@@ -103,7 +104,7 @@ static void init_ui(void)
     };
     m_widget = std::make_shared<SplashScreen>(&options);
     m_inactivityTracker = std::make_unique<InactivityTracker>(60000, []() {
-        auto screensaver = std::make_shared<ScreenSaver>(&options);
+        auto screensaver = std::make_shared<ClockScreenSaver>(&options);
         options.pushScreen(screensaver);
     });
 }
