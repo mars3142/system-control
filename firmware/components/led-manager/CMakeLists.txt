@@ -6,6 +6,7 @@ if (DEFINED ENV{IDF_PATH})
             PRIV_REQUIRES
                 u8g2
                 esp_event
+                esp_timer
                 persistence-manager
     )
     return()

@@ -1,4 +1,4 @@
-# Definiere die Quelldateien in einer Variable
+# Define the source files in a variable
 set(SOURCE_FILES
     src/common/InactivityTracker.cpp
     src/common/Menu.cpp

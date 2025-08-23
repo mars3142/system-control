@@ -1,3 +1,51 @@
 #pragma once
 
-void led_status_init();
+#include "driver/rmt_tx.h"
+#include <stdint.h>
+
+// Number of LEDs to be controlled
+#define STATUS_LED_COUNT 3
+
+// Possible lighting modes
+typedef enum
+{
+    LED_MODE_OFF,
+    LED_MODE_SOLID,
+    LED_MODE_BLINK
+} led_mode_t;
+
+// Structure for an RGB color
+typedef struct
+{
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+} rgb_t;
+
+// This is the structure you pass from the outside to define a behavior
+typedef struct
+{
+    led_mode_t mode;
+    rgb_t color;
+    uint32_t on_time_ms = 0;  // Only relevant for BLINK
+    uint32_t off_time_ms = 0; // Only relevant for BLINK
+} led_behavior_t;
+
+/**
+ * @brief Initializes the status manager and the LED strip.
+ *
+ * @param gpio_num GPIO where the data line of the LEDs is connected.
+ * @return esp_err_t ESP_OK on success.
+ */
+esp_err_t led_status_init(int gpio_num);
+
+/**
+ * @brief Sets the lighting behavior for a single LED.
+ *
+ * This function is thread-safe.
+ *
+ * @param index Index of the LED (0 to STATUS_LED_COUNT - 1).
+ * @param behavior The structure with the desired behavior.
+ * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG on invalid index.
+ */
+esp_err_t led_status_set_behavior(uint8_t index, led_behavior_t behavior);

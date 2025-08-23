@@ -18,20 +18,26 @@ const char *TAG = "LED";
 
 uint64_t wled_init(void)
 {
-    led_strip_config_t strip_config = {.strip_gpio_num = CONFIG_WLED_DIN_PIN,
-                                       .max_leds = 64,
-                                       .led_model = LED_MODEL_WS2812,
-                                       .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
-                                       .flags = {
-                                           .invert_out = false,
-                                       }};
+    led_strip_config_t strip_config = {
+        .strip_gpio_num = CONFIG_WLED_DIN_PIN,
+        .max_leds = 64,
+        .led_model = LED_MODEL_WS2812,
+        .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
+        .flags =
+            {
+                .invert_out = false,
+            },
+    };
 
-    led_strip_rmt_config_t rmt_config = {.clk_src = RMT_CLK_SRC_DEFAULT,
-                                         .resolution_hz = 0,
-                                         .mem_block_symbols = 0,
-                                         .flags = {
-                                             .with_dma = true,
-                                         }};
+    led_strip_rmt_config_t rmt_config = {
+        .clk_src = RMT_CLK_SRC_DEFAULT,
+        .resolution_hz = 0,
+        .mem_block_symbols = 0,
+        .flags =
+            {
+                .with_dma = true,
+            },
+    };
 
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
 
@@ -74,12 +80,12 @@ uint64_t send_event(uint32_t event, led_event_data_t *payload)
         return ESP_ERR_INVALID_ARG;
     }
 
-    esp_err_t err = esp_event_post_to(loop_handle,              // Event-Loop Handle
-                                      LED_EVENTS_BASE,          // Event Base
+    esp_err_t err = esp_event_post_to(loop_handle,              // Event loop handle
+                                      LED_EVENTS_BASE,          // Event base
                                       event,                    // Event ID (EVENT_LED_ON, EVENT_LED_OFF, etc.)
-                                      payload,                  // Daten-Pointer
-                                      sizeof(led_event_data_t), // Datengröße
-                                      portMAX_DELAY             // Wartezeit
+                                      payload,                  // Data pointer
+                                      sizeof(led_event_data_t), // Data size
+                                      portMAX_DELAY             // Wait time
     );
 
     if (err != ESP_OK)

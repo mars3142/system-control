@@ -1,5 +1,6 @@
 # esp-idf
 build/
+build-release/
 managed_components/
 sdkconfig
 sdkconfig.old
@@ -16,7 +17,6 @@ cmake_install.cmake
 install_manifest.txt
 CMakeFiles/
 CTestTestfile.cmake
-Makefile
 CMakeScripts
 compile_commands.json
 
