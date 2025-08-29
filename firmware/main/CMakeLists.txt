@@ -6,9 +6,11 @@ idf_component_register(SRCS
     INCLUDE_DIRS "."
     PRIV_REQUIRES
         insa
+        ble-manager
         led-manager
         persistence-manager
         u8g2
+        nvs_flash
         driver
         esp_timer
         esp_event

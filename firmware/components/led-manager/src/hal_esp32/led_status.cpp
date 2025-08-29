@@ -27,7 +27,7 @@ static void led_status_task(void *pvParameters)
 {
     ESP_LOGI(TAG, "Led Status Task started.");
 
-    while (1)
+    while (true)
     {
         uint64_t now_us = esp_timer_get_time();
 

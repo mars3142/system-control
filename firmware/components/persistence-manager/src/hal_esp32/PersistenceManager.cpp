@@ -23,22 +23,8 @@ bool PersistenceManager::Initialize()
         return true;
     }
 
-    // Initialize NVS
-    esp_err_t err = nvs_flash_init();
-    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
-    {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        err = nvs_flash_init();
-    }
-
-    if (err != ESP_OK)
-    {
-        ESP_LOGE(TAG, "Failed to initialize NVS flash: %s", esp_err_to_name(err));
-        return false;
-    }
-
     // Open NVS handle
-    err = nvs_open(namespace_.c_str(), NVS_READWRITE, &nvs_handle_);
+    esp_err_t err = nvs_open(namespace_.c_str(), NVS_READWRITE, &nvs_handle_);
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "Failed to open NVS handle: %s", esp_err_to_name(err));
