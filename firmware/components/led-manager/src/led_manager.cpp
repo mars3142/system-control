@@ -20,7 +20,7 @@ uint64_t wled_init(void)
 {
     led_strip_config_t strip_config = {
         .strip_gpio_num = CONFIG_WLED_DIN_PIN,
-        .max_leds = 64,
+        .max_leds = 500,
         .led_model = LED_MODEL_WS2812,
         .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
         .flags =
@@ -55,7 +55,7 @@ void event_handler(void *arg, esp_event_base_t base, int32_t id, void *event_dat
     if (id == EVENT_LED_ON || id == EVENT_LED_OFF)
     {
         auto brightness = (id == EVENT_LED_ON) ? value : 0;
-        for (uint32_t i = 0; i < 64; i++)
+        for (uint32_t i = 0; i < 500; i++)
         {
             led_strip_set_pixel(led_strip, i, brightness, brightness, brightness);
         }
