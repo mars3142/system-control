@@ -3,6 +3,7 @@
 #include "button_handling.h"
 #include "common/InactivityTracker.h"
 #include "driver/i2c.h"
+#include "esp_diagnostics.h"
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "hal/u8g2_esp32_hal.h"
@@ -151,6 +152,7 @@ void app_task(void *args)
         led_status_set_behavior(0, led0_behavior);
 
         ESP_LOGE(TAG, "Display not found, cannot continue.");
+        ESP_DIAG_EVENT(TAG, "Display not found on I2C bus");
         vTaskDelete(nullptr);
         return;
     }

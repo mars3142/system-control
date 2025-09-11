@@ -27,25 +27,32 @@ typedef struct
 {
     led_mode_t mode;
     rgb_t color;
-    uint32_t on_time_ms = 0;  // Only relevant for BLINK
-    uint32_t off_time_ms = 0; // Only relevant for BLINK
+    uint32_t on_time_ms;  // Only relevant for BLINK
+    uint32_t off_time_ms; // Only relevant for BLINK
 } led_behavior_t;
 
-/**
- * @brief Initializes the status manager and the LED strip.
- *
- * @param gpio_num GPIO where the data line of the LEDs is connected.
- * @return esp_err_t ESP_OK on success.
- */
-esp_err_t led_status_init(int gpio_num);
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+    /**
+     * @brief Initializes the status manager and the LED strip.
+     *
+     * @param gpio_num GPIO where the data line of the LEDs is connected.
+     * @return esp_err_t ESP_OK on success.
+     */
+    esp_err_t led_status_init(int gpio_num);
 
-/**
- * @brief Sets the lighting behavior for a single LED.
- *
- * This function is thread-safe.
- *
- * @param index Index of the LED (0 to STATUS_LED_COUNT - 1).
- * @param behavior The structure with the desired behavior.
- * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG on invalid index.
- */
-esp_err_t led_status_set_behavior(uint8_t index, led_behavior_t behavior);
+    /**
+     * @brief Sets the lighting behavior for a single LED.
+     *
+     * This function is thread-safe.
+     *
+     * @param index Index of the LED (0 to STATUS_LED_COUNT - 1).
+     * @param behavior The structure with the desired behavior.
+     * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG on invalid index.
+     */
+    esp_err_t led_status_set_behavior(uint8_t index, led_behavior_t behavior);
+#ifdef __cplusplus
+}
+#endif

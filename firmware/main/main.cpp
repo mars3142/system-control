@@ -4,12 +4,14 @@
 #include "esp_insights.h"
 #include "esp_log.h"
 #include "esp_ota_ops.h"
+#include "esp_rmaker_utils.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "led_manager.h"
 #include "led_status.h"
 #include "nvs_flash.h"
 #include "sdkconfig.h"
+#include "wifi_handler.h"
 
 #define ESP_INSIGHTS_AUTH_KEY                                                                                          \
     "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9."                                                                            \
@@ -58,6 +60,10 @@ extern "C"
 
         show_partition();
 
+        led_status_init(CONFIG_STATUS_WLED_PIN);
+
+        wifi_init_sta();
+
         esp_insights_config_t config = {
             .log_type = ESP_DIAG_LOG_TYPE_ERROR,
             .node_id = nullptr,
@@ -67,9 +73,10 @@ extern "C"
 
         esp_insights_init(&config);
 
-        led_status_init(CONFIG_STATUS_WLED_PIN);
+        esp_rmaker_time_sync_init(NULL);
 
         wled_init();
+
         register_handler();
 
         xTaskCreatePinnedToCore(app_task, "main_loop", 4096, NULL, tskIDLE_PRIORITY + 1, NULL, portNUM_PROCESSORS - 1);

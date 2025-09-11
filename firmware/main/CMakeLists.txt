@@ -4,6 +4,7 @@ idf_component_register(SRCS
         button_handling.c
         i2c_checker.c
         hal/u8g2_esp32_hal.c
+        wifi_handler.c
     INCLUDE_DIRS "."
     PRIV_REQUIRES
         insa
@@ -15,5 +16,7 @@ idf_component_register(SRCS
         driver
         esp_timer
         esp_event
+        esp_wifi
         app_update
+        rmaker_common
 )
