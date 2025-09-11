@@ -1,25 +1,19 @@
 #include "app_task.h"
 
+#include "button_handling.h"
+#include "common/InactivityTracker.h"
+#include "driver/i2c.h"
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "hal/u8g2_esp32_hal.h"
-#include "u8g2.h"
-
-#include "button_handling.h"
-#include "common/InactivityTracker.h"
 #include "hal_esp32/PersistenceManager.h"
+#include "i2c_checker.h"
+#include "led_status.h"
+#include "u8g2.h"
 #include "ui/ClockScreenSaver.h"
 #include "ui/ScreenSaver.h"
 #include "ui/SplashScreen.h"
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
-#define PIN_SDA GPIO_NUM_35
-#define PIN_SCL GPIO_NUM_36
-#else
-/// just dummy pins, because of compile check
-#define PIN_SDA GPIO_NUM_20
-#define PIN_SCL GPIO_NUM_21
-#endif
 #define PIN_RST GPIO_NUM_NC
 
 static const char *TAG = "app_task";
@@ -38,13 +32,13 @@ extern QueueHandle_t buttonQueue;
 static void setup_screen(void)
 {
     u8g2_esp32_hal_t u8g2_esp32_hal = U8G2_ESP32_HAL_DEFAULT;
-    u8g2_esp32_hal.bus.i2c.sda = PIN_SDA;
-    u8g2_esp32_hal.bus.i2c.scl = PIN_SCL;
+    u8g2_esp32_hal.bus.i2c.sda = I2C_MASTER_SDA_PIN;
+    u8g2_esp32_hal.bus.i2c.scl = I2C_MASTER_SCL_PIN;
     u8g2_esp32_hal.reset = PIN_RST;
     u8g2_esp32_hal_init(u8g2_esp32_hal);
 
     u8g2_Setup_sh1106_i2c_128x64_noname_f(&u8g2, U8G2_R0, u8g2_esp32_i2c_byte_cb, u8g2_esp32_gpio_and_delay_cb);
-    u8x8_SetI2CAddress(&u8g2.u8x8, 0x3C * 2);
+    u8x8_SetI2CAddress(&u8g2.u8x8, DISPLAY_I2C_ADDRESS << 1);
 
     ESP_LOGI(TAG, "u8g2_InitDisplay");
     u8g2_InitDisplay(&u8g2);
@@ -150,6 +144,17 @@ static void handle_button(uint8_t button)
 
 void app_task(void *args)
 {
+    if (i2c_bus_scan_and_check() != ESP_OK)
+    {
+        led_behavior_t led0_behavior = {
+            .mode = LED_MODE_BLINK, .color = {.r = 50, .g = 0, .b = 0}, .on_time_ms = 200, .off_time_ms = 200};
+        led_status_set_behavior(0, led0_behavior);
+
+        ESP_LOGE(TAG, "Display not found, cannot continue.");
+        vTaskDelete(nullptr);
+        return;
+    }
+
     setup_screen();
     setup_buttons();
     init_ui();

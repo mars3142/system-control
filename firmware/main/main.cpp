@@ -3,7 +3,9 @@
 #include "esp_event.h"
 #include "esp_insights.h"
 #include "esp_log.h"
+#include "esp_ota_ops.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "led_manager.h"
 #include "led_status.h"
 #include "nvs_flash.h"
@@ -20,6 +22,26 @@
     "2nVyZI5Y253Nch6MaeBpvrfRXhUI6uWXZuSDa3nrS5MmtElZgQjEyAJSX5lfhRwEc2Qi2LlHc4LHPD0YvO1JhSF4N6Rwf1FrJZ1qU_"           \
     "IxNTdTxtzLC0BUcYA"
 
+static const char *TAG = "main";
+
+void show_partition(void)
+{
+    const esp_partition_t *running_partition = esp_ota_get_running_partition();
+
+    if (running_partition != NULL)
+    {
+        ESP_LOGI(TAG, "Currently running partition: %s", running_partition->label);
+        ESP_LOGI(TAG, "  Type: %s", (running_partition->type == ESP_PARTITION_TYPE_APP) ? "APP" : "DATA");
+        ESP_LOGI(TAG, "  Subtype: %d", running_partition->subtype);
+        ESP_LOGI(TAG, "  Offset: 0x%lx", running_partition->address);
+        ESP_LOGI(TAG, "  Size: %ld bytes", running_partition->size);
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Could not determine the running partition!");
+    }
+}
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -34,6 +56,8 @@ extern "C"
             ESP_ERROR_CHECK(nvs_flash_init());
         }
 
+        show_partition();
+
         esp_insights_config_t config = {
             .log_type = ESP_DIAG_LOG_TYPE_ERROR,
             .node_id = nullptr,
@@ -45,26 +69,15 @@ extern "C"
 
         led_status_init(CONFIG_STATUS_WLED_PIN);
 
-        // LED 0: solid red
-        led_behavior_t led0_solid_red = {.mode = LED_MODE_SOLID, .color = {.r = 50, .g = 0, .b = 0}};
-        led_status_set_behavior(0, led0_solid_red);
-
-        // LED 1: fast blinking green (200ms an, 200ms aus)
-        led_behavior_t led1_blink_green = {
-            .mode = LED_MODE_BLINK, .color = {.r = 0, .g = 50, .b = 0}, .on_time_ms = 200, .off_time_ms = 200};
-        led_status_set_behavior(1, led1_blink_green);
-
-        // LED 2: slow blinking blue (1000ms an, 500ms aus)
-        led_behavior_t led2_blink_blue = {
-            .mode = LED_MODE_BLINK, .color = {.r = 0, .g = 0, .b = 50}, .on_time_ms = 1000, .off_time_ms = 500};
-        led_status_set_behavior(2, led2_blink_blue);
-
         wled_init();
         register_handler();
 
         xTaskCreatePinnedToCore(app_task, "main_loop", 4096, NULL, tskIDLE_PRIORITY + 1, NULL, portNUM_PROCESSORS - 1);
-        xTaskCreatePinnedToCore(ble_manager_task, "ble_manager", 4096, NULL, tskIDLE_PRIORITY + 1, NULL,
-                                portNUM_PROCESSORS - 1);
+        // xTaskCreatePinnedToCore(ble_manager_task, "ble_manager", 4096, NULL, tskIDLE_PRIORITY + 1, NULL,
+        // portNUM_PROCESSORS - 1);
+
+        led_event_data_t payload = {.value = 42};
+        send_event(EVENT_LED_ON, &payload);
     }
 #ifdef __cplusplus
 }

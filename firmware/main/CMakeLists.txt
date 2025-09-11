@@ -2,6 +2,7 @@ idf_component_register(SRCS
         main.cpp
         app_task.cpp
         button_handling.c
+        i2c_checker.c
         hal/u8g2_esp32_hal.c
     INCLUDE_DIRS "."
     PRIV_REQUIRES
@@ -14,4 +15,5 @@ idf_component_register(SRCS
         driver
         esp_timer
         esp_event
+        app_update
 )
