@@ -1,4 +1,4 @@
-menu "System Control"
+menu "Led Manager Configuration"
     config WLED_DIN_PIN
         int "WLED Data In Pin"
         default 14
@@ -10,5 +10,4 @@ menu "System Control"
         default 2
         help
             The number of the status WLED pin.
-
 endmenu

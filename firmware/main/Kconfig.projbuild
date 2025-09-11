@@ -1,0 +1,35 @@
+menu "System Control"
+    menu "WiFi Configuration"
+        config WIFI_SSID
+            string  "WiFi SSID"
+            default "YourSSID"
+            help
+                The SSID of the WiFi network to connect to.
+
+        config WIFI_PASSWORD
+            string  "WiFi Password"
+            default "YourPassword"
+            help
+                The password of the WiFi network to connect to.
+
+        config WIFI_CONNECT_RETRIES
+            int     "WiFi Connection Retry Attempts"
+            default 5
+            help
+                Number of times to retry connecting to the WiFi network before giving up.
+    endmenu
+
+    menu "Display Settings"
+        config DISPLAY_SDA_PIN
+            int     "I2C SDA Pin"
+            default 35
+            help
+                GPIO pin number for the SDA line of the display.
+
+        config DISPLAY_SCL_PIN
+            int     "I2C SCL Pin"
+            default 36
+            help
+                GPIO pin number for the SCL line of the display.
+    endmenu
+endmenu

@@ -1,17 +1,12 @@
 #pragma once
 
+#include "driver/gpio.h"
 #include "esp_err.h"
 
 #define DISPLAY_I2C_ADDRESS 0x3C
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
-#define I2C_MASTER_SDA_PIN GPIO_NUM_35
-#define I2C_MASTER_SCL_PIN GPIO_NUM_36
-#else
-/// just dummy pins, because of compile check
-#define I2C_MASTER_SDA_PIN GPIO_NUM_20
-#define I2C_MASTER_SCL_PIN GPIO_NUM_21
-#endif
+#define I2C_MASTER_SDA_PIN ((gpio_num_t)CONFIG_DISPLAY_SDA_PIN)
+#define I2C_MASTER_SCL_PIN ((gpio_num_t)CONFIG_DISPLAY_SCL_PIN)
 
 #ifdef __cplusplus
 extern "C"
