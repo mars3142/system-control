@@ -7,7 +7,7 @@
 #include "freertos/task.h"
 #include "led_strip.h"
 
-static const char *TAG = "LED_STATUS";
+static const char *TAG = "led_status";
 
 // Internal control structure for each LED
 typedef struct

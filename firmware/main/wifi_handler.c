@@ -48,6 +48,10 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
         }
         else
         {
+            led_behavior_t led0_behavior = {
+                .mode = LED_MODE_BLINK, .color = {.r = 0, .g = 50, .b = 0}, .on_time_ms = 1000, .off_time_ms = 500};
+            led_status_set_behavior(0, led0_behavior);
+
             xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
         }
         ESP_LOGI(TAG, "Failed to connect to the AP");
@@ -91,6 +95,7 @@ void wifi_init_sta()
             {
                 .ssid = CONFIG_WIFI_SSID,
                 .password = CONFIG_WIFI_PASSWORD,
+                .threshold.authmode = WIFI_AUTH_WPA2_PSK,
             },
     };
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
@@ -114,6 +119,6 @@ void wifi_init_sta()
     }
     else
     {
-        ESP_LOGE(TAG, "UNERWARTETES EVENT");
+        ESP_LOGE(TAG, "Unexpected event");
     }
 }
