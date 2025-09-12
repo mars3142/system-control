@@ -1,6 +1,7 @@
 #include "i2c_checker.h"
 
 #include "driver/i2c.h"
+#include "esp_insights.h"
 #include "esp_log.h"
 #include "hal/u8g2_esp32_hal.h"
 
@@ -67,7 +68,7 @@ esp_err_t i2c_bus_scan_and_check(void)
 
     // 3. Uninstall I2C driver if it is no longer needed
     i2c_driver_delete(I2C_MASTER_NUM);
-    ESP_LOGI(TAG, "I2C driver uninstalled.");
+    ESP_DIAG_EVENT(TAG, "I2C driver uninstalled.");
 
     return err;
 }

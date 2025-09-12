@@ -20,3 +20,5 @@ idf_component_register(SRCS
         app_update
         rmaker_common
 )
+
+target_add_binary_data(${COMPONENT_TARGET} "insights_auth_key.txt" TEXT)

@@ -13,18 +13,10 @@
 #include "sdkconfig.h"
 #include "wifi_handler.h"
 
-#define ESP_INSIGHTS_AUTH_KEY                                                                                          \
-    "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9."                                                                            \
-    "eyJ1c2VyIjoiZTYzNTNmOTUtN2I2Ni00M2U0LTgyM2UtOTlkYzAxNTYyN2NmIiwiaXNzIjoiZTMyMmI1OWMtNjNjYy00ZTQwLThlYTItNGU3NzY2" \
-    "NTQ1Y2NhIiwic3ViIjoiMjE2YWJhNmYtZmI5Zi00ZTM3LWEzMDMtOTliZmNlODU1NWJiIiwiZXhwIjoyMDcxNDIzNjk0LCJpYXQiOjE3NTYwNjM2" \
-    "OTR9.eG2musOILUiWUzE3AwWWx-_vOLeIoUlmL9LMaDrHYC6h_"                                                               \
-    "YOYT4Fqtvytgv1qAI0jxXQmijoQdpoQrlNYQwJlH1gRpILcvlFdL1YkBjzfKXgo_"                                                 \
-    "jJaOlmHv2tkd54FAg49DmG4j0BY3xAnhz5y0XBHsXWiFKwpZHWy0q5IuKyVJ3syNzmTg2LwVBVu8gU2EoGikdVKNazRC1BwPLz_"              \
-    "KNWdW03WVCniun_"                                                                                                  \
-    "2nVyZI5Y253Nch6MaeBpvrfRXhUI6uWXZuSDa3nrS5MmtElZgQjEyAJSX5lfhRwEc2Qi2LlHc4LHPD0YvO1JhSF4N6Rwf1FrJZ1qU_"           \
-    "IxNTdTxtzLC0BUcYA"
-
 static const char *TAG = "main";
+
+extern const char insights_auth_key_start[] asm("_binary_insights_auth_key_txt_start");
+extern const char insights_auth_key_end[] asm("_binary_insights_auth_key_txt_end");
 
 void show_partition(void)
 {
@@ -32,11 +24,11 @@ void show_partition(void)
 
     if (running_partition != NULL)
     {
-        ESP_LOGI(TAG, "Currently running partition: %s", running_partition->label);
-        ESP_LOGI(TAG, "  Type: %s", (running_partition->type == ESP_PARTITION_TYPE_APP) ? "APP" : "DATA");
-        ESP_LOGI(TAG, "  Subtype: %d", running_partition->subtype);
-        ESP_LOGI(TAG, "  Offset: 0x%lx", running_partition->address);
-        ESP_LOGI(TAG, "  Size: %ld bytes", running_partition->size);
+        ESP_DIAG_EVENT(TAG, "Currently running partition: %s", running_partition->label);
+        ESP_DIAG_EVENT(TAG, "  Type: %s", (running_partition->type == ESP_PARTITION_TYPE_APP) ? "APP" : "DATA");
+        ESP_DIAG_EVENT(TAG, "  Subtype: %d", running_partition->subtype);
+        ESP_DIAG_EVENT(TAG, "  Offset: 0x%lx", running_partition->address);
+        ESP_DIAG_EVENT(TAG, "  Size: %ld bytes", running_partition->size);
     }
     else
     {
@@ -67,7 +59,7 @@ extern "C"
         esp_insights_config_t config = {
             .log_type = ESP_DIAG_LOG_TYPE_ERROR,
             .node_id = nullptr,
-            .auth_key = ESP_INSIGHTS_AUTH_KEY,
+            .auth_key = insights_auth_key_start,
             .alloc_ext_ram = false,
         };
 

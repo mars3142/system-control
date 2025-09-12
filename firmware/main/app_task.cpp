@@ -41,10 +41,10 @@ static void setup_screen(void)
     u8g2_Setup_sh1106_i2c_128x64_noname_f(&u8g2, U8G2_R0, u8g2_esp32_i2c_byte_cb, u8g2_esp32_gpio_and_delay_cb);
     u8x8_SetI2CAddress(&u8g2.u8x8, DISPLAY_I2C_ADDRESS << 1);
 
-    ESP_LOGI(TAG, "u8g2_InitDisplay");
+    ESP_DIAG_EVENT(TAG, "u8g2_InitDisplay");
     u8g2_InitDisplay(&u8g2);
 
-    ESP_LOGI(TAG, "u8g2_SetPowerSave");
+    ESP_DIAG_EVENT(TAG, "u8g2_SetPowerSave");
     u8g2_SetPowerSave(&u8g2, 0);
 }
 
@@ -151,7 +151,6 @@ void app_task(void *args)
             .mode = LED_MODE_BLINK, .color = {.r = 50, .g = 0, .b = 0}, .on_time_ms = 200, .off_time_ms = 200};
         led_status_set_behavior(0, led0_behavior);
 
-        ESP_LOGE(TAG, "Display not found, cannot continue.");
         ESP_DIAG_EVENT(TAG, "Display not found on I2C bus");
         vTaskDelete(nullptr);
         return;
