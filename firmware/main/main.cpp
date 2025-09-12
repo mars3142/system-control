@@ -57,7 +57,7 @@ extern "C"
         wifi_init_sta();
 
         esp_insights_config_t config = {
-            .log_type = ESP_DIAG_LOG_TYPE_ERROR,
+            .log_type = ESP_DIAG_LOG_TYPE_ERROR | ESP_DIAG_LOG_TYPE_EVENT | ESP_DIAG_LOG_TYPE_WARNING,
             .node_id = nullptr,
             .auth_key = insights_auth_key_start,
             .alloc_ext_ram = false,
