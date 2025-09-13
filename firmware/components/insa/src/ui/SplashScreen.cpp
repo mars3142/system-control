@@ -1,13 +1,10 @@
 #include "ui/SplashScreen.h"
 
+#include "analytics.h"
 #include "ui/MainMenu.h"
+#include "wifi_manager.h"
 
-#ifndef ESP32
-#include <chrono>
-#include <thread>
-#endif
-
-uint64_t counter = 0;
+uint64_t splashTime = 0;
 
 SplashScreen::SplashScreen(menu_options_t *options) : Widget(options->u8g2), m_options(options)
 {
@@ -15,18 +12,14 @@ SplashScreen::SplashScreen(menu_options_t *options) : Widget(options->u8g2), m_o
 
 void SplashScreen::update(const uint64_t dt)
 {
-    counter += dt;
-    if (counter >= 3000)
+    splashTime += dt;
+    if (splashTime > 100)
     {
-        counter = 0;
         if (m_options && m_options->setScreen)
         {
             m_options->setScreen(std::make_shared<MainMenu>(m_options));
         }
     }
-#ifndef ESP32
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-#endif
 }
 
 void SplashScreen::render()

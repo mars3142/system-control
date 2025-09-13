@@ -1,4 +1,4 @@
-#include "wifi_handler.h"
+#include "wifi_manager.h"
 
 #include "esp_event.h"
 #include "esp_insights.h"
@@ -21,7 +21,7 @@ static EventGroupHandle_t s_wifi_event_group;
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
 
-static const char *TAG = "wifi_handler";
+static const char *TAG = "wifi_manager";
 
 static int s_retry_num = 0;
 
@@ -72,7 +72,7 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
     }
 }
 
-void wifi_init_sta()
+void wifi_manager_init()
 {
     s_wifi_event_group = xEventGroupCreate();
 

@@ -4,21 +4,18 @@ idf_component_register(SRCS
         button_handling.c
         i2c_checker.c
         hal/u8g2_esp32_hal.c
-        wifi_handler.c
     INCLUDE_DIRS "."
     PRIV_REQUIRES
+        analytics
         insa
-        ble-manager
+        connectivity-manager
         led-manager
         persistence-manager
         u8g2
         nvs_flash
-        driver
         esp_timer
         esp_event
         esp_wifi
         app_update
         rmaker_common
 )
-
-target_add_binary_data(${COMPONENT_TARGET} "insights_auth_key.txt" TEXT)

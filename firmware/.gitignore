@@ -38,3 +38,5 @@ bin/
 components/**/*.a
 *.ninja
 Testing/*
+
+**/insights_auth_key.txt

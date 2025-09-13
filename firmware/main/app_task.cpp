@@ -1,5 +1,6 @@
 #include "app_task.h"
 
+#include "analytics.h"
 #include "button_handling.h"
 #include "common/InactivityTracker.h"
 #include "driver/i2c.h"
@@ -14,6 +15,7 @@
 #include "ui/ClockScreenSaver.h"
 #include "ui/ScreenSaver.h"
 #include "ui/SplashScreen.h"
+#include "wifi_manager.h"
 
 #define PIN_RST GPIO_NUM_NC
 
@@ -102,6 +104,10 @@ static void init_ui(void)
         auto screensaver = std::make_shared<ClockScreenSaver>(&options);
         options.pushScreen(screensaver);
     });
+
+    u8g2_ClearBuffer(&u8g2);
+    m_widget->render();
+    u8g2_SendBuffer(&u8g2);
 }
 
 static void handle_button(uint8_t button)
@@ -159,6 +165,9 @@ void app_task(void *args)
     setup_screen();
     setup_buttons();
     init_ui();
+
+    wifi_manager_init();
+    analytics_init();
 
     auto oldTime = esp_timer_get_time();
 

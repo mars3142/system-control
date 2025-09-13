@@ -4,7 +4,7 @@
 extern "C"
 {
 #endif
-    void wifi_init_sta(void);
+    void wifi_manager_init(void);
 #ifdef __cplusplus
 }
 #endif
