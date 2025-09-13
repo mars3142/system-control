@@ -155,7 +155,7 @@ void app_task(void *args)
     if (i2c_bus_scan_and_check() != ESP_OK)
     {
         led_behavior_t led0_behavior = {
-            .mode = LED_MODE_BLINK, .color = {.r = 50, .g = 0, .b = 0}, .on_time_ms = 200, .off_time_ms = 200};
+            .mode = LED_MODE_BLINK, .color = {.r = 50, .g = 0, .b = 0}, .on_time_ms = 1000, .off_time_ms = 500};
         led_status_set_behavior(0, led0_behavior);
 
         ESP_DIAG_EVENT(TAG, "Display not found on I2C bus");

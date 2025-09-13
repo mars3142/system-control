@@ -30,7 +30,7 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START)
     {
         led_behavior_t led0_behavior = {
-            .mode = LED_MODE_BLINK, .color = {.r = 0, .g = 50, .b = 0}, .on_time_ms = 200, .off_time_ms = 200};
+            .mode = LED_MODE_BLINK, .color = {.r = 50, .g = 50, .b = 0}, .on_time_ms = 200, .off_time_ms = 200};
         led_status_set_behavior(0, led0_behavior);
 
         esp_wifi_connect();
@@ -40,7 +40,7 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
         if (s_retry_num < CONFIG_WIFI_CONNECT_RETRIES)
         {
             led_behavior_t led0_behavior = {
-                .mode = LED_MODE_BLINK, .color = {.r = 0, .g = 50, .b = 0}, .on_time_ms = 200, .off_time_ms = 200};
+                .mode = LED_MODE_BLINK, .color = {.r = 50, .g = 50, .b = 0}, .on_time_ms = 200, .off_time_ms = 200};
             led_status_set_behavior(0, led0_behavior);
 
             esp_wifi_connect();
@@ -50,7 +50,7 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
         else
         {
             led_behavior_t led0_behavior = {
-                .mode = LED_MODE_BLINK, .color = {.r = 0, .g = 50, .b = 0}, .on_time_ms = 1000, .off_time_ms = 500};
+                .mode = LED_MODE_BLINK, .color = {.r = 50, .g = 0, .b = 0}, .on_time_ms = 1000, .off_time_ms = 500};
             led_status_set_behavior(0, led0_behavior);
 
             xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
