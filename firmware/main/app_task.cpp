@@ -11,6 +11,7 @@
 #include "hal_esp32/PersistenceManager.h"
 #include "i2c_checker.h"
 #include "led_status.h"
+#include "sdkconfig.h"
 #include "u8g2.h"
 #include "ui/ClockScreenSaver.h"
 #include "ui/ScreenSaver.h"
@@ -166,8 +167,10 @@ void app_task(void *args)
     setup_buttons();
     init_ui();
 
+#if CONFIG_WIFI_ENABLED
     wifi_manager_init();
     analytics_init();
+#endif
 
     auto oldTime = esp_timer_get_time();
 

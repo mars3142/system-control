@@ -1,18 +1,27 @@
 menu "System Control"
     menu "WiFi Configuration"
+        config WIFI_ENABLED
+            bool    "Enable WiFi"
+            default y
+            help
+                Enable or disable WiFi connectivity.
+
         config WIFI_SSID
+            depends on WIFI_ENABLED
             string  "WiFi SSID"
             default "YourSSID"
             help
                 The SSID of the WiFi network to connect to.
 
         config WIFI_PASSWORD
+            depends on WIFI_ENABLED
             string  "WiFi Password"
             default "YourPassword"
             help
                 The password of the WiFi network to connect to.
 
         config WIFI_CONNECT_RETRIES
+            depends on WIFI_ENABLED
             int     "WiFi Connection Retry Attempts"
             default 5
             help

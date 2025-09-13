@@ -1,8 +1,6 @@
 #include "ui/SplashScreen.h"
 
-#include "analytics.h"
 #include "ui/MainMenu.h"
-#include "wifi_manager.h"
 
 uint64_t splashTime = 0;
 
