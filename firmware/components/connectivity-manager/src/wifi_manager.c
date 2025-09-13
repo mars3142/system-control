@@ -46,16 +46,13 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
             esp_wifi_connect();
             s_retry_num++;
             ESP_DIAG_EVENT(TAG, "Retrying to connect to the AP");
+            return;
         }
-        else
-        {
-            led_behavior_t led0_behavior = {
-                .mode = LED_MODE_BLINK, .color = {.r = 50, .g = 0, .b = 0}, .on_time_ms = 1000, .off_time_ms = 500};
-            led_status_set_behavior(0, led0_behavior);
+        led_behavior_t led0_behavior = {
+            .mode = LED_MODE_BLINK, .color = {.r = 50, .g = 0, .b = 0}, .on_time_ms = 1000, .off_time_ms = 500};
+        led_status_set_behavior(0, led0_behavior);
 
-            xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
-        }
-        ESP_DIAG_EVENT(TAG, "Failed to connect to the AP");
+        xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
     }
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
     {
@@ -103,7 +100,7 @@ void wifi_manager_init()
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
 
-    ESP_DIAG_EVENT(TAG, "wifi_init_sta finished.");
+    ESP_DIAG_EVENT(TAG, "waiting for wifi connection...");
 
     /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or
        connection failed for the maximum number of retries (WIFI_FAIL_BIT). The bits are set by event_handler() */
@@ -116,7 +113,7 @@ void wifi_manager_init()
     }
     else if (bits & WIFI_FAIL_BIT)
     {
-        ESP_DIAG_EVENT(TAG, "Failed to connect to SSID:%s", CONFIG_WIFI_SSID);
+        ESP_LOGE(TAG, "Failed to connect to SSID:%s", CONFIG_WIFI_SSID);
     }
     else
     {

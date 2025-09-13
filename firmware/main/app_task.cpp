@@ -144,7 +144,7 @@ static void handle_button(uint8_t button)
             break;
 
         default:
-            ESP_LOGI(TAG, "Unhandled button: %u", button);
+            ESP_LOGE(TAG, "Unhandled button: %u", button);
             break;
         }
     }
@@ -158,7 +158,7 @@ void app_task(void *args)
             .mode = LED_MODE_BLINK, .color = {.r = 50, .g = 0, .b = 0}, .on_time_ms = 1000, .off_time_ms = 500};
         led_status_set_behavior(0, led0_behavior);
 
-        ESP_DIAG_EVENT(TAG, "Display not found on I2C bus");
+        ESP_LOGE(TAG, "Display not found on I2C bus");
         vTaskDelete(nullptr);
         return;
     }
