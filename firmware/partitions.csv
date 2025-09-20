@@ -1,6 +1,6 @@
 # Name   , Type , SubType  , Offset  , Size  , Flags
 nvs      , data , nvs      , 0x9000  ,   24k ,
 phy_init , data , phy      ,         ,    4k ,
-factory  , app  , factory  , 0x10000 , 3584K ,
-coredump , data , coredump ,         ,   64k ,
+factory  , app  , factory  , 0x10000 , 3072K ,
+coredump , data , coredump ,         ,  576k ,
 fctry    , data , nvs      ,         ,   24k ,

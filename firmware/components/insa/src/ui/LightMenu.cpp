@@ -58,20 +58,19 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
         {
             toggle(menuItem);
             const auto value = getItem(menuItem.getId()).getValue() == "1";
+            led_event_data_t payload = {.value = 42};
             if (value)
             {
-                led_event_data_t payload = {.value = 42};
                 send_event(EVENT_LED_ON, &payload);
             }
             else
             {
-                led_event_data_t payload = {.value = 0};
                 send_event(EVENT_LED_OFF, &payload);
             }
+
             if (m_options && m_options->persistenceManager)
             {
                 m_options->persistenceManager->SetValue(LightMenuOptions::LIGHT_ACTIVE, value);
-                m_options->persistenceManager->Save();
             }
         }
         break;
@@ -83,14 +82,14 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
         if (button == ButtonType::LEFT || button == ButtonType::RIGHT)
         {
             const auto value = getItem(item.getId()).getIndex();
-            led_event_data_t payload = {.value = value};
-            send_event(EVENT_LED_DAY + value, &payload);
-
             if (m_options && m_options->persistenceManager)
             {
                 m_options->persistenceManager->SetValue(LightMenuOptions::LIGHT_MODE, value);
                 m_options->persistenceManager->Save();
             }
+
+            led_event_data_t payload = {.value = value};
+            send_event(EVENT_LED_DAY + value, &payload);
         }
         break;
     }

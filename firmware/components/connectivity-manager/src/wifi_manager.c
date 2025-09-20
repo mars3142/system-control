@@ -27,6 +27,7 @@ static int s_retry_num = 0;
 
 static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
+#if CONFIG_WIFI_ENABLED
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START)
     {
         led_behavior_t led0_behavior = {
@@ -67,10 +68,12 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
         s_retry_num = 0;
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
     }
+#endif
 }
 
 void wifi_manager_init()
 {
+#if CONFIG_WIFI_ENABLED
     s_wifi_event_group = xEventGroupCreate();
 
     ESP_ERROR_CHECK(esp_netif_init());
@@ -119,4 +122,5 @@ void wifi_manager_init()
     {
         ESP_LOGE(TAG, "Unexpected event");
     }
+#endif
 }

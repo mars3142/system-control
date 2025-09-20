@@ -3,6 +3,7 @@ idf_component_register(SRCS
             src/led_status.c
         INCLUDE_DIRS "include"
         PRIV_REQUIRES
+            insa
             u8g2
             esp_event
             esp_timer

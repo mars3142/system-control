@@ -159,7 +159,7 @@ class Menu : public Widget
      * @note New items are created as selection items with auto-generated names
      *       in the format "Section X" where X is the item number
      */
-    void setItemSize(size_t size);
+    void setItemSize(size_t size, int8_t startIndex = 0);
 
     /**
      * @brief Toggles the boolean state of a toggle menu item

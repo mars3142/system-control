@@ -8,6 +8,7 @@ enum
     EVENT_LED_OFF,
     EVENT_LED_DAY,
     EVENT_LED_NIGHT,
+    EVENT_LED_REFRESH
 };
 
 typedef struct

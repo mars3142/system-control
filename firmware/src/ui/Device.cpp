@@ -92,7 +92,7 @@ void Device::SetScreen(const std::shared_ptr<Widget> &screen)
         m_widget = screen;
         m_history.clear();
         m_history.emplace_back(m_widget);
-        m_widget->enter();
+        m_widget->onEnter();
     }
 }
 
@@ -102,11 +102,11 @@ void Device::PushScreen(const std::shared_ptr<Widget> &screen)
     {
         if (m_widget)
         {
-            m_widget->pause();
+            m_widget->onPause();
         }
         m_widget = screen;
         m_history.emplace_back(m_widget);
-        m_widget->enter();
+        m_widget->onEnter();
     }
 }
 
@@ -116,11 +116,11 @@ void Device::PopScreen()
     {
         if (m_widget)
         {
-            m_widget->exit();
+            m_widget->onExit();
         }
         m_history.pop_back();
         m_widget = m_history.back();
-        m_widget->resume();
+        m_widget->onResume();
     }
 }
 

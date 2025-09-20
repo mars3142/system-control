@@ -63,7 +63,7 @@ class Widget
      * @note This method is typically called by the UI management system during
      *       screen transitions or focus changes.
      */
-    virtual void enter();
+    virtual void onEnter();
 
     /**
      * @brief Called when the widget is temporarily paused or loses focus
@@ -76,7 +76,7 @@ class Widget
      *       only if pause behavior is needed.
      * @note The widget should be prepared to resume from this state when resume() is called.
      */
-    virtual void pause();
+    virtual void onPause();
 
     /**
      * @brief Called when the widget resumes from a paused state
@@ -89,7 +89,7 @@ class Widget
      *       only if resume behavior is needed.
      * @note This method should restore the widget to the state it was in before pause() was called.
      */
-    virtual void resume();
+    virtual void onResume();
 
     /**
      * @brief Called when the widget is being destroyed or exits the system
@@ -99,11 +99,11 @@ class Widget
      *          save final state, or release resources that are not automatically freed.
      *
      * @note The base implementation is empty, allowing derived classes to override
-     *       only if exit behavior is needed.
+     *       only if onExit behavior is needed.
      * @note This method is called before the widget's destructor and provides
      *       an opportunity for controlled shutdown of widget-specific resources.
      */
-    virtual void exit();
+    virtual void onExit();
 
     /**
      * @brief Updates the widget's internal state based on elapsed time

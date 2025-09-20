@@ -30,6 +30,7 @@ uint8_t received_signal;
 std::shared_ptr<Widget> m_widget;
 std::vector<std::shared_ptr<Widget>> m_history;
 std::unique_ptr<InactivityTracker> m_inactivityTracker;
+std::shared_ptr<PersistenceManager> m_persistenceManager;
 
 extern QueueHandle_t buttonQueue;
 
@@ -58,7 +59,7 @@ void setScreen(const std::shared_ptr<Widget> &screen)
         m_widget = screen;
         m_history.clear();
         m_history.emplace_back(m_widget);
-        m_widget->enter();
+        m_widget->onEnter();
     }
 }
 
@@ -68,10 +69,10 @@ void pushScreen(const std::shared_ptr<Widget> &screen)
     {
         if (m_widget)
         {
-            m_widget->pause();
+            m_widget->onPause();
         }
         m_widget = screen;
-        m_widget->enter();
+        m_widget->onEnter();
         m_history.emplace_back(m_widget);
     }
 }
@@ -83,22 +84,27 @@ void popScreen()
         m_history.pop_back();
         if (m_widget)
         {
-            m_widget->exit();
+            if (m_persistenceManager != nullptr)
+            {
+                m_persistenceManager->Save();
+            }
+            m_widget->onExit();
         }
         m_widget = m_history.back();
-        m_widget->resume();
+        m_widget->onResume();
     }
 }
 
 static void init_ui(void)
 {
+    m_persistenceManager = std::make_shared<PersistenceManager>();
     options = {
         .u8g2 = &u8g2,
         .setScreen = [](const std::shared_ptr<Widget> &screen) { setScreen(screen); },
         .pushScreen = [](const std::shared_ptr<Widget> &screen) { pushScreen(screen); },
         .popScreen = []() { popScreen(); },
         .onButtonClicked = nullptr,
-        .persistenceManager = std::make_shared<PersistenceManager>(),
+        .persistenceManager = m_persistenceManager,
     };
     m_widget = std::make_shared<SplashScreen>(&options);
     m_inactivityTracker = std::make_unique<InactivityTracker>(60000, []() {

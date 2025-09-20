@@ -4,19 +4,19 @@ Widget::Widget(u8g2_t *u8g2) : u8g2(u8g2)
 {
 }
 
-void Widget::enter()
+void Widget::onEnter()
 {
 }
 
-void Widget::pause()
+void Widget::onPause()
 {
 }
 
-void Widget::resume()
+void Widget::onResume()
 {
 }
 
-void Widget::exit()
+void Widget::onExit()
 {
 }
 

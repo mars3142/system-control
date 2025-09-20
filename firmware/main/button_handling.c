@@ -36,7 +36,7 @@ static void button_event_cb(void *arg, void *usr_data)
     button_user_data_t *data = (button_user_data_t *)usr_data;
     uint8_t gpio_num = data->gpio;
 
-    ESP_DIAG_EVENT(TAG, "Button pressed on GPIO %d", gpio_num);
+    ESP_LOGI(TAG, "Button pressed on GPIO %d", gpio_num);
 
     if (xQueueSend(buttonQueue, &gpio_num, 0) != pdTRUE)
     {

@@ -51,19 +51,19 @@ size_t Menu::getItemCount() const
     return m_items.size();
 }
 
-void Menu::setItemSize(const size_t size)
+void Menu::setItemSize(const size_t size, int8_t startIndex)
 {
     if ((m_items.size() - 1) < size)
     {
         for (size_t i = m_items.size() - 1; i < size; i++)
         {
-            auto caption = std::string("Bereich ") + std::to_string(i + 1);
+            auto caption = std::string("Bereich ") + std::to_string(i + 1 - startIndex);
             auto index = 0;
             if (m_options && m_options->persistenceManager)
             {
                 constexpr int key_length = 20;
                 char key[key_length] = "";
-                snprintf(key, key_length, "section_%zu", i + 1);
+                snprintf(key, key_length, "section_%zu", i + 1 - startIndex);
                 index = m_options->persistenceManager->GetValue(key, index);
             }
             addSelection(i + 1, caption, m_items.at(0).getValues(), index);

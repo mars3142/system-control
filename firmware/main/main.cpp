@@ -5,6 +5,7 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "hal_esp32/PersistenceManager.h"
 #include "led_manager.h"
 #include "led_status.h"
 #include "nvs_flash.h"
@@ -31,12 +32,18 @@ extern "C"
 
         register_handler();
 
-        xTaskCreatePinnedToCore(app_task, "main_loop", 4096, NULL, tskIDLE_PRIORITY + 1, NULL, portNUM_PROCESSORS - 1);
+        xTaskCreatePinnedToCore(app_task, "app_task", 4096, NULL, tskIDLE_PRIORITY + 1, NULL, portNUM_PROCESSORS - 1);
         // xTaskCreatePinnedToCore(ble_manager_task, "ble_manager", 4096, NULL, tskIDLE_PRIORITY + 1, NULL,
         // portNUM_PROCESSORS - 1);
 
-        led_event_data_t payload = {.value = 42};
-        send_event(EVENT_LED_ON, &payload);
+        auto persistence = PersistenceManager();
+        persistence.Load();
+
+        if (persistence.GetValue("light_active", false))
+        {
+            led_event_data_t payload = {.value = 42};
+            send_event(EVENT_LED_ON, &payload);
+        }
     }
 #ifdef __cplusplus
 }

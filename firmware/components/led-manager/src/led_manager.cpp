@@ -1,26 +1,30 @@
 #include "led_manager.h"
 
+#include "common/ColorSettingsMenu.h"
 #include "esp_event.h"
 #include "esp_log.h"
+#include "hal_esp32/PersistenceManager.h"
+#include "led_status.h"
 #include "led_strip.h"
 #include "sdkconfig.h"
 
 led_strip_handle_t led_strip;
 
-static const uint32_t value = 5;
+static const int value = 125;
+static const uint32_t max_leds = 500;
 
 ESP_EVENT_DECLARE_BASE(LED_EVENTS_BASE);
 ESP_EVENT_DEFINE_BASE(LED_EVENTS_BASE);
 
 esp_event_loop_handle_t loop_handle;
 
-const char *TAG = "LED";
+const char *TAG = "led_manager";
 
 uint64_t wled_init(void)
 {
     led_strip_config_t strip_config = {
         .strip_gpio_num = CONFIG_WLED_DIN_PIN,
-        .max_leds = 500,
+        .max_leds = max_leds,
         .led_model = LED_MODEL_WS2812,
         .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
         .flags =
@@ -41,26 +45,35 @@ uint64_t wled_init(void)
 
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
 
-    for (uint32_t i = 0; i < 3; i++)
-    {
-        led_strip_set_pixel(led_strip, i, 10, 10, 0);
-    }
-    led_strip_refresh(led_strip);
-
     return ESP_OK;
 }
 
 void event_handler(void *arg, esp_event_base_t base, int32_t id, void *event_data)
 {
-    if (id == EVENT_LED_ON || id == EVENT_LED_OFF)
+    uint8_t red = 0;
+    uint8_t green = 0;
+    uint8_t blue = 0;
+
+    if (id != EVENT_LED_OFF)
     {
-        auto brightness = (id == EVENT_LED_ON) ? value : 0;
-        for (uint32_t i = 0; i < 500; i++)
-        {
-            led_strip_set_pixel(led_strip, i, brightness, brightness, brightness);
-        }
-        led_strip_refresh(led_strip);
+        auto persistenceManager = PersistenceManager();
+        persistenceManager.Load();
+
+        auto mode = persistenceManager.GetValue("light_mode", 0);
+        auto light_mode = (mode == 0) ? "day" : "night";
+        red = persistenceManager.GetValue(std::string(ColorSettingsMenuOptions::RED) + light_mode, value);
+        green = persistenceManager.GetValue(std::string(ColorSettingsMenuOptions::GREEN) + light_mode, value);
+        blue = persistenceManager.GetValue(std::string(ColorSettingsMenuOptions::BLUE) + light_mode, value);
     }
+
+    for (uint32_t i = 0; i < max_leds; i++)
+    {
+        led_strip_set_pixel(led_strip, i, red, green, blue);
+    }
+    led_strip_refresh(led_strip);
+
+    led_behavior_t led2_behavior = {.mode = LED_MODE_SOLID, .color = {.r = red, .g = green, .b = blue}};
+    led_status_set_behavior(2, led2_behavior);
 }
 
 uint64_t register_handler(void)
