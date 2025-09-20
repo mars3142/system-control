@@ -20,3 +20,6 @@
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode
+**/*_back.png
+**/*_front.png
+**/*_schematic*.png
