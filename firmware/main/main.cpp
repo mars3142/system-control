@@ -10,6 +10,7 @@
 #include "led_status.h"
 #include "nvs_flash.h"
 #include "sdkconfig.h"
+#include "simulator.h"
 #include "wifi_manager.h"
 
 #ifdef __cplusplus
@@ -33,6 +34,7 @@ extern "C"
         register_handler();
 
         xTaskCreatePinnedToCore(app_task, "app_task", 4096, NULL, tskIDLE_PRIORITY + 1, NULL, portNUM_PROCESSORS - 1);
+        xTaskCreatePinnedToCore(simulate, "simulate", 4096, NULL, tskIDLE_PRIORITY + 1, NULL, portNUM_PROCESSORS - 1);
         // xTaskCreatePinnedToCore(ble_manager_task, "ble_manager", 4096, NULL, tskIDLE_PRIORITY + 1, NULL,
         // portNUM_PROCESSORS - 1);
 

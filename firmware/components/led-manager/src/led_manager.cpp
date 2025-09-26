@@ -72,7 +72,8 @@ void event_handler(void *arg, esp_event_base_t base, int32_t id, void *event_dat
     }
     led_strip_refresh(led_strip);
 
-    led_behavior_t led2_behavior = {.mode = LED_MODE_SOLID, .color = {.r = red, .g = green, .b = blue}};
+    led_behavior_t led2_behavior = {
+        .mode = LED_MODE_SOLID, .color = {.r = red, .g = green, .b = blue}, .on_time_ms = 0, .off_time_ms = 0};
     led_status_set_behavior(2, led2_behavior);
 }
 

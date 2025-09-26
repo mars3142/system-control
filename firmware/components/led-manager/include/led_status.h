@@ -1,6 +1,6 @@
 #pragma once
 
-#include "driver/rmt_tx.h"
+#include "esp_check.h"
 #include <stdint.h>
 
 // Number of LEDs to be controlled

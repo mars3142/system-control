@@ -11,6 +11,7 @@ idf_component_register(SRCS
         connectivity-manager
         led-manager
         persistence-manager
+        simulator
         u8g2
         nvs_flash
         esp_timer
@@ -19,3 +20,5 @@ idf_component_register(SRCS
         app_update
         rmaker_common
 )
+
+spiffs_create_partition_image(storage ../spiffs_image FLASH_IN_PROJECT)
