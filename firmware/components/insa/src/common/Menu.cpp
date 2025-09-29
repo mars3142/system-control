@@ -29,7 +29,7 @@ constexpr int BOTTOM_OFFSET = 10;
 Menu::Menu(menu_options_t *options) : Widget(options->u8g2), m_options(options)
 {
     // Set up button callback using lambda to forward to member function
-    m_options->onButtonClicked = [this](const ButtonType button) { onButtonClicked(button); };
+    m_options->onButtonClicked = [this](const ButtonType button) { OnButtonClicked(button); };
 }
 
 Menu::~Menu()
@@ -126,7 +126,7 @@ MenuItem Menu::replaceItem(const int index, const MenuItem &item)
     return item;
 }
 
-void Menu::render()
+void Menu::Render()
 {
     // Initialize selection if not set
     if (m_selected_item >= m_items.size() && !m_items.empty())
@@ -232,7 +232,7 @@ void Menu::renderWidget(const MenuItem *item, const uint8_t *font, const int x, 
     }
 }
 
-void Menu::onButtonClicked(const ButtonType button)
+void Menu::OnButtonClicked(const ButtonType button)
 {
     // Map button input to navigation functions
     switch (button)
@@ -362,7 +362,7 @@ void Menu::drawScrollBar() const
     // Create scrollbar instance
     ScrollBar scrollBar(m_options, u8g2->width - UIConstants::SCROLLBAR_WIDTH, 3, 1, u8g2->height - 6);
     scrollBar.refresh(m_selected_item, m_items.size());
-    scrollBar.render();
+    scrollBar.Render();
 }
 
 void Menu::drawSelectionBox() const

@@ -46,8 +46,8 @@ static void led_status_task(void *pvParameters)
                     break;
 
                 case LED_MODE_SOLID:
-                    led_strip_set_pixel(led_strip, i, control->behavior.color.r, control->behavior.color.g,
-                                        control->behavior.color.b);
+                    led_strip_set_pixel(led_strip, i, control->behavior.color.red, control->behavior.color.green,
+                                        control->behavior.color.blue);
                     break;
 
                 case LED_MODE_BLINK: {
@@ -61,8 +61,8 @@ static void led_status_task(void *pvParameters)
 
                     if (control->is_on_in_blink)
                     {
-                        led_strip_set_pixel(led_strip, i, control->behavior.color.r, control->behavior.color.g,
-                                            control->behavior.color.b);
+                        led_strip_set_pixel(led_strip, i, control->behavior.color.red, control->behavior.color.green,
+                                            control->behavior.color.blue);
                     }
                     else
                     {
@@ -119,7 +119,7 @@ esp_err_t led_status_init(int gpio_num)
     }
 
     // Start task
-    xTaskCreate(led_status_task, "led_status_task", 2048, NULL, 5, NULL);
+    xTaskCreate(led_status_task, "led_status_task", 2048, NULL, tskIDLE_PRIORITY + 1, NULL);
 
     return ESP_OK;
 }

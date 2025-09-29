@@ -20,7 +20,7 @@ void ScreenSaver::initVehicles()
     }
 }
 
-void ScreenSaver::update(const uint64_t dt)
+void ScreenSaver::Update(const uint64_t dt)
 {
     m_animationCounter += dt;
     m_lastSpawnTime += dt;
@@ -214,7 +214,7 @@ ScreenSaver::Direction ScreenSaver::getRandomDirection()
     return (random() % 2 == 0) ? Direction::LEFT : Direction::RIGHT;
 }
 
-void ScreenSaver::render()
+void ScreenSaver::Render()
 {
     // Clear screen with a black background
     u8g2_SetDrawColor(u8g2, 0);
@@ -320,7 +320,7 @@ const unsigned char *ScreenSaver::getVehicleBitmap(const VehicleType type, const
     }
 }
 
-void ScreenSaver::onButtonClicked(ButtonType button)
+void ScreenSaver::OnButtonClicked(ButtonType button)
 {
     if (m_options && m_options->popScreen)
     {

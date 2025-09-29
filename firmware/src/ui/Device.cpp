@@ -206,8 +206,8 @@ void Device::DrawScreen(const uint64_t dt) const
 
     if (m_widget != nullptr)
     {
-        m_widget->update(dt);
-        m_widget->render();
+        m_widget->Update(dt);
+        m_widget->Render();
     }
 
     RenderU8G2();
@@ -257,7 +257,7 @@ void Device::OnButtonClicked(const ButtonType button) const
 
     if (m_widget != nullptr)
     {
-        m_widget->onButtonClicked(button);
+        m_widget->OnButtonClicked(button);
     }
 }
 

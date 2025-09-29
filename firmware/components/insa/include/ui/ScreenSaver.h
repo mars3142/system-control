@@ -23,9 +23,9 @@ class ScreenSaver final : public Widget
 {
   public:
     explicit ScreenSaver(menu_options_t *options);
-    void update(uint64_t dt) override;
-    void render() override;
-    void onButtonClicked(ButtonType button) override;
+    void Update(uint64_t dt) override;
+    void Render() override;
+    void OnButtonClicked(ButtonType button) override;
 
   private:
     /**

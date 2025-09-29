@@ -7,7 +7,7 @@ ScrollBar::ScrollBar(const menu_options_t *options, const size_t x, const size_t
 {
 }
 
-void ScrollBar::render()
+void ScrollBar::Render()
 {
     if (m_max <= 1)
     {

@@ -113,7 +113,7 @@ static void init_ui(void)
     });
 
     u8g2_ClearBuffer(&u8g2);
-    m_widget->render();
+    m_widget->Render();
     u8g2_SendBuffer(&u8g2);
 }
 
@@ -126,27 +126,27 @@ static void handle_button(uint8_t button)
         switch (button)
         {
         case 1:
-            m_widget->onButtonClicked(ButtonType::UP);
+            m_widget->OnButtonClicked(ButtonType::UP);
             break;
 
         case 3:
-            m_widget->onButtonClicked(ButtonType::LEFT);
+            m_widget->OnButtonClicked(ButtonType::LEFT);
             break;
 
         case 5:
-            m_widget->onButtonClicked(ButtonType::RIGHT);
+            m_widget->OnButtonClicked(ButtonType::RIGHT);
             break;
 
         case 6:
-            m_widget->onButtonClicked(ButtonType::DOWN);
+            m_widget->OnButtonClicked(ButtonType::DOWN);
             break;
 
         case 16:
-            m_widget->onButtonClicked(ButtonType::BACK);
+            m_widget->OnButtonClicked(ButtonType::BACK);
             break;
 
         case 18:
-            m_widget->onButtonClicked(ButtonType::SELECT);
+            m_widget->OnButtonClicked(ButtonType::SELECT);
             break;
 
         default:
@@ -160,8 +160,10 @@ void app_task(void *args)
 {
     if (i2c_bus_scan_and_check() != ESP_OK)
     {
-        led_behavior_t led0_behavior = {
-            .mode = LED_MODE_BLINK, .color = {.r = 50, .g = 0, .b = 0}, .on_time_ms = 1000, .off_time_ms = 500};
+        led_behavior_t led0_behavior = {.mode = LED_MODE_BLINK,
+                                        .color = {.red = 50, .green = 0, .blue = 0},
+                                        .on_time_ms = 1000,
+                                        .off_time_ms = 500};
         led_status_set_behavior(0, led0_behavior);
 
         ESP_LOGE(TAG, "Display not found on I2C bus");
@@ -192,8 +194,8 @@ void app_task(void *args)
 
             uint64_t deltaMs = delta / 1000;
 
-            m_widget->update(deltaMs);
-            m_widget->render();
+            m_widget->Update(deltaMs);
+            m_widget->Render();
 
             m_inactivityTracker->update(deltaMs);
         }

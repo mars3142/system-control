@@ -117,7 +117,7 @@ class Widget
      * @note Override this method in derived classes to implement time-based behavior
      *       such as animations, blinking effects, or timeout handling.
      */
-    virtual void update(uint64_t dt);
+    virtual void Update(uint64_t dt);
 
     /**
      * @brief Renders the widget to the display
@@ -133,7 +133,7 @@ class Widget
      *       Derived classes should use the u8g2 member variable to perform
      *       drawing operations.
      */
-    virtual void render();
+    virtual void Render();
 
     /**
      * @brief Handles button press events
@@ -148,7 +148,7 @@ class Widget
      *
      * @see ButtonType for available button types
      */
-    virtual void onButtonClicked(ButtonType button);
+    virtual void OnButtonClicked(ButtonType button);
 
   protected:
     /**

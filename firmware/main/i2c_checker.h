@@ -8,11 +8,6 @@
 #define I2C_MASTER_SDA_PIN ((gpio_num_t)CONFIG_DISPLAY_SDA_PIN)
 #define I2C_MASTER_SCL_PIN ((gpio_num_t)CONFIG_DISPLAY_SCL_PIN)
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-    esp_err_t i2c_bus_scan_and_check(void);
-#ifdef __cplusplus
-}
-#endif
+__BEGIN_DECLS
+esp_err_t i2c_bus_scan_and_check(void);
+__END_DECLS

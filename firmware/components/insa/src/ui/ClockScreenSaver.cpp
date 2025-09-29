@@ -1,4 +1,5 @@
 #include "ui/ClockScreenSaver.h"
+#include "simulator.h"
 #include <cstring>
 #include <ctime>
 
@@ -36,17 +37,25 @@ void ClockScreenSaver::updateTextDimensions()
 
 void ClockScreenSaver::getCurrentTimeString(char *buffer, size_t bufferSize) const
 {
-    time_t rawtime;
-    struct tm *timeinfo;
+    char *simulated_time = get_time();
+    if (simulated_time != nullptr)
+    {
+        strncpy(buffer, simulated_time, bufferSize);
+    }
+    else
+    {
+        time_t rawtime;
+        struct tm *timeinfo;
 
-    time(&rawtime);
-    timeinfo = localtime(&rawtime);
+        time(&rawtime);
+        timeinfo = localtime(&rawtime);
 
-    // Format time as HH:MM:SS
-    strftime(buffer, bufferSize, "%H:%M:%S", timeinfo);
+        // Format time as HH:MM:SS
+        strftime(buffer, bufferSize, "%H:%M:%S", timeinfo);
+    }
 }
 
-void ClockScreenSaver::update(const uint64_t dt)
+void ClockScreenSaver::Update(const uint64_t dt)
 {
     m_moveTimer += dt;
 
@@ -94,7 +103,7 @@ void ClockScreenSaver::checkBoundaryCollision()
     }
 }
 
-void ClockScreenSaver::render()
+void ClockScreenSaver::Render()
 {
     // Clear screen with a black background
     u8g2_SetDrawColor(u8g2, 0);
@@ -112,7 +121,7 @@ void ClockScreenSaver::render()
     u8g2_DrawStr(u8g2, m_posX, m_posY, timeBuffer);
 }
 
-void ClockScreenSaver::onButtonClicked(ButtonType button)
+void ClockScreenSaver::OnButtonClicked(ButtonType button)
 {
     // Exit screensaver on any button press
     if (m_options && m_options->popScreen)

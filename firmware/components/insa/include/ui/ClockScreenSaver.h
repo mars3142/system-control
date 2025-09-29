@@ -21,9 +21,9 @@ class ClockScreenSaver final : public Widget
 {
   public:
     explicit ClockScreenSaver(menu_options_t *options);
-    void update(uint64_t dt) override;
-    void render() override;
-    void onButtonClicked(ButtonType button) override;
+    void Update(uint64_t dt) override;
+    void Render() override;
+    void OnButtonClicked(ButtonType button) override;
 
   private:
     static constexpr int MOVE_INTERVAL = 50;                       // milliseconds between movements

@@ -20,14 +20,14 @@ void Widget::onExit()
 {
 }
 
-void Widget::update(uint64_t dt)
+void Widget::Update(uint64_t dt)
 {
 }
 
-void Widget::render()
+void Widget::Render()
 {
 }
 
-void Widget::onButtonClicked(ButtonType button)
+void Widget::OnButtonClicked(ButtonType button)
 {
 }

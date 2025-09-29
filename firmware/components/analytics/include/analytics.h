@@ -1,10 +1,7 @@
 #pragma once
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-    void analytics_init(void);
-#ifdef __cplusplus
-}
-#endif
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+void analytics_init(void);
+__END_DECLS

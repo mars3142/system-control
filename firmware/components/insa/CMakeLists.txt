@@ -1,15 +1,11 @@
 idf_component_register(SRCS
-        src/common/ColorSettingsMenu.cpp
         src/common/InactivityTracker.cpp
         src/common/Menu.cpp
         src/common/ScrollBar.cpp
         src/common/Widget.cpp
         src/data/MenuItem.cpp
-        src/ui/DayColorSettingsMenu.cpp
         src/ui/LightMenu.cpp
-        src/ui/LightSettingsMenu.cpp
         src/ui/MainMenu.cpp
-        src/ui/NightColorSettingsMenu.cpp
         src/ui/ClockScreenSaver.cpp
         src/ui/ScreenSaver.cpp
         src/ui/SettingsMenu.cpp
@@ -19,4 +15,5 @@ idf_component_register(SRCS
             u8g2
             led-manager
             persistence-manager
+            simulator
 )

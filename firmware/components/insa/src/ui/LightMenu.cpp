@@ -1,7 +1,6 @@
 #include "ui/LightMenu.h"
 
-#include "led_manager.h"
-#include "ui/LightSettingsMenu.h"
+#include "led_strip_ws2812.h"
 
 /**
  * @namespace LightMenuItem
@@ -9,9 +8,8 @@
  */
 namespace LightMenuItem
 {
-constexpr auto ACTIVATE = 0;     ///< ID for the light activation toggle
-constexpr auto MODE = 1;         ///< ID for the light mode selection
-constexpr auto LED_SETTINGS = 2; ///< ID for the LED settings menu item
+constexpr auto ACTIVATE = 0; ///< ID for the light activation toggle
+constexpr auto MODE = 1;     ///< ID for the light mode selection
 } // namespace LightMenuItem
 
 namespace LightMenuOptions
@@ -30,19 +28,17 @@ LightMenu::LightMenu(menu_options_t *options) : Menu(options), m_options(options
     }
     addToggle(LightMenuItem::ACTIVATE, "Einschalten", active);
 
-    // Create mode selection options (Day/Night modes)
-    std::vector<std::string> values;
-    values.emplace_back("Tag");   // Day mode
-    values.emplace_back("Nacht"); // Night mode
+    // Create mode selection options (Simulation/Day/Night modes)
+    std::vector<std::string> items;
+    items.emplace_back("Simulation"); // Simulation mode
+    items.emplace_back("Tag");        // Day mode
+    items.emplace_back("Nacht");      // Night mode
     int mode_value = 0;
     if (m_options && m_options->persistenceManager)
     {
         mode_value = m_options->persistenceManager->GetValue(LightMenuOptions::LIGHT_MODE, mode_value);
     }
-    addSelection(LightMenuItem::MODE, "Modus", values, mode_value);
-
-    // Add menu item for accessing LED settings submenu
-    addText(LightMenuItem::LED_SETTINGS, "Einstellungen");
+    addSelection(LightMenuItem::MODE, "Modus", items, mode_value);
 }
 
 void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType button)
@@ -58,14 +54,13 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
         {
             toggle(menuItem);
             const auto value = getItem(menuItem.getId()).getValue() == "1";
-            led_event_data_t payload = {.value = 42};
             if (value)
             {
-                send_event(EVENT_LED_ON, &payload);
+                led_strip_update(LED_STATE_DAY, rgb_t{});
             }
             else
             {
-                send_event(EVENT_LED_OFF, &payload);
+                led_strip_update(LED_STATE_OFF, rgb_t{});
             }
 
             if (m_options && m_options->persistenceManager)
@@ -88,17 +83,7 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
                 m_options->persistenceManager->Save();
             }
 
-            led_event_data_t payload = {.value = value};
-            send_event(EVENT_LED_DAY + value, &payload);
-        }
-        break;
-    }
-
-    case LightMenuItem::LED_SETTINGS: {
-        // Open the LED settings submenu when SELECT is pressed
-        if (button == ButtonType::SELECT)
-        {
-            widget = std::make_shared<LightSettingsMenu>(m_options);
+            led_strip_update(value == 0 ? LED_STATE_DAY : LED_STATE_NIGHT, rgb_t{});
         }
         break;
     }

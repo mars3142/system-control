@@ -194,9 +194,9 @@ class Menu : public Widget
   private:
     MenuItem replaceItem(int index, const MenuItem &item);
 
-    void render() override;
+    void Render() override;
 
-    void onButtonClicked(ButtonType button) override;
+    void OnButtonClicked(ButtonType button) override;
 
     void onPressedDown();
 

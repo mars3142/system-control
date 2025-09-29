@@ -10,4 +10,10 @@ menu "Led Manager Configuration"
         default 2
         help
             The number of the status WLED pin.
+
+    config LED_STRIP_MAX_LEDS
+        int "Maximum number of LEDs"
+        default 500
+        help
+            The maximum number of LEDs that can be controlled.
 endmenu
