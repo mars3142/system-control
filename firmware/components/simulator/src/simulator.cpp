@@ -1,6 +1,7 @@
 #include "simulator.h"
 
 #include "color.h"
+#include "hal_esp32/PersistenceManager.h"
 #include "led_strip_ws2812.h"
 #include "storage.h"
 #include <esp_heap_caps.h>
@@ -332,11 +333,7 @@ void simulate_cycle(void *args)
 
 void start_simulation_task(void)
 {
-    if (simulation_task_handle != NULL)
-    {
-        vTaskDelete(simulation_task_handle);
-        simulation_task_handle = NULL;
-    }
+    stop_simulation_task();
 
     simulation_config_t *config =
         (simulation_config_t *)heap_caps_malloc(sizeof(simulation_config_t), MALLOC_CAP_SPIRAM);
@@ -353,5 +350,48 @@ void start_simulation_task(void)
     {
         ESP_LOGE(TAG, "Failed to create simulation task.");
         heap_caps_free(config);
+    }
+}
+
+void stop_simulation_task(void)
+{
+    if (simulation_task_handle != NULL)
+    {
+        vTaskDelete(simulation_task_handle);
+        simulation_task_handle = NULL;
+    }
+};
+
+void start_simulation(void)
+{
+    stop_simulation_task();
+
+    auto persistence = PersistenceManager();
+    if (persistence.GetValue("light_active", false))
+    {
+
+        int mode = persistence.GetValue("light_mode", 0);
+        switch (mode)
+        {
+        case 0: // Simulation mode
+            start_simulation_task();
+            break;
+
+        case 1: // Day mode
+            start_simulate_day();
+            break;
+
+        case 2: // Night mode
+            start_simulate_night();
+            break;
+
+        default:
+            ESP_LOGW(TAG, "Unknown light mode: %d", mode);
+            break;
+        }
+    }
+    else
+    {
+        led_strip_update(LED_STATE_OFF, rgb_t{});
     }
 }

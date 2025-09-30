@@ -1,6 +1,7 @@
 #include "ui/LightMenu.h"
 
 #include "led_strip_ws2812.h"
+#include "simulator.h"
 
 /**
  * @namespace LightMenuItem
@@ -54,19 +55,12 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
         {
             toggle(menuItem);
             const auto value = getItem(menuItem.getId()).getValue() == "1";
-            if (value)
-            {
-                led_strip_update(LED_STATE_DAY, rgb_t{});
-            }
-            else
-            {
-                led_strip_update(LED_STATE_OFF, rgb_t{});
-            }
-
             if (m_options && m_options->persistenceManager)
             {
                 m_options->persistenceManager->SetValue(LightMenuOptions::LIGHT_ACTIVE, value);
             }
+
+            start_simulation();
         }
         break;
     }
@@ -83,7 +77,7 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
                 m_options->persistenceManager->Save();
             }
 
-            led_strip_update(value == 0 ? LED_STATE_DAY : LED_STATE_NIGHT, rgb_t{});
+            start_simulation();
         }
         break;
     }

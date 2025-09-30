@@ -1,8 +1,9 @@
 idf_component_register(SRCS 
-                        "src/simulator.c"
-                        "src/storage.c"
+                        "src/simulator.cpp"
+                        "src/storage.cpp"
                     INCLUDE_DIRS "include"
                     PRIV_REQUIRES
                         led-manager
+                        persistence-manager
                         spiffs
 )

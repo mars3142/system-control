@@ -3,20 +3,22 @@
 #include "analytics.h"
 #include "button_handling.h"
 #include "common/InactivityTracker.h"
-#include "driver/i2c.h"
-#include "esp_diagnostics.h"
-#include "esp_log.h"
-#include "esp_timer.h"
 #include "hal/u8g2_esp32_hal.h"
 #include "hal_esp32/PersistenceManager.h"
 #include "i2c_checker.h"
 #include "led_status.h"
-#include "sdkconfig.h"
-#include "u8g2.h"
+#include "simulator.h"
 #include "ui/ClockScreenSaver.h"
 #include "ui/ScreenSaver.h"
 #include "ui/SplashScreen.h"
 #include "wifi_manager.h"
+#include <driver/i2c.h>
+#include <esp_diagnostics.h>
+#include <esp_log.h>
+#include <esp_task_wdt.h>
+#include <esp_timer.h>
+#include <sdkconfig.h>
+#include <u8g2.h>
 
 #define PIN_RST GPIO_NUM_NC
 
@@ -47,9 +49,13 @@ static void setup_screen(void)
 
     ESP_DIAG_EVENT(TAG, "u8g2_InitDisplay");
     u8g2_InitDisplay(&u8g2);
+    vTaskDelay(pdMS_TO_TICKS(10));
 
     ESP_DIAG_EVENT(TAG, "u8g2_SetPowerSave");
     u8g2_SetPowerSave(&u8g2, 0);
+    vTaskDelay(pdMS_TO_TICKS(10));
+
+    u8g2_ClearDisplay(&u8g2);
 }
 
 void setScreen(const std::shared_ptr<Widget> &screen)
@@ -158,6 +164,8 @@ static void handle_button(uint8_t button)
 
 void app_task(void *args)
 {
+    esp_task_wdt_add(NULL);
+
     if (i2c_bus_scan_and_check() != ESP_OK)
     {
         led_behavior_t led0_behavior = {.mode = LED_MODE_BLINK,
@@ -180,10 +188,14 @@ void app_task(void *args)
     analytics_init();
 #endif
 
+    start_simulation();
+
     auto oldTime = esp_timer_get_time();
 
     while (true)
     {
+        esp_task_wdt_reset();
+
         u8g2_ClearBuffer(&u8g2);
 
         if (m_widget != nullptr)

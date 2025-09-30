@@ -3,7 +3,6 @@
 #include "hal_esp32/PersistenceManager.h"
 #include "led_status.h"
 #include "led_strip_ws2812.h"
-#include "simulator.h"
 #include "wifi_manager.h"
 #include <ble_manager.h>
 #include <esp_event.h>
@@ -31,15 +30,9 @@ void app_main(void)
     led_status_init(CONFIG_STATUS_WLED_PIN);
 
     led_strip_init();
-    start_simulation_task();
 
-    xTaskCreatePinnedToCore(app_task, "app_task", 4096, NULL, tskIDLE_PRIORITY + 1, NULL, portNUM_PROCESSORS - 1);
+    xTaskCreatePinnedToCore(app_task, "app_task", 8192, NULL, tskIDLE_PRIORITY + 1, NULL, portNUM_PROCESSORS - 1);
     //  xTaskCreatePinnedToCore(ble_manager_task, "ble_manager", 4096, NULL, tskIDLE_PRIORITY + 1, NULL,
     //  portNUM_PROCESSORS - 1);
-
-    if (persistence.GetValue("light_active", false))
-    {
-        led_strip_update(LED_STATE_DAY, rgb_t{});
-    }
 }
 __END_DECLS

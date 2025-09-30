@@ -88,6 +88,8 @@ esp_err_t led_strip_init(void)
         return ESP_FAIL;
     }
 
+    set_all_pixels((rgb_t){.red = 0, .green = 0, .blue = 0});
+
     xTaskCreate(led_strip_task, "led_strip_task", 4096, NULL, tskIDLE_PRIORITY + 1, NULL);
 
     ESP_LOGI(TAG, "LED strip initialized");
