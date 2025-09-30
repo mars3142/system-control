@@ -21,4 +21,4 @@ idf_component_register(SRCS
         rmaker_common
 )
 
-spiffs_create_partition_image(storage ../spiffs_image FLASH_IN_PROJECT)
+spiffs_create_partition_image(storage ../storage FLASH_IN_PROJECT)

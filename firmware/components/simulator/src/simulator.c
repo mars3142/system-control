@@ -7,6 +7,7 @@
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -37,12 +38,36 @@ typedef struct light_item_node_t
 static light_item_node_t *head = NULL;
 static light_item_node_t *tail = NULL;
 
+// Interpolation mode selection
+typedef enum
+{
+    INTERPOLATION_RGB,
+    INTERPOLATION_HSV
+} interpolation_mode_t;
+
+// You can change this to test different interpolation methods
+static const interpolation_mode_t interpolation_mode = INTERPOLATION_RGB;
+
 char *get_time(void)
 {
     return time;
 }
 
-esp_err_t add_light_item(const char time[5], uint8_t red, uint8_t green, uint8_t blue)
+// Main interpolation function that selects the appropriate method
+static rgb_t interpolate_color(rgb_t start, rgb_t end, float factor)
+{
+    switch (interpolation_mode)
+    {
+    case INTERPOLATION_RGB:
+        return interpolate_color_rgb(start, end, factor);
+    case INTERPOLATION_HSV:
+    default:
+        return interpolate_color_hsv(start, end, factor);
+    }
+}
+
+esp_err_t add_light_item(const char time[5], uint8_t red, uint8_t green, uint8_t blue, uint8_t white,
+                         uint8_t brightness, uint8_t saturation)
 {
     // Allocate memory for a new node in PSRAM.
     light_item_node_t *new_node = (light_item_node_t *)heap_caps_malloc(sizeof(light_item_node_t), MALLOC_CAP_SPIRAM);
@@ -52,11 +77,17 @@ esp_err_t add_light_item(const char time[5], uint8_t red, uint8_t green, uint8_t
         return ESP_FAIL;
     }
 
+    rgb_t color = {.red = red, .green = green, .blue = blue};
+    hsv_t hsv = rgb_to_hsv(color);
+    hsv.v = brightness;
+    hsv.s = saturation;
+    rgb_t adjusted_color = hsv_to_rgb(hsv);
+
     // Initialize the data of the new node.
     memcpy(new_node->time, time, sizeof(new_node->time));
-    new_node->red = red;
-    new_node->green = green;
-    new_node->blue = blue;
+    new_node->red = adjusted_color.red;
+    new_node->green = adjusted_color.green;
+    new_node->blue = adjusted_color.blue;
     new_node->next = NULL;
 
     // Append the new node to the end of the list.
@@ -131,14 +162,60 @@ static light_item_node_t *find_best_light_item_for_time(int hhmm)
 
     if (best_item == NULL)
     {
-        ESP_LOGW(TAG, "No suitable light item found for time up to %04d", hhmm);
-    }
-    else
-    {
-        ESP_LOGD(TAG, "Best light item for time %04d is %s", hhmm, best_item->time);
+        // If no item is found for the given time (e.g., before the first item of the day),
+        // find the last item of the previous day.
+        best_time = -1;
+        current = head;
+        while (current != NULL)
+        {
+            int current_time = atoi(current->time);
+            if (current_time > best_time)
+            {
+                best_time = current_time;
+                best_item = current;
+            }
+            current = current->next;
+        }
     }
 
     return best_item;
+}
+
+static light_item_node_t *find_next_light_item_for_time(int hhmm)
+{
+    light_item_node_t *current = head;
+    light_item_node_t *next_item = NULL;
+    int next_time = 9999; // Initialize with a value larger than any possible time
+
+    // First pass: find the soonest time after hhmm
+    while (current != NULL)
+    {
+        int current_time = atoi(current->time);
+        if (current_time > hhmm && current_time < next_time)
+        {
+            next_time = current_time;
+            next_item = current;
+        }
+        current = current->next;
+    }
+
+    // If no item is found for the rest of the day, wrap around to the beginning of the next day
+    if (next_item == NULL)
+    {
+        current = head;
+        next_time = 9999;
+        while (current != NULL)
+        {
+            int current_time = atoi(current->time);
+            if (current_time < next_time)
+            {
+                next_time = current_time;
+                next_item = current;
+            }
+            current = current->next;
+        }
+    }
+    return next_item;
 }
 
 void start_simulate_day(void)
@@ -186,7 +263,6 @@ void simulate_cycle(void *args)
              cycle_duration_minutes, delay_ms);
 
     int current_minute_of_day = 0;
-    light_item_node_t *last_item = NULL;
 
     while (1)
     {
@@ -196,15 +272,47 @@ void simulate_cycle(void *args)
         time = time_to_string(hhmm);
 
         light_item_node_t *current_item = find_best_light_item_for_time(hhmm);
+        light_item_node_t *next_item = find_next_light_item_for_time(hhmm);
 
-        if (current_item != NULL && current_item != last_item)
+        if (current_item != NULL && next_item != NULL)
         {
-            ESP_LOGI(TAG, "Simulating time: %02d:%02d -> Closest schedule is %s. R:%d, G:%d, B:%d", hours, minutes,
-                     current_item->time, current_item->red, current_item->green, current_item->blue);
+            int current_item_time_min = (atoi(current_item->time) / 100) * 60 + (atoi(current_item->time) % 100);
+            int next_item_time_min = (atoi(next_item->time) / 100) * 60 + (atoi(next_item->time) % 100);
+
+            if (next_item_time_min < current_item_time_min)
+            {
+                next_item_time_min += total_minutes_in_day;
+            }
+
+            int minutes_since_current_item_start = current_minute_of_day - current_item_time_min;
+            if (minutes_since_current_item_start < 0)
+            {
+                minutes_since_current_item_start += total_minutes_in_day;
+            }
+
+            int interval_duration = next_item_time_min - current_item_time_min;
+            if (interval_duration == 0)
+            {
+                interval_duration = 1;
+            }
+
+            float interpolation_factor = (float)minutes_since_current_item_start / (float)interval_duration;
+
+            // Prepare colors for interpolation
+            rgb_t start_rgb = {.red = current_item->red, .green = current_item->green, .blue = current_item->blue};
+            rgb_t end_rgb = {.red = next_item->red, .green = next_item->green, .blue = next_item->blue};
+
+            // Use the interpolation function
+            rgb_t final_rgb = interpolate_color(start_rgb, end_rgb, interpolation_factor);
+
+            led_strip_update(LED_STATE_SIMULATION, final_rgb);
+        }
+        else if (current_item != NULL)
+        {
+            // No next item, just use current
             led_strip_update(
                 LED_STATE_SIMULATION,
                 (rgb_t){.red = current_item->red, .green = current_item->green, .blue = current_item->blue});
-            last_item = current_item;
         }
 
         vTaskDelay(pdMS_TO_TICKS(delay_ms));

@@ -9,4 +9,14 @@ typedef struct
     uint8_t blue;
 } rgb_t;
 
-void interpolate_color(const rgb_t start_color, const rgb_t end_color, float fraction, rgb_t *out_color);
+typedef struct
+{
+    uint8_t h;
+    uint8_t s;
+    uint8_t v;
+} hsv_t;
+
+rgb_t interpolate_color_rgb(rgb_t start, rgb_t end, float factor);
+rgb_t interpolate_color_hsv(rgb_t start, rgb_t end, float factor);
+hsv_t rgb_to_hsv(rgb_t rgb);
+rgb_t hsv_to_rgb(hsv_t hsv);

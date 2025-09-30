@@ -12,7 +12,8 @@ typedef struct
 __BEGIN_DECLS
 char *get_time(void);
 
-esp_err_t add_light_item(const char time[5], uint8_t red, uint8_t green, uint8_t blue);
+esp_err_t add_light_item(const char time[5], uint8_t red, uint8_t green, uint8_t blue, uint8_t white,
+                         uint8_t brightness, uint8_t saturation);
 void cleanup_light_items(void);
 void start_simulate_day(void);
 void start_simulate_night(void);
