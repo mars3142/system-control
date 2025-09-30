@@ -57,6 +57,21 @@ void load_file(const char *filename)
             *pos = '\0';
         }
 
+        if (strlen(line) == 0)
+        {
+            continue;
+        }
+
+        char *trimmed = line;
+        while (*trimmed == ' ' || *trimmed == '\t')
+        {
+            trimmed++;
+        }
+        if (*trimmed == '#' || *trimmed == '\0')
+        {
+            continue;
+        }
+
         char time[10] = {0};
         int red, green, blue, white, brightness, saturation;
 
@@ -79,5 +94,5 @@ void load_file(const char *filename)
     }
 
     fclose(f);
-    ESP_LOGI(TAG, "Finished loading file.");
+    ESP_LOGI(TAG, "Finished loading file. Loaded %d entries.", line_number);
 }

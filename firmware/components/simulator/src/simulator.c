@@ -78,16 +78,20 @@ esp_err_t add_light_item(const char time[5], uint8_t red, uint8_t green, uint8_t
     }
 
     rgb_t color = {.red = red, .green = green, .blue = blue};
-    hsv_t hsv = rgb_to_hsv(color);
-    hsv.v = brightness;
-    hsv.s = saturation;
-    rgb_t adjusted_color = hsv_to_rgb(hsv);
 
-    // Initialize the data of the new node.
+    if (saturation < 255)
+    {
+        hsv_t hsv = rgb_to_hsv(color);
+        hsv.s = hsv.s * (saturation / 255.0f);
+        // color = hsv_to_rgb(hsv);
+    }
+
+    float brightness_factor = brightness / 255.0f;
+
     memcpy(new_node->time, time, sizeof(new_node->time));
-    new_node->red = adjusted_color.red;
-    new_node->green = adjusted_color.green;
-    new_node->blue = adjusted_color.blue;
+    new_node->red = (uint8_t)(color.red * brightness_factor);
+    new_node->green = (uint8_t)(color.green * brightness_factor);
+    new_node->blue = (uint8_t)(color.blue * brightness_factor);
     new_node->next = NULL;
 
     // Append the new node to the end of the list.
@@ -133,7 +137,7 @@ static void initialize_light_items(void)
     }
 
     initialize_storage();
-    load_file("/spiffs/schema_02.csv");
+    load_file("/spiffs/schema_03.csv");
 
     if (head == NULL)
     {
