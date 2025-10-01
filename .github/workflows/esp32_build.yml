@@ -35,8 +35,11 @@ jobs:
         with:
           submodules: "recursive"
 
-      - name: Delete CMakeLists.txt in components (only used for simulator build)
-        run: rm -f firmware/components/CMakeLists.txt
+      - name: Extract API key
+        env:
+          INSIGHTS_API_KEY: ${{ secrets.INSIGHTS_API_KEY }}
+        run: |
+          echo $INSIGHTS_API_KEY > firmware/components/analytics/insights_api_key.txt
 
       - name: ESP-IDF build
         uses: espressif/esp-idf-ci-action@v1
