@@ -36,7 +36,7 @@ jobs:
           submodules: "recursive"
 
       - name: Delete CMakeLists.txt in components (only used for simulator build)
-        run: rm firmware/components/CMakeLists.txt
+        run: rm -f firmware/components/CMakeLists.txt
 
       - name: ESP-IDF build
         uses: espressif/esp-idf-ci-action@v1
