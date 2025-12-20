@@ -5,3 +5,4 @@ dependencies:
 #    git: https://github.com/mkfrey/u8g2-hal-esp-idf.git
   espressif/button: ^4.1.3
   espressif/esp_insights: ^1.2.7
+  espressif/mqtt: ^1.0.0
