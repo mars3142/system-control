@@ -1,11 +1,11 @@
 #include "led_status.h"
 
-#include "esp_log.h"
-#include "esp_timer.h" // For high-resolution timestamps
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-#include "freertos/task.h"
-#include "led_strip.h"
+#include <esp_log.h>
+#include <esp_timer.h> // For high-resolution timestamps
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
+#include <freertos/task.h>
+#include <led_strip.h>
 
 static const char *TAG = "led_status";
 
@@ -32,7 +32,7 @@ static void led_status_task(void *pvParameters)
         uint64_t now_us = esp_timer_get_time();
 
         // Take the mutex to safely access the control data
-        if (xSemaphoreTake(mutex, portMAX_DELAY) == pdTRUE)
+        if (xSemaphoreTake(mutex, pdMS_TO_TICKS(100)) == pdTRUE)
         {
 
             for (int i = 0; i < STATUS_LED_COUNT; i++)
@@ -74,6 +74,10 @@ static void led_status_task(void *pvParameters)
             }
             // Release the mutex
             xSemaphoreGive(mutex);
+        }
+        else
+        {
+            ESP_LOGW(TAG, "Failed to acquire mutex within timeout");
         }
 
         // Update the physical LED strip with the new values
@@ -119,26 +123,32 @@ esp_err_t led_status_init(int gpio_num)
     }
 
     // Start task
-    xTaskCreate(led_status_task, "led_status_task", 2048, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreatePinnedToCore(led_status_task, "led_status_task", 2048, NULL, tskIDLE_PRIORITY + 2, NULL,
+                            CONFIG_FREERTOS_NUMBER_OF_CORES - 1);
 
     return ESP_OK;
 }
 
 // Function to set the behavior
-esp_err_t led_status_set_behavior(uint8_t index, led_behavior_t behavior)
+esp_err_t led_status_set_behavior(led_behavior_t behavior)
 {
-    if (index >= STATUS_LED_COUNT)
+    if (behavior.index >= STATUS_LED_COUNT)
     {
         return ESP_ERR_INVALID_ARG;
     }
 
-    if (xSemaphoreTake(mutex, portMAX_DELAY) == pdTRUE)
+    if (xSemaphoreTake(mutex, pdMS_TO_TICKS(100)) == pdTRUE)
     {
-        led_controls[index].behavior = behavior;
+        led_controls[behavior.index].behavior = behavior;
         // Reset internal state variables to start the new pattern cleanly
-        led_controls[index].is_on_in_blink = false;
-        led_controls[index].last_toggle_time_us = esp_timer_get_time();
+        led_controls[behavior.index].is_on_in_blink = false;
+        led_controls[behavior.index].last_toggle_time_us = esp_timer_get_time();
         xSemaphoreGive(mutex);
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Failed to acquire mutex for set_behavior");
+        return ESP_FAIL;
     }
 
     return ESP_OK;

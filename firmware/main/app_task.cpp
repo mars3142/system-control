@@ -164,15 +164,16 @@ static void handle_button(uint8_t button)
 
 void app_task(void *args)
 {
-    esp_task_wdt_add(NULL);
-
     if (i2c_bus_scan_and_check() != ESP_OK)
     {
-        led_behavior_t led0_behavior = {.mode = LED_MODE_BLINK,
-                                        .color = {.red = 50, .green = 0, .blue = 0},
-                                        .on_time_ms = 1000,
-                                        .off_time_ms = 500};
-        led_status_set_behavior(0, led0_behavior);
+        led_behavior_t led_behavior = {
+            .on_time_ms = 1000,
+            .off_time_ms = 500,
+            .color = {.red = 50, .green = 0, .blue = 0},
+            .index = 0,
+            .mode = LED_MODE_BLINK,
+        };
+        led_status_set_behavior(led_behavior);
 
         ESP_LOGE(TAG, "Display not found on I2C bus");
         vTaskDelete(nullptr);
@@ -194,8 +195,6 @@ void app_task(void *args)
 
     while (true)
     {
-        esp_task_wdt_reset();
-
         u8g2_ClearBuffer(&u8g2);
 
         if (m_widget != nullptr)

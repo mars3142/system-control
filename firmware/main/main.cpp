@@ -31,8 +31,9 @@ void app_main(void)
 
     led_strip_init();
 
-    xTaskCreatePinnedToCore(app_task, "app_task", 8192, NULL, tskIDLE_PRIORITY + 1, NULL, portNUM_PROCESSORS - 1);
-    //  xTaskCreatePinnedToCore(ble_manager_task, "ble_manager", 4096, NULL, tskIDLE_PRIORITY + 1, NULL,
-    //  portNUM_PROCESSORS - 1);
+    xTaskCreatePinnedToCore(app_task, "app_task", 8192, NULL, tskIDLE_PRIORITY + 5, NULL,
+                            CONFIG_FREERTOS_NUMBER_OF_CORES - 1);
+    xTaskCreatePinnedToCore(ble_manager_task, "ble_manager", 4096, NULL, tskIDLE_PRIORITY + 1, NULL,
+                            CONFIG_FREERTOS_NUMBER_OF_CORES - 1);
 }
 __END_DECLS

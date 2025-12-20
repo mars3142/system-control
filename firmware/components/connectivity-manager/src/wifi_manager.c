@@ -1,18 +1,18 @@
 #include "wifi_manager.h"
 
-#include "esp_event.h"
-#include "esp_insights.h"
-#include "esp_log.h"
-#include "esp_system.h"
-#include "esp_wifi.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/event_groups.h"
-#include "freertos/task.h"
-#include "led_status.h"
-#include "lwip/err.h"
-#include "lwip/sys.h"
-#include "nvs_flash.h"
-#include "sdkconfig.h"
+#include <esp_event.h>
+#include <esp_insights.h>
+#include <esp_log.h>
+#include <esp_system.h>
+#include <esp_wifi.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/event_groups.h>
+#include <freertos/task.h>
+#include <led_status.h>
+#include <lwip/err.h>
+#include <lwip/sys.h>
+#include <nvs_flash.h>
+#include <sdkconfig.h>
 
 // Event group to signal when we are connected
 static EventGroupHandle_t s_wifi_event_group;
@@ -30,11 +30,14 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
 #if CONFIG_WIFI_ENABLED
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START)
     {
-        led_behavior_t led0_behavior = {.mode = LED_MODE_BLINK,
-                                        .color = {.red = 50, .green = 50, .blue = 0},
-                                        .on_time_ms = 200,
-                                        .off_time_ms = 200};
-        led_status_set_behavior(0, led0_behavior);
+        led_behavior_t led0_behavior = {
+            .index = 0,
+            .mode = LED_MODE_BLINK,
+            .color = {.red = 50, .green = 50, .blue = 0},
+            .on_time_ms = 200,
+            .off_time_ms = 200,
+        };
+        led_status_set_behavior(led0_behavior);
 
         esp_wifi_connect();
     }
@@ -42,32 +45,39 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
     {
         if (s_retry_num < CONFIG_WIFI_CONNECT_RETRIES)
         {
-            led_behavior_t led0_behavior = {.mode = LED_MODE_BLINK,
-                                            .color = {.red = 50, .green = 50, .blue = 0},
-                                            .on_time_ms = 200,
-                                            .off_time_ms = 200};
-            led_status_set_behavior(0, led0_behavior);
+            led_behavior_t led0_behavior = {
+                .index = 0,
+                .mode = LED_MODE_BLINK,
+                .color = {.red = 50, .green = 50, .blue = 0},
+                .on_time_ms = 200,
+                .off_time_ms = 200,
+            };
+            led_status_set_behavior(led0_behavior);
 
             esp_wifi_connect();
             s_retry_num++;
             ESP_DIAG_EVENT(TAG, "Retrying to connect to the AP");
             return;
         }
-        led_behavior_t led0_behavior = {.mode = LED_MODE_BLINK,
-                                        .color = {.red = 50, .green = 0, .blue = 0},
-                                        .on_time_ms = 1000,
-                                        .off_time_ms = 500};
-        led_status_set_behavior(0, led0_behavior);
+        led_behavior_t led0_behavior = {
+            .index = 0,
+            .mode = LED_MODE_BLINK,
+            .color = {.red = 50, .green = 0, .blue = 0},
+            .on_time_ms = 1000,
+            .off_time_ms = 500,
+        };
+        led_status_set_behavior(led0_behavior);
 
         xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
     }
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
     {
         led_behavior_t led0_behavior = {
+            .index = 0,
             .mode = LED_MODE_SOLID,
             .color = {.red = 0, .green = 50, .blue = 0},
         };
-        led_status_set_behavior(0, led0_behavior);
+        led_status_set_behavior(led0_behavior);
 
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
         ESP_DIAG_EVENT(TAG, "Got IP address:" IPSTR, IP2STR(&event->ip_info.ip));

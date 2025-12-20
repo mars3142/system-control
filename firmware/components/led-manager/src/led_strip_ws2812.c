@@ -29,9 +29,12 @@ static void set_all_pixels(const rgb_t color)
     }
     led_strip_refresh(led_strip);
 
-    led_behavior_t led2_behavior = {.mode = LED_MODE_SOLID,
-                                    .color = {.red = color.red, .green = color.green, .blue = color.blue}};
-    led_status_set_behavior(2, led2_behavior);
+    led_behavior_t led_behavior = {
+        .index = 2,
+        .mode = LED_MODE_SOLID,
+        .color = {.red = color.red, .green = color.green, .blue = color.blue},
+    };
+    led_status_set_behavior(led_behavior);
 }
 
 void led_strip_task(void *pvParameters)
@@ -90,7 +93,8 @@ esp_err_t led_strip_init(void)
 
     set_all_pixels((rgb_t){.red = 0, .green = 0, .blue = 0});
 
-    xTaskCreate(led_strip_task, "led_strip_task", 4096, NULL, tskIDLE_PRIORITY + 1, NULL);
+    xTaskCreatePinnedToCore(led_strip_task, "led_strip_task", 4096, NULL, tskIDLE_PRIORITY + 1, NULL,
+                            CONFIG_FREERTOS_NUMBER_OF_CORES - 1);
 
     ESP_LOGI(TAG, "LED strip initialized");
 

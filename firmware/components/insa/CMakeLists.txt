@@ -4,6 +4,7 @@ idf_component_register(SRCS
         src/common/ScrollBar.cpp
         src/common/Widget.cpp
         src/data/MenuItem.cpp
+        src/ui/ExternalDevices.cpp
         src/ui/LightMenu.cpp
         src/ui/MainMenu.cpp
         src/ui/ClockScreenSaver.cpp
@@ -13,6 +14,7 @@ idf_component_register(SRCS
         INCLUDE_DIRS "include"
         PRIV_REQUIRES
             u8g2
+            connectivity-manager
             led-manager
             persistence-manager
             simulator

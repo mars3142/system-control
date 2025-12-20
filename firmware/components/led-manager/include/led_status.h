@@ -1,7 +1,7 @@
 #pragma once
 
 #include "color.h"
-#include "esp_check.h"
+#include <esp_check.h>
 #include <stdint.h>
 
 // Number of LEDs to be controlled
@@ -18,10 +18,11 @@ typedef enum
 // This is the structure you pass from the outside to define a behavior
 typedef struct
 {
-    led_mode_t mode;
-    rgb_t color;
     uint32_t on_time_ms;  // Only relevant for BLINK
     uint32_t off_time_ms; // Only relevant for BLINK
+    rgb_t color;
+    uint8_t index;
+    led_mode_t mode;
 } led_behavior_t;
 
 __BEGIN_DECLS
@@ -42,5 +43,5 @@ esp_err_t led_status_init(int gpio_num);
  * @param behavior The structure with the desired behavior.
  * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG on invalid index.
  */
-esp_err_t led_status_set_behavior(uint8_t index, led_behavior_t behavior);
+esp_err_t led_status_set_behavior(led_behavior_t behavior);
 __END_DECLS

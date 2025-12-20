@@ -345,8 +345,8 @@ void start_simulation_task(void)
 
     config->cycle_duration_minutes = 15;
 
-    if (xTaskCreate(simulate_cycle, "simulate_cycle", 4096, (void *)config, tskIDLE_PRIORITY + 1,
-                    &simulation_task_handle) != pdPASS)
+    if (xTaskCreatePinnedToCore(simulate_cycle, "simulate_cycle", 4096, (void *)config, tskIDLE_PRIORITY + 1,
+                                &simulation_task_handle, CONFIG_FREERTOS_NUMBER_OF_CORES - 1) != pdPASS)
     {
         ESP_LOGE(TAG, "Failed to create simulation task.");
         heap_caps_free(config);

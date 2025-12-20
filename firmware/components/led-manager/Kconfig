@@ -13,7 +13,7 @@ menu "Led Manager Configuration"
 
     config LED_STRIP_MAX_LEDS
         int "Maximum number of LEDs"
-        default 500
+        default 800
         help
             The maximum number of LEDs that can be controlled.
 endmenu

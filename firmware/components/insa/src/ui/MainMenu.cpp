@@ -1,6 +1,7 @@
 #include "ui/MainMenu.h"
 
 #include "common/Widget.h"
+#include "ui/ExternalDevices.h"
 #include "ui/LightMenu.h"
 #include "ui/SettingsMenu.h"
 
@@ -31,6 +32,10 @@ void MainMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType button
 
         case MainMenuItem::SETTINGS:
             widget = std::make_shared<SettingsMenu>(m_options);
+            break;
+
+        case MainMenuItem::EXTERNAL_DEVICES:
+            widget = std::make_shared<ExternalDevices>(m_options);
             break;
 
         default:
