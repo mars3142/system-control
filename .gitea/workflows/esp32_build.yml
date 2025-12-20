@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - "firmware/**"
-      - ".github/workflows/esp32_build.yml"
+      - ".gitea/workflows/esp32_build.yml"
   pull_request:
   merge_group:
   workflow_dispatch:
@@ -39,7 +39,7 @@ jobs:
         env:
           INSIGHTS_API_KEY: ${{ secrets.INSIGHTS_API_KEY }}
         run: |
-          echo $INSIGHTS_API_KEY > firmware/components/analytics/insights_api_key.txt
+          echo $INSIGHTS_API_KEY > firmware/components/analytics/insights_auth_key.txt
 
       - name: ESP-IDF build
         uses: espressif/esp-idf-ci-action@v1
