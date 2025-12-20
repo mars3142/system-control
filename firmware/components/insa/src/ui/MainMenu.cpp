@@ -14,7 +14,7 @@ constexpr uint8_t SETTINGS = 2;
 MainMenu::MainMenu(menu_options_t *options) : Menu(options), m_options(options)
 {
     addText(MainMenuItem::LIGHT, "Lichtsteuerung");
-    addTextCounter(MainMenuItem::EXTERNAL_DEVICES, "ext. Geraete", 0);
+    // addTextCounter(MainMenuItem::EXTERNAL_DEVICES, "ext. Geraete", 0);
     addText(MainMenuItem::SETTINGS, "Einstellungen");
 }
 
@@ -32,6 +32,7 @@ void MainMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType button
         case MainMenuItem::SETTINGS:
             widget = std::make_shared<SettingsMenu>(m_options);
             break;
+
         default:
             break;
         }
