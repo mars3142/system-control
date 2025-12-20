@@ -35,6 +35,17 @@ jobs:
         with:
           submodules: "recursive"
 
+      - name: Debug - Check paths
+        run: |
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "Current directory: $(pwd)"
+          echo "Contents of workspace:"
+          ls -la
+          echo "Contents of firmware directory:"
+          ls -la firmware/ || echo "firmware directory not found"
+          echo "Check for CMakeLists.txt:"
+          test -f firmware/CMakeLists.txt && echo "CMakeLists.txt exists" || echo "CMakeLists.txt NOT found"
+
       - name: Extract API key
         env:
           INSIGHTS_API_KEY: ${{ secrets.INSIGHTS_API_KEY }}
