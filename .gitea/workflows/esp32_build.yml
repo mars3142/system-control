@@ -27,6 +27,7 @@ jobs:
         idf_target: [esp32c6, esp32s3]
 
     runs-on: ubuntu-latest
+    container: espressif/idf:${{ matrix.idf_ver }}
     timeout-minutes: 30
 
     steps:
@@ -35,18 +36,6 @@ jobs:
         with:
           submodules: "recursive"
 
-      - name: Debug - Check paths
-        run: |
-          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          echo "github.workspace: ${{ github.workspace }}"
-          echo "Current directory: $(pwd)"
-          echo "Contents of workspace:"
-          ls -la
-          echo "Contents of firmware directory:"
-          ls -la firmware/ || echo "firmware directory not found"
-          echo "Check for CMakeLists.txt:"
-          test -f firmware/CMakeLists.txt && echo "CMakeLists.txt exists" || echo "CMakeLists.txt NOT found"
-
       - name: Extract API key
         env:
           INSIGHTS_API_KEY: ${{ secrets.INSIGHTS_API_KEY }}
@@ -54,9 +43,9 @@ jobs:
           echo $INSIGHTS_API_KEY > firmware/components/analytics/insights_auth_key.txt
 
       - name: ESP-IDF build
+        env:
+          IDF_TARGET: ${{ matrix.idf_target }}
         run: |
-          docker run --rm \
-            -v "$(pwd)":/project \
-            -w /project/firmware \
-            espressif/idf:${{ matrix.idf_ver }} \
-            idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.release" build
+          cd firmware
+          . $IDF_PATH/export.sh
+          idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.release" build
