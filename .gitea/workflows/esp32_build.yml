@@ -32,9 +32,10 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          submodules: "recursive"
+        run: |
+          git config --global --add safe.directory "*"
+          git clone --recurse-submodules ${{ github.server_url }}/${{ github.repository }}.git .
+          git checkout ${{ github.sha }}
 
       - name: Extract API key
         env:
