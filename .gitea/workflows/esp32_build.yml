@@ -38,6 +38,7 @@ jobs:
       - name: Debug - Check paths
         run: |
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "github.workspace: ${{ github.workspace }}"
           echo "Current directory: $(pwd)"
           echo "Contents of workspace:"
           ls -la
@@ -55,7 +56,7 @@ jobs:
       - name: ESP-IDF build
         run: |
           docker run --rm \
-            -v ${{ github.workspace }}:/project \
+            -v "$(pwd)":/project \
             -w /project/firmware \
             espressif/idf:${{ matrix.idf_ver }} \
             idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.release" build
