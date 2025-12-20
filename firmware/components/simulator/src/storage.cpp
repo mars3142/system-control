@@ -3,6 +3,7 @@
 #include "esp_log.h"
 #include "esp_spiffs.h"
 #include "simulator.h"
+#include <cstring>
 #include <errno.h>
 #include <stdio.h>
 

@@ -1,0 +1,14 @@
+Checks: >
+  -*,
+  bugprone-*,
+  misc-include-cleaner,
+  modernize-use-nullptr,
+  readability-identifier-naming
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: '.*'
+
+CheckOptions:
+  - key: misc-include-cleaner.IgnoreHeaders
+    value: ''
