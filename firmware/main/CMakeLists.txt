@@ -19,6 +19,7 @@ idf_component_register(SRCS
         esp_wifi
         app_update
         rmaker_common
+        driver
 )
 
 spiffs_create_partition_image(storage ../storage FLASH_IN_PROJECT)
