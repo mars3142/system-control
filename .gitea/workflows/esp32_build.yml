@@ -53,9 +53,9 @@ jobs:
           echo $INSIGHTS_API_KEY > firmware/components/analytics/insights_auth_key.txt
 
       - name: ESP-IDF build
-        uses: espressif/esp-idf-ci-action@v1
-        with:
-          esp_idf_version: ${{ matrix.idf_ver }}
-          target: ${{ matrix.idf_target }}
-          path: ${{ github.workspace }}/firmware
-          command: idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.release" build
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/project \
+            -w /project/firmware \
+            espressif/idf:${{ matrix.idf_ver }} \
+            idf.py -DSDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.release" build
