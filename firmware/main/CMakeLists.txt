@@ -13,6 +13,7 @@ idf_component_register(SRCS
         persistence-manager
         simulator
         u8g2
+        hal
         nvs_flash
         esp_timer
         esp_event
