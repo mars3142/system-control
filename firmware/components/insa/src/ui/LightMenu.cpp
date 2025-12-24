@@ -11,12 +11,14 @@ namespace LightMenuItem
 {
 constexpr auto ACTIVATE = 0; ///< ID for the light activation toggle
 constexpr auto MODE = 1;     ///< ID for the light mode selection
+constexpr auto VARIANT = 2;  ///< ID for the light variant selection
 } // namespace LightMenuItem
 
 namespace LightMenuOptions
 {
 constexpr auto LIGHT_ACTIVE = "light_active";
 constexpr auto LIGHT_MODE = "light_mode";
+constexpr auto LIGHT_VARIANT = "light_variant";
 } // namespace LightMenuOptions
 
 LightMenu::LightMenu(menu_options_t *options) : Menu(options), m_options(options)
@@ -40,6 +42,17 @@ LightMenu::LightMenu(menu_options_t *options) : Menu(options), m_options(options
         mode_value = m_options->persistenceManager->GetValue(LightMenuOptions::LIGHT_MODE, mode_value);
     }
     addSelection(LightMenuItem::MODE, "Modus", items, mode_value);
+
+    std::vector<std::string> variants;
+    variants.emplace_back("1");
+    variants.emplace_back("2");
+    variants.emplace_back("3");
+    int variant_value = 2;
+    if (m_options && m_options->persistenceManager)
+    {
+        variant_value = m_options->persistenceManager->GetValue(LightMenuOptions::LIGHT_VARIANT, variant_value);
+    }
+    addSelection(LightMenuItem::VARIANT, "Variante", variants, variant_value);
 }
 
 void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType button)
@@ -74,6 +87,23 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
             if (m_options && m_options->persistenceManager)
             {
                 m_options->persistenceManager->SetValue(LightMenuOptions::LIGHT_MODE, value);
+                m_options->persistenceManager->Save();
+            }
+
+            start_simulation();
+        }
+        break;
+    }
+
+    case LightMenuItem::VARIANT: {
+        // Change light variant using left/right buttons
+        const auto item = switchValue(menuItem, button);
+        if (button == ButtonType::LEFT || button == ButtonType::RIGHT)
+        {
+            const auto value = getItem(item.getId()).getIndex() + 1;
+            if (m_options && m_options->persistenceManager)
+            {
+                m_options->persistenceManager->SetValue(LightMenuOptions::LIGHT_VARIANT, value);
                 m_options->persistenceManager->Save();
             }
 

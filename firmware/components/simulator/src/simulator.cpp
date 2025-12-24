@@ -7,6 +7,7 @@
 #include <esp_heap_caps.h>
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
 #include <freertos/task.h>
 #include <math.h>
 #include <stdint.h>
@@ -24,6 +25,15 @@ static char *time_to_string(int hhmm)
 }
 
 static TaskHandle_t simulation_task_handle = NULL;
+static SemaphoreHandle_t simulation_mutex = NULL;
+
+static void ensure_mutex_initialized(void)
+{
+    if (simulation_mutex == NULL)
+    {
+        simulation_mutex = xSemaphoreCreateMutex();
+    }
+}
 
 // The struct is extended with a 'next' pointer to form a linked list.
 typedef struct light_item_node_t
@@ -131,14 +141,14 @@ void cleanup_light_items(void)
 
 static void initialize_light_items(void)
 {
-    if (head != NULL)
-    {
-        ESP_LOGI(TAG, "Light schedule already initialized.");
-        return;
-    }
-
+    cleanup_light_items();
     initialize_storage();
-    load_file("/spiffs/schema_03.csv");
+
+    static char filename[30];
+    auto persistence = PersistenceManager();
+    int variant = persistence.GetValue("light_variant", 1);
+    snprintf(filename, sizeof(filename), "/spiffs/schema_%02d.csv", variant);
+    load_file(filename);
 
     if (head == NULL)
     {
@@ -256,6 +266,11 @@ void simulate_cycle(void *args)
     if (cycle_duration_minutes <= 0)
     {
         ESP_LOGE(TAG, "Invalid cycle duration: %d minutes. Must be positive.", cycle_duration_minutes);
+        if (simulation_mutex != NULL && xSemaphoreTake(simulation_mutex, portMAX_DELAY) == pdTRUE)
+        {
+            simulation_task_handle = NULL;
+            xSemaphoreGive(simulation_mutex);
+        }
         vTaskDelete(NULL);
         return;
     }
@@ -355,12 +370,29 @@ void start_simulation_task(void)
 
 void stop_simulation_task(void)
 {
-    if (simulation_task_handle != NULL)
+    ensure_mutex_initialized();
+
+    if (xSemaphoreTake(simulation_mutex, portMAX_DELAY) == pdTRUE)
     {
-        vTaskDelete(simulation_task_handle);
-        simulation_task_handle = NULL;
+        if (simulation_task_handle != NULL)
+        {
+            TaskHandle_t handle_to_delete = simulation_task_handle;
+            simulation_task_handle = NULL;
+            xSemaphoreGive(simulation_mutex);
+
+            // Prüfe ob der Task noch existiert bevor er gelöscht wird
+            eTaskState state = eTaskGetState(handle_to_delete);
+            if (state != eDeleted && state != eInvalid)
+            {
+                vTaskDelete(handle_to_delete);
+            }
+        }
+        else
+        {
+            xSemaphoreGive(simulation_mutex);
+        }
     }
-};
+}
 
 void start_simulation(void)
 {
