@@ -38,7 +38,8 @@ void ClockScreenSaver::updateTextDimensions()
 
 void ClockScreenSaver::getCurrentTimeString(char *buffer, size_t bufferSize) const
 {
-    if (m_options && m_options->persistenceManager->GetValue("light_active", false))
+    if (m_options && m_options->persistenceManager->GetValue("light_active", false) &&
+        m_options->persistenceManager->GetValue("light_mode", 0) == 0)
     {
         char *simulated_time = get_time();
         if (simulated_time != nullptr)
