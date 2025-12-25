@@ -6,26 +6,90 @@ menu "System Control"
             help
                 Enable or disable WiFi connectivity.
 
-        config WIFI_SSID
+        config WIFI_NETWORK_COUNT
             depends on WIFI_ENABLED
-            string  "WiFi SSID"
-            default "YourSSID"
+            int     "Number of WiFi Networks"
+            default 1
+            range 1 5
             help
-                The SSID of the WiFi network to connect to.
+                Number of WiFi networks to configure (1-5).
 
-        config WIFI_PASSWORD
+        config WIFI_SSID_1
             depends on WIFI_ENABLED
-            string  "WiFi Password"
-            default "YourPassword"
+            string  "WiFi SSID 1"
+            default "YourSSID1"
             help
-                The password of the WiFi network to connect to.
+                The SSID of the first WiFi network.
+
+        config WIFI_PASSWORD_1
+            depends on WIFI_ENABLED
+            string  "WiFi Password 1"
+            default "YourPassword1"
+            help
+                The password of the first WiFi network.
+
+        config WIFI_SSID_2
+            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 2
+            string  "WiFi SSID 2"
+            default ""
+            help
+                The SSID of the second WiFi network.
+
+        config WIFI_PASSWORD_2
+            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 2
+            string  "WiFi Password 2"
+            default ""
+            help
+                The password of the second WiFi network.
+
+        config WIFI_SSID_3
+            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 3
+            string  "WiFi SSID 3"
+            default ""
+            help
+                The SSID of the third WiFi network.
+
+        config WIFI_PASSWORD_3
+            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 3
+            string  "WiFi Password 3"
+            default ""
+            help
+                The password of the third WiFi network.
+
+        config WIFI_SSID_4
+            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 4
+            string  "WiFi SSID 4"
+            default ""
+            help
+                The SSID of the fourth WiFi network.
+
+        config WIFI_PASSWORD_4
+            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 4
+            string  "WiFi Password 4"
+            default ""
+            help
+                The password of the fourth WiFi network.
+
+        config WIFI_SSID_5
+            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 5
+            string  "WiFi SSID 5"
+            default ""
+            help
+                The SSID of the fifth WiFi network.
+
+        config WIFI_PASSWORD_5
+            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 5
+            string  "WiFi Password 5"
+            default ""
+            help
+                The password of the fifth WiFi network.
 
         config WIFI_CONNECT_RETRIES
             depends on WIFI_ENABLED
-            int     "WiFi Connection Retry Attempts"
-            default 5
+            int     "WiFi Connection Retry Attempts per Network"
+            default 3
             help
-                Number of times to retry connecting to the WiFi network before giving up.
+                Number of times to retry connecting to each WiFi network before trying the next one.
     endmenu
 
     menu "Display Settings"
