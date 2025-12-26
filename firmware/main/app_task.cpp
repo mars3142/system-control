@@ -14,6 +14,7 @@
 #include "wifi_manager.h"
 #include <driver/i2c.h>
 #include <esp_diagnostics.h>
+#include <esp_insights.h>
 #include <esp_log.h>
 #include <esp_task_wdt.h>
 #include <esp_timer.h>
@@ -62,6 +63,7 @@ void setScreen(const std::shared_ptr<Widget> &screen)
 {
     if (screen != nullptr)
     {
+        ESP_DIAG_EVENT(TAG, "Screen set: %s", screen->getName());
         m_widget = screen;
         m_history.clear();
         m_history.emplace_back(m_widget);
@@ -77,6 +79,7 @@ void pushScreen(const std::shared_ptr<Widget> &screen)
         {
             m_widget->onPause();
         }
+        ESP_DIAG_EVENT(TAG, "Screen pushed: %s", screen->getName());
         m_widget = screen;
         m_widget->onEnter();
         m_history.emplace_back(m_widget);
@@ -97,6 +100,7 @@ void popScreen()
             m_widget->onExit();
         }
         m_widget = m_history.back();
+        ESP_DIAG_EVENT(TAG, "Screen popped, now: %s", m_widget->getName());
         m_widget->onResume();
     }
 }

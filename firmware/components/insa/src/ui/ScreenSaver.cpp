@@ -327,3 +327,5 @@ void ScreenSaver::OnButtonClicked(ButtonType button)
         m_options->popScreen();
     }
 }
+
+IMPLEMENT_GET_NAME(ScreenSaver)

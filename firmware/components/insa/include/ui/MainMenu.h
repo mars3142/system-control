@@ -57,6 +57,8 @@ class MainMenu final : public Menu
      */
     explicit MainMenu(menu_options_t *options);
 
+    const char *getName() const override;
+
   private:
     /**
      * @brief Handles button press events specific to main menu items

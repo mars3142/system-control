@@ -48,3 +48,5 @@ void MainMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType button
         }
     }
 }
+
+IMPLEMENT_GET_NAME(MainMenu)

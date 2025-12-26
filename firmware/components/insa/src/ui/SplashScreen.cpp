@@ -28,3 +28,5 @@ void SplashScreen::Render()
     u8g2_SetFont(u8g2, u8g2_font_haxrcorp4089_tr);
     u8g2_DrawStr(u8g2, 35, 50, "Initialisierung...");
 }
+
+IMPLEMENT_GET_NAME(SplashScreen)

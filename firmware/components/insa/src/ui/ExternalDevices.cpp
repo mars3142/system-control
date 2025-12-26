@@ -23,3 +23,5 @@ void ExternalDevices::onButtonPressed(const MenuItem &menuItem, const ButtonType
         ble_connect_to_device(menuItem.getId());
     }
 }
+
+IMPLEMENT_GET_NAME(ExternalDevices)

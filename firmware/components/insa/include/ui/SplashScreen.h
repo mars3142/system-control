@@ -151,6 +151,8 @@ class SplashScreen final : public Widget
      */
     void Render() override;
 
+    const char *getName() const override;
+
   private:
     /**
      * @brief Pointer to menu options configuration structure

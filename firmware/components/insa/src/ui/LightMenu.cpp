@@ -123,3 +123,5 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
         m_options->pushScreen(widget);
     }
 }
+
+IMPLEMENT_GET_NAME(LightMenu)

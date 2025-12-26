@@ -80,6 +80,8 @@ class LightMenu final : public Menu
      */
     explicit LightMenu(menu_options_t *options);
 
+    const char *getName() const override;
+
   private:
     /**
      * @brief Handles button press events specific to light control menu items

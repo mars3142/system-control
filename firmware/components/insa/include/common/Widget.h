@@ -150,6 +150,19 @@ class Widget
      */
     virtual void OnButtonClicked(ButtonType button);
 
+    /**
+     * @brief Returns the name of this widget for diagnostic purposes
+     * @return A string identifying the widget type
+     *
+     * @details This method returns a human-readable name for the widget which
+     *          is used for logging and diagnostic events. Derived classes should
+     *          override this method to return their specific screen/widget name.
+     *
+     * @note The base implementation returns "Widget". Override in derived classes
+     *       to provide meaningful screen names for diagnostics.
+     */
+    virtual const char *getName() const;
+
   protected:
     /**
      * @brief Pointer to the u8g2 display context used for rendering operations

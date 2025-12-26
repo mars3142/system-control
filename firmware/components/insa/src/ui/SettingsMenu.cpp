@@ -9,3 +9,5 @@ SettingsMenu::SettingsMenu(menu_options_t *options) : Menu(options)
 {
     addText(SettingsMenuItem::OTA_UPLOAD, "OTA Einspielen");
 }
+
+IMPLEMENT_GET_NAME(SettingsMenu)

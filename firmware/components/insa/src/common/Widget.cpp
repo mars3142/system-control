@@ -31,3 +31,8 @@ void Widget::Render()
 void Widget::OnButtonClicked(ButtonType button)
 {
 }
+
+const char *Widget::getName() const
+{
+    return "Widget";
+}
