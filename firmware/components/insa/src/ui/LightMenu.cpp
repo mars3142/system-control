@@ -47,10 +47,10 @@ LightMenu::LightMenu(menu_options_t *options) : Menu(options), m_options(options
     variants.emplace_back("1");
     variants.emplace_back("2");
     variants.emplace_back("3");
-    int variant_value = 2;
+    int variant_value = 3;
     if (m_options && m_options->persistenceManager)
     {
-        variant_value = m_options->persistenceManager->GetValue(LightMenuOptions::LIGHT_VARIANT, variant_value);
+        variant_value = m_options->persistenceManager->GetValue(LightMenuOptions::LIGHT_VARIANT, variant_value) - 1;
     }
     addSelection(LightMenuItem::VARIANT, "Variante", variants, variant_value);
 }

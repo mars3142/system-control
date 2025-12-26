@@ -16,10 +16,12 @@
 static const char *TAG = "button_handling";
 
 const uint8_t gpios[] = {BUTTON_DOWN, BUTTON_UP, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_SELECT, BUTTON_BACK};
+static const char *button_names[] = {"DOWN", "UP", "LEFT", "RIGHT", "SELECT", "BACK"};
 
 typedef struct
 {
     uint8_t gpio;
+    uint8_t index;
 } button_user_data_t;
 
 static button_user_data_t button_data[6];
@@ -35,8 +37,9 @@ static void button_event_cb(void *arg, void *usr_data)
     }
     button_user_data_t *data = (button_user_data_t *)usr_data;
     uint8_t gpio_num = data->gpio;
+    const char *button_name = button_names[data->index];
 
-    ESP_LOGI(TAG, "Button pressed on GPIO %d", gpio_num);
+    ESP_DIAG_EVENT(TAG, "Button %s pressed (GPIO %d)", button_name, gpio_num);
 
     if (xQueueSend(buttonQueue, &gpio_num, 0) != pdTRUE)
     {
@@ -60,6 +63,7 @@ static void init_button(uint8_t gpio, int index)
     }
 
     button_data[index].gpio = gpio;
+    button_data[index].index = index;
     iot_button_register_cb(gpio_btn, BUTTON_SINGLE_CLICK, NULL, button_event_cb, &button_data[index]);
 }
 
