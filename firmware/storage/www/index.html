@@ -40,13 +40,19 @@
                 <h2 data-i18n="control.light.title">Lichtsteuerung</h2>
 
                 <div class="control-section">
-                    <h3 data-i18n="control.light.onoff">Ein/Aus</h3>
                     <div class="control-group">
                         <div class="toggle-row">
                             <span class="toggle-label" data-i18n="control.light.light">Licht</span>
                             <button class="toggle-switch" id="light-toggle" onclick="toggleLight()">
                                 <span class="toggle-state" id="light-state" data-i18n="common.off">AUS</span>
                                 <span class="toggle-icon" id="light-icon">💡</span>
+                            </button>
+                        </div>
+                        <div class="toggle-row">
+                            <span class="toggle-label" data-i18n="control.light.thunder">Gewitter</span>
+                            <button class="toggle-switch" id="thunder-toggle" onclick="toggleThunder()">
+                                <span class="toggle-state" id="thunder-state" data-i18n="common.off">AUS</span>
+                                <span class="toggle-icon" id="thunder-icon">⚡</span>
                             </button>
                         </div>
                     </div>

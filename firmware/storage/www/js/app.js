@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await initCapabilities();
     initWebSocket();
     updateConnectionStatus();
+    loadLightStatus();
 
     // Only load scenes and devices if thread is enabled
     if (isThreadEnabled()) {

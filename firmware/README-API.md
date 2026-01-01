@@ -154,6 +154,34 @@ Turns the main light on or off.
 
 ---
 
+#### Set Thunder Effect
+
+Turns the thunder/lightning effect on or off.
+
+- **URL:** `/api/light/thunder`
+- **Method:** `POST`
+- **Content-Type:** `application/json`
+- **Request Body:**
+
+```json
+{
+  "on": true
+}
+```
+
+| Field | Type    | Required | Description                    |
+|-------|---------|----------|--------------------------------|
+| on    | boolean | Yes      | `true` = on, `false` = off     |
+
+- **Response:** `200 OK` on success
+
+**Notes:**
+- When enabled, random lightning flashes are triggered
+- Can be combined with any light mode
+- Thunder effect stops automatically when light is turned off
+
+---
+
 #### Set Light Mode
 
 Sets the lighting mode.
@@ -211,6 +239,7 @@ Returns current light status (alternative to WebSocket).
 ```json
 {
   "on": true,
+  "thunder": false,
   "mode": "simulation",
   "schema": "schema_01.csv",
   "color": {
@@ -221,12 +250,13 @@ Returns current light status (alternative to WebSocket).
 }
 ```
 
-| Field  | Type    | Description                          |
-|--------|---------|--------------------------------------|
-| on     | boolean | Current power state                  |
-| mode   | string  | Current mode (day/night/simulation)  |
-| schema | string  | Active schema filename               |
-| color  | object  | Current RGB color being displayed    |
+| Field   | Type    | Description                          |
+|---------|---------|--------------------------------------|
+| on      | boolean | Current power state                  |
+| thunder | boolean | Current thunder effect state         |
+| mode    | string  | Current mode (day/night/simulation)  |
+| schema  | string  | Active schema filename               |
+| color   | object  | Current RGB color being displayed    |
 
 ---
 

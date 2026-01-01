@@ -1,4 +1,6 @@
 // Light control
+let thunderOn = false;
+
 async function toggleLight() {
     lightOn = !lightOn;
     updateLightToggle();
@@ -33,6 +35,44 @@ function updateLightToggle() {
         toggle.classList.remove('active');
         state.textContent = t('common.off');
         icon.textContent = '💡';
+    }
+}
+
+// Thunder control
+async function toggleThunder() {
+    thunderOn = !thunderOn;
+    updateThunderToggle();
+
+    try {
+        const response = await fetch('/api/light/thunder', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ on: thunderOn })
+        });
+
+        if (response.ok) {
+            showStatus('light-status', `${t('control.light.thunder')} ${thunderOn ? t('common.on') : t('common.off')}`, 'success');
+        } else {
+            throw new Error(t('error'));
+        }
+    } catch (error) {
+        showStatus('light-status', `Demo: ${t('control.light.thunder')} ${thunderOn ? t('common.on') : t('common.off')}`, 'success');
+    }
+}
+
+function updateThunderToggle() {
+    const toggle = document.getElementById('thunder-toggle');
+    const state = document.getElementById('thunder-state');
+    const icon = document.getElementById('thunder-icon');
+
+    if (thunderOn) {
+        toggle.classList.add('active');
+        state.textContent = t('common.on');
+        icon.textContent = '⛈️';
+    } else {
+        toggle.classList.remove('active');
+        state.textContent = t('common.off');
+        icon.textContent = '⚡';
     }
 }
 
@@ -98,5 +138,54 @@ async function setActiveSchema() {
     } catch (error) {
         showStatus('mode-status', `Demo: ${schemaName}`, 'success');
         document.getElementById('current-schema').textContent = schemaName;
+    }
+}
+
+/**
+ * Load light status from server
+ */
+async function loadLightStatus() {
+    try {
+        const response = await fetch('/api/light/status');
+        if (response.ok) {
+            const status = await response.json();
+
+            // Update light state
+            if (typeof status.on === 'boolean') {
+                lightOn = status.on;
+                updateLightToggle();
+            }
+
+            // Update thunder state
+            if (typeof status.thunder === 'boolean') {
+                thunderOn = status.thunder;
+                updateThunderToggle();
+            }
+
+            // Update mode
+            if (status.mode) {
+                currentMode = status.mode;
+                updateModeButtons();
+                updateSimulationOptions();
+                document.getElementById('current-mode').textContent = t(`mode.${status.mode}`);
+            }
+
+            // Update schema
+            if (status.schema) {
+                document.getElementById('active-schema').value = status.schema;
+                const schemaNum = status.schema.replace('schema_0', '').replace('.csv', '');
+                document.getElementById('current-schema').textContent = t(`schema.name.${schemaNum}`);
+            }
+
+            // Update current color
+            if (status.color) {
+                const colorPreview = document.getElementById('current-color');
+                if (colorPreview) {
+                    colorPreview.style.backgroundColor = `rgb(${status.color.r}, ${status.color.g}, ${status.color.b})`;
+                }
+            }
+        }
+    } catch (error) {
+        console.log('Light status not available');
     }
 }

@@ -33,8 +33,8 @@ const translations = {
 
         // Light Control
         'control.light.title': 'Lichtsteuerung',
-        'control.light.onoff': 'Ein/Aus',
         'control.light.light': 'Licht',
+        'control.light.thunder': 'Gewitter',
         'control.mode.title': 'Betriebsmodus',
         'control.schema.active': 'Aktives Schema',
         'control.status.title': 'Aktueller Status',
@@ -204,8 +204,8 @@ const translations = {
 
         // Light Control
         'control.light.title': 'Light Control',
-        'control.light.onoff': 'On/Off',
         'control.light.light': 'Light',
+        'control.light.thunder': 'Thunder',
         'control.mode.title': 'Operating Mode',
         'control.schema.active': 'Active Schema',
         'control.status.title': 'Current Status',
