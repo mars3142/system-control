@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <title data-i18n="captive.title">System Control - WLAN Setup</title>
+    <link rel="stylesheet" href="css/shared.css">
+    <link rel="stylesheet" href="css/captive.css">
+</head>
+
+<body>
+    <div class="header-controls captive-header">
+        <button class="lang-toggle" onclick="toggleLanguage()" aria-label="Sprache wechseln">
+            <span class="lang-flag" id="lang-flag">🇩🇪</span>
+            <span id="lang-label">DE</span>
+        </button>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Theme wechseln">
+            <span class="theme-toggle-icon" id="theme-icon">🌙</span>
+            <span id="theme-label">Dark</span>
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🚂 System Control</h1>
+            <p data-i18n="captive.subtitle">WLAN-Einrichtung</p>
+        </div>
+
+        <div class="card">
+            <div id="scan-section">
+                <button class="btn btn-secondary" onclick="scanNetworks()" data-i18n="captive.scan">
+                    📡 Netzwerke suchen
+                </button>
+
+                <div id="loading" class="loading">
+                    <div class="spinner"></div>
+                    <p data-i18n="captive.scanning">Suche nach Netzwerken...</p>
+                </div>
+
+                <div id="network-list" class="network-list" style="display: none;"></div>
+            </div>
+
+            <div class="divider"><span data-i18n="captive.or.manual">oder manuell eingeben</span></div>
+
+            <div class="form-group">
+                <label for="ssid" data-i18n="wifi.ssid">WLAN-Name (SSID)</label>
+                <input type="text" id="ssid" data-i18n-placeholder="wifi.ssid.placeholder"
+                    placeholder="Netzwerkname eingeben">
+            </div>
+
+            <div class="form-group">
+                <label for="password" data-i18n="wifi.password.short">Passwort</label>
+                <div class="password-toggle">
+                    <input type="password" id="password" data-i18n-placeholder="captive.password.placeholder"
+                        placeholder="WLAN-Passwort">
+                    <button type="button" onclick="togglePassword()" id="password-btn">👁️</button>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="saveWifi()" data-i18n="captive.connect">
+                    💾 Verbinden
+                </button>
+            </div>
+
+            <div id="wifi-status" class="status"></div>
+
+            <div class="info-box">
+                <strong>ℹ️ <span data-i18n="captive.note.title">Hinweis:</span></strong>
+                <span data-i18n="captive.note.text">Nach dem Speichern verbindet sich das Gerät mit dem gewählten
+                    Netzwerk.
+                    Diese Seite wird dann nicht mehr erreichbar sein. Verbinden Sie sich mit Ihrem normalen WLAN,
+                    um auf das Gerät zuzugreifen.</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/i18n.js"></script>
+    <script src="js/wifi-shared.js"></script>
+    <script>
+        // Theme management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            setTheme(savedTheme);
+        }
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+
+            const icon = document.getElementById('theme-icon');
+            const label = document.getElementById('theme-label');
+            const metaTheme = document.querySelector('meta[name="theme-color"]');
+
+            if (theme === 'light') {
+                icon.textContent = '☀️';
+                label.textContent = 'Light';
+                if (metaTheme) metaTheme.content = '#faf8f5';
+            } else {
+                icon.textContent = '🌙';
+                label.textContent = 'Dark';
+                if (metaTheme) metaTheme.content = '#1a1a2e';
+            }
+        }
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            setTheme(current === 'dark' ? 'light' : 'dark');
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            initI18n();
+            // Auto-scan on load
+            setTimeout(scanNetworks, 500);
+        });
+
+        // Toggle password visibility
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const btn = document.getElementById('password-btn');
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+    </script>
+</body>
+
+</html>

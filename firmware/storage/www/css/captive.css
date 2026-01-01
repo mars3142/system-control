@@ -1,0 +1,201 @@
+/* Captive Portal CSS - WiFi setup specific styles */
+/* Base styles are in shared.css */
+
+body {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.header h1 {
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+}
+
+.header p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Theme Toggle - Absolute positioned */
+/* Handled by .captive-header in shared.css */
+
+/* Card - Larger padding for captive */
+.card {
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px var(--shadow);
+}
+
+/* Form Group - More spacing */
+.form-group {
+    margin-bottom: 16px;
+}
+
+label {
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+/* Inputs - Thicker border for captive */
+input[type="text"],
+input[type="password"],
+select {
+    padding: 14px 16px;
+    border-width: 2px;
+    border-radius: 10px;
+}
+
+/* Buttons - Full width for captive */
+.btn {
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    min-height: 50px;
+}
+
+.btn-secondary {
+    margin-top: 10px;
+}
+
+.btn-group {
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* Status - Centered text */
+.status {
+    text-align: center;
+    border-radius: 10px;
+    padding: 12px 16px;
+}
+
+/* Divider */
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.divider span {
+    padding: 0 12px;
+}
+
+/* Network List */
+.network-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+.network-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.network-item:last-child {
+    border-bottom: none;
+}
+
+.network-item:hover {
+    background: var(--accent);
+}
+
+.network-item.selected {
+    background: var(--accent);
+    border-left: 3px solid var(--success);
+}
+
+.network-name {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.network-signal {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.signal-icon {
+    font-size: 1.1rem;
+}
+
+/* Password Toggle */
+.password-toggle {
+    position: relative;
+}
+
+.password-toggle input {
+    padding-right: 50px;
+}
+
+.password-toggle button {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px;
+}
+
+/* Info Box */
+.info-box {
+    background: var(--accent);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 20px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.info-box strong {
+    color: var(--text);
+}
+
+/* Spinner - Smaller for captive */
+.spinner {
+    width: 30px;
+    height: 30px;
+}
+
+.loading {
+    padding: 20px;
+}
