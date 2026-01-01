@@ -137,8 +137,10 @@
                 <button class="sub-tab active" onclick="switchSubTab('wifi')" data-i18n="subtab.wifi">📶 WLAN</button>
                 <button class="sub-tab" onclick="switchSubTab('schema')" data-i18n="subtab.light">💡
                     Lichtsteuerung</button>
-                <button class="sub-tab" onclick="switchSubTab('devices')" data-i18n="subtab.devices">🔗 Geräte</button>
-                <button class="sub-tab" onclick="switchSubTab('scenes')" data-i18n="subtab.scenes">🎬 Szenen</button>
+                <button class="sub-tab" id="subtab-btn-devices" onclick="switchSubTab('devices')"
+                    data-i18n="subtab.devices">🔗 Geräte</button>
+                <button class="sub-tab" id="subtab-btn-scenes" onclick="switchSubTab('scenes')"
+                    data-i18n="subtab.scenes">🎬 Szenen</button>
             </div>
 
             <!-- WLAN Sub-Tab -->
@@ -449,6 +451,7 @@
 
     <!-- JavaScript Modules -->
     <script src="js/i18n.js"></script>
+    <script src="js/capabilities.js"></script>
     <script src="js/wifi-shared.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/websocket.js"></script>

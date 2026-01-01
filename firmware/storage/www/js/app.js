@@ -41,13 +41,18 @@ document.addEventListener('touchend', (e) => {
 }, false);
 
 // Initialization
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     initI18n();
     initTheme();
+    await initCapabilities();
     initWebSocket();
     updateConnectionStatus();
-    loadScenes();
-    loadPairedDevices();
+
+    // Only load scenes and devices if thread is enabled
+    if (isThreadEnabled()) {
+        loadScenes();
+        loadPairedDevices();
+    }
     // WiFi status polling (less frequent)
     setInterval(updateConnectionStatus, 30000);
 });

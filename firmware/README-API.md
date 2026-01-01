@@ -5,6 +5,7 @@ This document describes all REST API endpoints and WebSocket messages required f
 ## Table of Contents
 
 - [REST API Endpoints](#rest-api-endpoints)
+  - [Capabilities](#capabilities)
   - [WiFi](#wifi)
   - [Light Control](#light-control)
   - [LED Configuration](#led-configuration)
@@ -19,6 +20,33 @@ This document describes all REST API endpoints and WebSocket messages required f
 ---
 
 ## REST API Endpoints
+
+### Capabilities
+
+#### Get Device Capabilities
+
+Returns the device capabilities. Used to determine which features are available.
+
+- **URL:** `/api/capabilities`
+- **Method:** `GET`
+- **Response:**
+
+```json
+{
+  "thread": true
+}
+```
+
+| Field  | Type    | Description                                           |
+|--------|---------|-------------------------------------------------------|
+| thread | boolean | Whether Thread/Matter features are enabled            |
+
+**Notes:**
+- If `thread` is `true`, the UI shows Matter device management and Scenes
+- If `thread` is `false` or the endpoint is unavailable, these features are hidden
+- The client can also force-enable features via URL parameter `?thread=true`
+
+---
 
 ### WiFi
 
