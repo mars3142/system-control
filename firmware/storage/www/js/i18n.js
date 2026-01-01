@@ -12,9 +12,27 @@ const translations = {
 
         // Sub Tabs
         'subtab.wifi': '📶 WLAN',
-        'subtab.schema': '💡 Schema',
+        'subtab.light': '💡 Lichtsteuerung',
         'subtab.devices': '🔗 Geräte',
         'subtab.scenes': '🎬 Szenen',
+
+        // WLED Configuration
+        'wled.config.title': 'WLED Konfiguration',
+        'wled.config.desc': 'Konfiguriere die WLED-Segmente und LEDs pro Segment',
+        'wled.host': 'WLED Host',
+        'wled.host.placeholder': 'z.B. 192.168.1.100 oder wled.local',
+        'wled.segments.title': 'Segmente',
+        'wled.segments.empty': 'Keine Segmente konfiguriert',
+        'wled.segments.empty.hint': 'Klicke auf "Segment hinzufügen" um ein Segment zu erstellen',
+        'wled.segment.add': '➕ Segment hinzufügen',
+        'wled.segment.name': 'Segment {num}',
+        'wled.segment.leds': 'Anzahl LEDs',
+        'wled.segment.start': 'Start-LED',
+        'wled.segment.remove': 'Entfernen',
+        'wled.saved': 'WLED-Konfiguration gespeichert!',
+        'wled.error.host': 'Bitte WLED Host eingeben',
+        'wled.error.save': 'Fehler beim Speichern der WLED-Konfiguration',
+        'wled.loaded': 'WLED-Konfiguration geladen',
 
         // Light Control
         'control.light.title': 'Lichtsteuerung',
@@ -168,9 +186,27 @@ const translations = {
 
         // Sub Tabs
         'subtab.wifi': '📶 WiFi',
-        'subtab.schema': '💡 Schema',
+        'subtab.light': '💡 Light Control',
         'subtab.devices': '🔗 Devices',
         'subtab.scenes': '🎬 Scenes',
+
+        // WLED Configuration
+        'wled.config.title': 'WLED Configuration',
+        'wled.config.desc': 'Configure WLED segments and LEDs per segment',
+        'wled.host': 'WLED Host',
+        'wled.host.placeholder': 'e.g. 192.168.1.100 or wled.local',
+        'wled.segments.title': 'Segments',
+        'wled.segments.empty': 'No segments configured',
+        'wled.segments.empty.hint': 'Click "Add Segment" to create a segment',
+        'wled.segment.add': '➕ Add Segment',
+        'wled.segment.name': 'Segment {num}',
+        'wled.segment.leds': 'Number of LEDs',
+        'wled.segment.start': 'Start LED',
+        'wled.segment.remove': 'Remove',
+        'wled.saved': 'WLED configuration saved!',
+        'wled.error.host': 'Please enter WLED host',
+        'wled.error.save': 'Error saving WLED configuration',
+        'wled.loaded': 'WLED configuration loaded',
 
         // Light Control
         'control.light.title': 'Light Control',

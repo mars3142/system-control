@@ -135,7 +135,8 @@
         <div id="tab-config" class="tab-content">
             <div class="sub-tabs">
                 <button class="sub-tab active" onclick="switchSubTab('wifi')" data-i18n="subtab.wifi">📶 WLAN</button>
-                <button class="sub-tab" onclick="switchSubTab('schema')" data-i18n="subtab.schema">💡 Schema</button>
+                <button class="sub-tab" onclick="switchSubTab('schema')" data-i18n="subtab.light">💡
+                    Lichtsteuerung</button>
                 <button class="sub-tab" onclick="switchSubTab('devices')" data-i18n="subtab.devices">🔗 Geräte</button>
                 <button class="sub-tab" onclick="switchSubTab('scenes')" data-i18n="subtab.scenes">🎬 Szenen</button>
             </div>
@@ -185,8 +186,39 @@
                 </div>
             </div>
 
-            <!-- Schema Sub-Tab -->
+            <!-- Schema Sub-Tab (Lichtsteuerung) -->
             <div id="subtab-schema" class="sub-tab-content">
+                <!-- WLED Konfiguration -->
+                <div class="card">
+                    <h2 data-i18n="wled.config.title">WLED Konfiguration</h2>
+                    <p class="card-description" data-i18n="wled.config.desc">Konfiguriere die WLED-Segmente und LEDs pro
+                        Segment</p>
+
+                    <div class="segment-header">
+                        <h3 data-i18n="wled.segments.title">Segmente</h3>
+                        <button class="btn btn-secondary btn-small" onclick="addWledSegment()"
+                            data-i18n="wled.segment.add">➕ Segment hinzufügen</button>
+                    </div>
+
+                    <div id="wled-segments-list" class="wled-segments-list">
+                        <!-- Wird dynamisch gefüllt -->
+                        <div class="empty-state" id="no-wled-segments">
+                            <span class="empty-icon">💡</span>
+                            <p data-i18n="wled.segments.empty">Keine Segmente konfiguriert</p>
+                            <p class="empty-hint" data-i18n="wled.segments.empty.hint">Klicke auf "Segment hinzufügen"
+                                um ein Segment zu erstellen</p>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="saveWledConfig()" data-i18n="btn.save">💾
+                            Speichern</button>
+                    </div>
+
+                    <div id="wled-status" class="status"></div>
+                </div>
+
+                <!-- Schema Editor -->
                 <div class="card">
                     <h2 data-i18n="schema.editor.title">Licht-Schema Editor</h2>
 
@@ -423,6 +455,7 @@
     <script src="js/scenes.js"></script>
     <script src="js/devices.js"></script>
     <script src="js/schema.js"></script>
+    <script src="js/wled.js"></script>
     <script src="js/app.js"></script>
 </body>
 

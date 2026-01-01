@@ -1199,3 +1199,135 @@ body {
         width: 100%;
     }
 }
+
+/* WLED Configuration */
+.segment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.segment-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text);
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+}
+
+.wled-segments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.wled-segment-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 12px;
+    align-items: flex-end;
+    padding: 16px;
+    background: var(--bg-color);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+
+.segment-name-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.segment-number {
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: var(--primary);
+}
+
+.segment-name-input {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 0.9rem;
+    height: 38px;
+    box-sizing: border-box;
+}
+
+.segment-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.segment-field label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.segment-field input {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text);
+    font-size: 0.9rem;
+    text-align: center;
+    width: 70px;
+    height: 38px;
+    box-sizing: border-box;
+}
+
+.segment-remove-btn {
+    padding: 8px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    height: 38px;
+    width: 38px;
+    box-sizing: border-box;
+    align-self: flex-end;
+}
+
+.segment-remove-btn:hover {
+    background: #ff4444;
+    border-color: #ff4444;
+    color: white;
+}
+
+/* Responsive for WLED */
+@media (max-width: 600px) {
+    .segment-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .wled-segment-item {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
+    }
+
+    .segment-number {
+        grid-column: 1 / -1;
+    }
+
+    .segment-name-input {
+        grid-column: 1 / -1;
+    }
+
+    .segment-remove-btn {
+        grid-column: 1 / -1;
+        justify-self: end;
+    }
+}
