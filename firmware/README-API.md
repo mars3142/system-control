@@ -7,7 +7,7 @@ This document describes all REST API endpoints and WebSocket messages required f
 - [REST API Endpoints](#rest-api-endpoints)
   - [WiFi](#wifi)
   - [Light Control](#light-control)
-  - [WLED Configuration](#wled-configuration)
+  - [LED Configuration](#led-configuration)
   - [Schema](#schema)
   - [Devices](#devices)
   - [Scenes](#scenes)
@@ -202,11 +202,11 @@ Returns current light status (alternative to WebSocket).
 
 ---
 
-### WLED Configuration
+### LED Configuration
 
-#### Get WLED Configuration
+#### Get LED Configuration
 
-Returns the current WLED configuration including host and all segments.
+Returns the current LED segment configuration.
 
 - **URL:** `/api/wled/config`
 - **Method:** `GET`
@@ -214,7 +214,6 @@ Returns the current WLED configuration including host and all segments.
 
 ```json
 {
-  "host": "192.168.1.100",
   "segments": [
     {
       "name": "Main Light",
@@ -232,7 +231,6 @@ Returns the current WLED configuration including host and all segments.
 
 | Field              | Type   | Description                              |
 |--------------------|--------|------------------------------------------|
-| host               | string | WLED host address (IP or hostname)       |
 | segments           | array  | List of LED segments                     |
 | segments[].name    | string | Optional segment name                    |
 | segments[].start   | number | Start LED index (0-based)                |
@@ -240,9 +238,9 @@ Returns the current WLED configuration including host and all segments.
 
 ---
 
-#### Save WLED Configuration
+#### Save LED Configuration
 
-Saves the WLED configuration.
+Saves the LED segment configuration.
 
 - **URL:** `/api/wled/config`
 - **Method:** `POST`
@@ -251,7 +249,6 @@ Saves the WLED configuration.
 
 ```json
 {
-  "host": "192.168.1.100",
   "segments": [
     {
       "name": "Main Light",
@@ -269,7 +266,6 @@ Saves the WLED configuration.
 
 | Field              | Type   | Required | Description                              |
 |--------------------|--------|----------|------------------------------------------|
-| host               | string | Yes      | WLED host address (IP or hostname)       |
 | segments           | array  | Yes      | List of LED segments (can be empty)      |
 | segments[].name    | string | No       | Optional segment name                    |
 | segments[].start   | number | Yes      | Start LED index (0-based)                |
@@ -278,10 +274,9 @@ Saves the WLED configuration.
 - **Response:** `200 OK` on success, `400 Bad Request` on validation error
 
 **Notes:**
-- The firmware uses this configuration to communicate with a WLED controller
-- Segments are mapped to the WLED JSON API segment control
+- Segments define how the LED strip is divided into logical groups
 - Changes are persisted to NVS (non-volatile storage)
-- The host can be an IP address (e.g., `192.168.1.100`) or hostname (e.g., `wled.local`)
+- Each segment can be controlled independently in the light schema
 
 ---
 

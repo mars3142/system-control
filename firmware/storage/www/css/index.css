@@ -1200,7 +1200,7 @@ body {
     }
 }
 
-/* WLED Configuration */
+/* LED Configuration */
 .segment-header {
     display: flex;
     justify-content: space-between;
@@ -1305,7 +1305,7 @@ body {
     color: white;
 }
 
-/* Responsive for WLED */
+/* Responsive for LED */
 @media (max-width: 600px) {
     .segment-header {
         flex-direction: column;

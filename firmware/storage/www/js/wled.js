@@ -1,5 +1,5 @@
-// WLED Configuration Module
-// Manages WLED segments and LED configuration
+// LED Configuration Module
+// Manages LED segments and configuration
 
 let wledConfig = {
     segments: []
@@ -24,7 +24,7 @@ async function loadWledConfig() {
             showStatus('wled-status', t('wled.loaded'), 'success');
         }
     } catch (error) {
-        console.log('Using default WLED config');
+        console.log('Using default LED config');
         wledConfig = { segments: [] };
         renderWledSegments();
     }
