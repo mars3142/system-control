@@ -125,7 +125,40 @@ esp_err_t api_wifi_config_handler(httpd_req_t *req)
     }
     buf[ret] = '\0';
 
-    ESP_LOGI(TAG, "Received WiFi config: %s", buf);
+    // Passwort maskieren
+    cJSON *json = cJSON_Parse(buf);
+    if (json)
+    {
+        cJSON *pw = cJSON_GetObjectItem(json, "password");
+        if (pw && cJSON_IsString(pw) && pw->valuestring)
+        {
+            size_t pwlen = strlen(pw->valuestring);
+            char *masked = malloc(pwlen + 1);
+            if (masked)
+            {
+                memset(masked, '*', pwlen);
+                masked[pwlen] = '\0';
+                cJSON_ReplaceItemInObject(json, "password", cJSON_CreateString(masked));
+                char *logstr = cJSON_PrintUnformatted(json);
+                ESP_LOGI(TAG, "Received WiFi config: %s", logstr);
+                free(logstr);
+                free(masked);
+            }
+            else
+            {
+                ESP_LOGI(TAG, "Received WiFi config: %s", buf);
+            }
+        }
+        else
+        {
+            ESP_LOGI(TAG, "Received WiFi config: %s", buf);
+        }
+        cJSON_Delete(json);
+    }
+    else
+    {
+        ESP_LOGI(TAG, "Received WiFi config: %s", buf);
+    }
 
     // TODO: Parse JSON and connect to WiFi
     set_cors_headers(req);
