@@ -1,5 +1,7 @@
 #include "wifi_manager.h"
 
+#include "api_server.h"
+
 #include <esp_event.h>
 #include <esp_insights.h>
 #include <esp_log.h>
@@ -216,6 +218,9 @@ void wifi_manager_init()
     if (bits & WIFI_CONNECTED_BIT)
     {
         ESP_DIAG_EVENT(TAG, "Connected to AP SSID:%s", s_wifi_networks[s_current_network_index].ssid);
+
+        api_server_config_t s_config = API_SERVER_CONFIG_DEFAULT();
+        ESP_ERROR_CHECK(api_server_start(&s_config));
     }
     else if (bits & WIFI_FAIL_BIT)
     {

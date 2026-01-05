@@ -3,14 +3,20 @@
 #include "esp_log.h"
 #include "esp_spiffs.h"
 #include "simulator.h"
-#include <cstring>
 #include <errno.h>
 #include <stdio.h>
 
 static const char *TAG = "storage";
 
+static bool is_spiffs_mounted = false;
+
 void initialize_storage()
 {
+    if (is_spiffs_mounted)
+    {
+        return;
+    }
+
     esp_vfs_spiffs_conf_t conf = {
         .base_path = "/spiffs",
         .partition_label = NULL,
@@ -36,6 +42,8 @@ void initialize_storage()
         }
         return;
     }
+
+    is_spiffs_mounted = true;
 }
 
 void load_file(const char *filename)

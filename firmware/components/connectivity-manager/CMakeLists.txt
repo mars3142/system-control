@@ -10,4 +10,5 @@ idf_component_register(SRCS
             nvs_flash
             esp_insights
             led-manager
+            api-server
 )

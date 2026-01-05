@@ -1,0 +1,771 @@
+#include "api_handlers.h"
+
+#include <esp_http_server.h>
+#include <esp_log.h>
+#include <string.h>
+#include <sys/stat.h>
+
+static const char *TAG = "api_handlers";
+
+// Helper function to set CORS headers
+static esp_err_t set_cors_headers(httpd_req_t *req)
+{
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Headers", "Content-Type");
+    return ESP_OK;
+}
+
+// Helper function to send JSON response
+static esp_err_t send_json_response(httpd_req_t *req, const char *json)
+{
+    set_cors_headers(req);
+    httpd_resp_set_type(req, "application/json");
+    return httpd_resp_sendstr(req, json);
+}
+
+// Helper function to send error response
+static esp_err_t send_error_response(httpd_req_t *req, int status_code, const char *message)
+{
+    set_cors_headers(req);
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_set_status(req, status_code == 400   ? "400 Bad Request"
+                               : status_code == 404 ? "404 Not Found"
+                                                    : "500 Internal Server Error");
+    char buffer[128];
+    snprintf(buffer, sizeof(buffer), "{\"error\":\"%s\"}", message);
+    return httpd_resp_sendstr(req, buffer);
+}
+
+// OPTIONS handler for CORS preflight
+static esp_err_t options_handler(httpd_req_t *req)
+{
+    set_cors_headers(req);
+    httpd_resp_set_status(req, "204 No Content");
+    httpd_resp_send(req, NULL, 0);
+    return ESP_OK;
+}
+
+// ============================================================================
+// Capabilities API
+// ============================================================================
+
+esp_err_t api_capabilities_get_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "GET /api/capabilities");
+
+    // TODO: Implement actual capability detection
+    const char *response = "{\"thread\":false}";
+    return send_json_response(req, response);
+}
+
+// ============================================================================
+// WiFi API
+// ============================================================================
+
+esp_err_t api_wifi_scan_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "GET /api/wifi/scan");
+
+    // TODO: Implement actual WiFi scanning
+    const char *response = "["
+                           "{\"ssid\":\"Network1\",\"rssi\":-45},"
+                           "{\"ssid\":\"Network2\",\"rssi\":-72}"
+                           "]";
+    return send_json_response(req, response);
+}
+
+esp_err_t api_wifi_config_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST /api/wifi/config");
+
+    char buf[256];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    if (ret <= 0)
+    {
+        return send_error_response(req, 400, "Failed to receive request body");
+    }
+    buf[ret] = '\0';
+
+    ESP_LOGI(TAG, "Received WiFi config: %s", buf);
+
+    // TODO: Parse JSON and connect to WiFi
+    set_cors_headers(req);
+    httpd_resp_set_status(req, "200 OK");
+    return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+}
+
+esp_err_t api_wifi_status_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "GET /api/wifi/status");
+
+    // TODO: Implement actual WiFi status retrieval
+    const char *response = "{"
+                           "\"connected\":true,"
+                           "\"ssid\":\"NetworkName\","
+                           "\"ip\":\"192.168.1.100\","
+                           "\"rssi\":-45"
+                           "}";
+    return send_json_response(req, response);
+}
+
+// ============================================================================
+// Light Control API
+// ============================================================================
+
+esp_err_t api_light_power_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST /api/light/power");
+
+    char buf[64];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    if (ret <= 0)
+    {
+        return send_error_response(req, 400, "Failed to receive request body");
+    }
+    buf[ret] = '\0';
+
+    ESP_LOGI(TAG, "Received light power: %s", buf);
+
+    // TODO: Parse JSON and control light
+    set_cors_headers(req);
+    return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+}
+
+esp_err_t api_light_thunder_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST /api/light/thunder");
+
+    char buf[64];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    if (ret <= 0)
+    {
+        return send_error_response(req, 400, "Failed to receive request body");
+    }
+    buf[ret] = '\0';
+
+    ESP_LOGI(TAG, "Received thunder setting: %s", buf);
+
+    // TODO: Parse JSON and control thunder effect
+    set_cors_headers(req);
+    return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+}
+
+esp_err_t api_light_mode_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST /api/light/mode");
+
+    char buf[64];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    if (ret <= 0)
+    {
+        return send_error_response(req, 400, "Failed to receive request body");
+    }
+    buf[ret] = '\0';
+
+    ESP_LOGI(TAG, "Received light mode: %s", buf);
+
+    // TODO: Parse JSON and set light mode
+    set_cors_headers(req);
+    return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+}
+
+esp_err_t api_light_schema_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST /api/light/schema");
+
+    char buf[128];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    if (ret <= 0)
+    {
+        return send_error_response(req, 400, "Failed to receive request body");
+    }
+    buf[ret] = '\0';
+
+    ESP_LOGI(TAG, "Received schema setting: %s", buf);
+
+    // TODO: Parse JSON and set active schema
+    set_cors_headers(req);
+    return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+}
+
+esp_err_t api_light_status_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "GET /api/light/status");
+
+    // TODO: Implement actual light status retrieval
+    const char *response = "{"
+                           "\"on\":true,"
+                           "\"thunder\":false,"
+                           "\"mode\":\"simulation\","
+                           "\"schema\":\"schema_01.csv\","
+                           "\"color\":{\"r\":255,\"g\":240,\"b\":220}"
+                           "}";
+    return send_json_response(req, response);
+}
+
+// ============================================================================
+// LED Configuration API
+// ============================================================================
+
+esp_err_t api_wled_config_get_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "GET /api/wled/config");
+
+    // TODO: Implement actual LED config retrieval
+    const char *response = "{"
+                           "\"segments\":["
+                           "{\"name\":\"Main Light\",\"start\":0,\"leds\":60},"
+                           "{\"name\":\"Accent Light\",\"start\":60,\"leds\":30}"
+                           "]"
+                           "}";
+    return send_json_response(req, response);
+}
+
+esp_err_t api_wled_config_post_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST /api/wled/config");
+
+    char buf[512];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    if (ret <= 0)
+    {
+        return send_error_response(req, 400, "Failed to receive request body");
+    }
+    buf[ret] = '\0';
+
+    ESP_LOGI(TAG, "Received WLED config: %s", buf);
+
+    // TODO: Parse JSON and save LED configuration
+    set_cors_headers(req);
+    return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+}
+
+// ============================================================================
+// Schema API
+// ============================================================================
+
+esp_err_t api_schema_get_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "GET /api/schema/*");
+
+    // Extract filename from URI
+    const char *uri = req->uri;
+    const char *filename = strrchr(uri, '/');
+    if (filename == NULL)
+    {
+        return send_error_response(req, 400, "Invalid schema path");
+    }
+    filename++; // Skip the '/'
+
+    ESP_LOGI(TAG, "Requested schema: %s", filename);
+
+    // TODO: Read actual schema file from storage
+    // For now, return sample CSV data
+    set_cors_headers(req);
+    httpd_resp_set_type(req, "text/csv");
+    const char *sample_csv = "255,240,220,0,100,250\n"
+                             "255,230,200,0,120,250\n"
+                             "255,220,180,0,140,250\n";
+    return httpd_resp_sendstr(req, sample_csv);
+}
+
+esp_err_t api_schema_post_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST /api/schema/*");
+
+    // Extract filename from URI
+    const char *uri = req->uri;
+    const char *filename = strrchr(uri, '/');
+    if (filename == NULL)
+    {
+        return send_error_response(req, 400, "Invalid schema path");
+    }
+    filename++;
+
+    char buf[2048];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    if (ret <= 0)
+    {
+        return send_error_response(req, 400, "Failed to receive request body");
+    }
+    buf[ret] = '\0';
+
+    ESP_LOGI(TAG, "Saving schema %s, size: %d bytes", filename, ret);
+
+    // TODO: Save schema to storage
+    set_cors_headers(req);
+    return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+}
+
+// ============================================================================
+// Devices API (Matter)
+// ============================================================================
+
+esp_err_t api_devices_scan_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "GET /api/devices/scan");
+
+    // TODO: Implement Matter device scanning
+    const char *response = "["
+                           "{\"id\":\"matter-001\",\"type\":\"light\",\"name\":\"Matter Lamp\"},"
+                           "{\"id\":\"matter-002\",\"type\":\"sensor\",\"name\":\"Temperature Sensor\"}"
+                           "]";
+    return send_json_response(req, response);
+}
+
+esp_err_t api_devices_pair_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST /api/devices/pair");
+
+    char buf[256];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    if (ret <= 0)
+    {
+        return send_error_response(req, 400, "Failed to receive request body");
+    }
+    buf[ret] = '\0';
+
+    ESP_LOGI(TAG, "Pairing device: %s", buf);
+
+    // TODO: Implement Matter device pairing
+    set_cors_headers(req);
+    return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+}
+
+esp_err_t api_devices_paired_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "GET /api/devices/paired");
+
+    // TODO: Get list of paired devices
+    const char *response = "["
+                           "{\"id\":\"matter-001\",\"type\":\"light\",\"name\":\"Living Room Lamp\"}"
+                           "]";
+    return send_json_response(req, response);
+}
+
+esp_err_t api_devices_update_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST /api/devices/update");
+
+    char buf[256];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    if (ret <= 0)
+    {
+        return send_error_response(req, 400, "Failed to receive request body");
+    }
+    buf[ret] = '\0';
+
+    ESP_LOGI(TAG, "Updating device: %s", buf);
+
+    // TODO: Update device name
+    set_cors_headers(req);
+    return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+}
+
+esp_err_t api_devices_unpair_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST /api/devices/unpair");
+
+    char buf[128];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    if (ret <= 0)
+    {
+        return send_error_response(req, 400, "Failed to receive request body");
+    }
+    buf[ret] = '\0';
+
+    ESP_LOGI(TAG, "Unpairing device: %s", buf);
+
+    // TODO: Unpair device
+    set_cors_headers(req);
+    return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+}
+
+esp_err_t api_devices_toggle_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST /api/devices/toggle");
+
+    char buf[128];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    if (ret <= 0)
+    {
+        return send_error_response(req, 400, "Failed to receive request body");
+    }
+    buf[ret] = '\0';
+
+    ESP_LOGI(TAG, "Toggling device: %s", buf);
+
+    // TODO: Toggle device
+    set_cors_headers(req);
+    return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+}
+
+// ============================================================================
+// Scenes API
+// ============================================================================
+
+esp_err_t api_scenes_get_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "GET /api/scenes");
+
+    // TODO: Get scenes from storage
+    const char *response = "["
+                           "{"
+                           "\"id\":\"scene-1\","
+                           "\"name\":\"Evening Mood\","
+                           "\"icon\":\"🌅\","
+                           "\"actions\":{"
+                           "\"light\":\"on\","
+                           "\"mode\":\"simulation\","
+                           "\"schema\":\"schema_02.csv\""
+                           "}"
+                           "},"
+                           "{"
+                           "\"id\":\"scene-2\","
+                           "\"name\":\"Night Mode\","
+                           "\"icon\":\"🌙\","
+                           "\"actions\":{"
+                           "\"light\":\"on\","
+                           "\"mode\":\"night\""
+                           "}"
+                           "}"
+                           "]";
+    return send_json_response(req, response);
+}
+
+esp_err_t api_scenes_post_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST /api/scenes");
+
+    char buf[512];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    if (ret <= 0)
+    {
+        return send_error_response(req, 400, "Failed to receive request body");
+    }
+    buf[ret] = '\0';
+
+    ESP_LOGI(TAG, "Creating/updating scene: %s", buf);
+
+    // TODO: Save scene to storage
+    set_cors_headers(req);
+    return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+}
+
+esp_err_t api_scenes_delete_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "DELETE /api/scenes");
+
+    char buf[128];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    if (ret <= 0)
+    {
+        return send_error_response(req, 400, "Failed to receive request body");
+    }
+    buf[ret] = '\0';
+
+    ESP_LOGI(TAG, "Deleting scene: %s", buf);
+
+    // TODO: Delete scene from storage
+    set_cors_headers(req);
+    return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+}
+
+esp_err_t api_scenes_activate_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST /api/scenes/activate");
+
+    char buf[128];
+    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
+    if (ret <= 0)
+    {
+        return send_error_response(req, 400, "Failed to receive request body");
+    }
+    buf[ret] = '\0';
+
+    ESP_LOGI(TAG, "Activating scene: %s", buf);
+
+    // TODO: Activate scene
+    set_cors_headers(req);
+    return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
+}
+
+// ============================================================================
+// Static file serving
+// ============================================================================
+
+// Get MIME type from file extension
+static const char *get_mime_type(const char *path)
+{
+    const char *ext = strrchr(path, '.');
+    if (ext == NULL)
+        return "text/plain";
+
+    if (strcmp(ext, ".html") == 0)
+        return "text/html";
+    if (strcmp(ext, ".css") == 0)
+        return "text/css";
+    if (strcmp(ext, ".js") == 0)
+        return "application/javascript";
+    if (strcmp(ext, ".json") == 0)
+        return "application/json";
+    if (strcmp(ext, ".png") == 0)
+        return "image/png";
+    if (strcmp(ext, ".jpg") == 0 || strcmp(ext, ".jpeg") == 0)
+        return "image/jpeg";
+    if (strcmp(ext, ".svg") == 0)
+        return "image/svg+xml";
+    if (strcmp(ext, ".ico") == 0)
+        return "image/x-icon";
+    if (strcmp(ext, ".csv") == 0)
+        return "text/csv";
+
+    return "text/plain";
+}
+
+esp_err_t api_static_file_handler(httpd_req_t *req)
+{
+    char filepath[CONFIG_HTTPD_MAX_URI_LEN + 16];
+    const char *uri = req->uri;
+
+    // Default to index.html for root
+    if (strcmp(uri, "/") == 0)
+    {
+        uri = "/index.html";
+    }
+
+    const char *base_path = CONFIG_API_SERVER_STATIC_FILES_PATH;
+    int written = snprintf(filepath, sizeof(filepath), "%s%s", base_path, uri);
+    if (written < 0 || (size_t)written >= sizeof(filepath))
+    {
+        ESP_LOGE(TAG, "URI too long: %s", uri);
+        return send_error_response(req, 400, "URI too long");
+    }
+
+    ESP_LOGI(TAG, "Serving static file: %s", filepath);
+
+    // Check if file exists
+    struct stat st;
+    if (stat(filepath, &st) != 0)
+    {
+        ESP_LOGW(TAG, "File not found: %s", filepath);
+        return send_error_response(req, 404, "File not found");
+    }
+
+    // Open and serve file
+    FILE *f = fopen(filepath, "r");
+    if (f == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to open file: %s", filepath);
+        return send_error_response(req, 500, "Failed to open file");
+    }
+
+    set_cors_headers(req);
+    httpd_resp_set_type(req, get_mime_type(filepath));
+
+    char buf[512];
+    size_t read_bytes;
+    while ((read_bytes = fread(buf, 1, sizeof(buf), f)) > 0)
+    {
+        if (httpd_resp_send_chunk(req, buf, read_bytes) != ESP_OK)
+        {
+            fclose(f);
+            ESP_LOGE(TAG, "Failed to send file chunk");
+            return ESP_FAIL;
+        }
+    }
+
+    fclose(f);
+    httpd_resp_send_chunk(req, NULL, 0); // End response
+    return ESP_OK;
+}
+
+// ============================================================================
+// Captive portal detection
+// ============================================================================
+
+esp_err_t api_captive_portal_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "Captive portal detection: %s", req->uri);
+
+    // Redirect to captive portal page
+    httpd_resp_set_status(req, "302 Found");
+    httpd_resp_set_hdr(req, "Location", "/captive.html");
+    httpd_resp_send(req, NULL, 0);
+    return ESP_OK;
+}
+
+// ============================================================================
+// Handler Registration
+// ============================================================================
+
+esp_err_t api_handlers_register(httpd_handle_t server)
+{
+    esp_err_t err;
+
+    // Capabilities
+    httpd_uri_t capabilities_get = {
+        .uri = "/api/capabilities", .method = HTTP_GET, .handler = api_capabilities_get_handler};
+    err = httpd_register_uri_handler(server, &capabilities_get);
+    if (err != ESP_OK)
+        return err;
+
+    // WiFi endpoints
+    httpd_uri_t wifi_scan = {.uri = "/api/wifi/scan", .method = HTTP_GET, .handler = api_wifi_scan_handler};
+    err = httpd_register_uri_handler(server, &wifi_scan);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t wifi_config = {.uri = "/api/wifi/config", .method = HTTP_POST, .handler = api_wifi_config_handler};
+    err = httpd_register_uri_handler(server, &wifi_config);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t wifi_status = {.uri = "/api/wifi/status", .method = HTTP_GET, .handler = api_wifi_status_handler};
+    err = httpd_register_uri_handler(server, &wifi_status);
+    if (err != ESP_OK)
+        return err;
+
+    // Light endpoints
+    httpd_uri_t light_power = {.uri = "/api/light/power", .method = HTTP_POST, .handler = api_light_power_handler};
+    err = httpd_register_uri_handler(server, &light_power);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t light_thunder = {
+        .uri = "/api/light/thunder", .method = HTTP_POST, .handler = api_light_thunder_handler};
+    err = httpd_register_uri_handler(server, &light_thunder);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t light_mode = {.uri = "/api/light/mode", .method = HTTP_POST, .handler = api_light_mode_handler};
+    err = httpd_register_uri_handler(server, &light_mode);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t light_schema = {.uri = "/api/light/schema", .method = HTTP_POST, .handler = api_light_schema_handler};
+    err = httpd_register_uri_handler(server, &light_schema);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t light_status = {.uri = "/api/light/status", .method = HTTP_GET, .handler = api_light_status_handler};
+    err = httpd_register_uri_handler(server, &light_status);
+    if (err != ESP_OK)
+        return err;
+
+    // WLED config endpoints
+    httpd_uri_t wled_config_get = {
+        .uri = "/api/wled/config", .method = HTTP_GET, .handler = api_wled_config_get_handler};
+    err = httpd_register_uri_handler(server, &wled_config_get);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t wled_config_post = {
+        .uri = "/api/wled/config", .method = HTTP_POST, .handler = api_wled_config_post_handler};
+    err = httpd_register_uri_handler(server, &wled_config_post);
+    if (err != ESP_OK)
+        return err;
+
+    // Schema endpoints (wildcard)
+    httpd_uri_t schema_get = {.uri = "/api/schema/*", .method = HTTP_GET, .handler = api_schema_get_handler};
+    err = httpd_register_uri_handler(server, &schema_get);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t schema_post = {.uri = "/api/schema/*", .method = HTTP_POST, .handler = api_schema_post_handler};
+    err = httpd_register_uri_handler(server, &schema_post);
+    if (err != ESP_OK)
+        return err;
+
+    // Devices endpoints
+    httpd_uri_t devices_scan = {.uri = "/api/devices/scan", .method = HTTP_GET, .handler = api_devices_scan_handler};
+    err = httpd_register_uri_handler(server, &devices_scan);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t devices_pair = {.uri = "/api/devices/pair", .method = HTTP_POST, .handler = api_devices_pair_handler};
+    err = httpd_register_uri_handler(server, &devices_pair);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t devices_paired = {
+        .uri = "/api/devices/paired", .method = HTTP_GET, .handler = api_devices_paired_handler};
+    err = httpd_register_uri_handler(server, &devices_paired);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t devices_update = {
+        .uri = "/api/devices/update", .method = HTTP_POST, .handler = api_devices_update_handler};
+    err = httpd_register_uri_handler(server, &devices_update);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t devices_unpair = {
+        .uri = "/api/devices/unpair", .method = HTTP_POST, .handler = api_devices_unpair_handler};
+    err = httpd_register_uri_handler(server, &devices_unpair);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t devices_toggle = {
+        .uri = "/api/devices/toggle", .method = HTTP_POST, .handler = api_devices_toggle_handler};
+    err = httpd_register_uri_handler(server, &devices_toggle);
+    if (err != ESP_OK)
+        return err;
+
+    // Scenes endpoints
+    httpd_uri_t scenes_get = {.uri = "/api/scenes", .method = HTTP_GET, .handler = api_scenes_get_handler};
+    err = httpd_register_uri_handler(server, &scenes_get);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t scenes_post = {.uri = "/api/scenes", .method = HTTP_POST, .handler = api_scenes_post_handler};
+    err = httpd_register_uri_handler(server, &scenes_post);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t scenes_delete = {.uri = "/api/scenes", .method = HTTP_DELETE, .handler = api_scenes_delete_handler};
+    err = httpd_register_uri_handler(server, &scenes_delete);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t scenes_activate = {
+        .uri = "/api/scenes/activate", .method = HTTP_POST, .handler = api_scenes_activate_handler};
+    err = httpd_register_uri_handler(server, &scenes_activate);
+    if (err != ESP_OK)
+        return err;
+
+    // Captive portal detection endpoints
+    httpd_uri_t captive_generate_204 = {
+        .uri = "/generate_204", .method = HTTP_GET, .handler = api_captive_portal_handler};
+    err = httpd_register_uri_handler(server, &captive_generate_204);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t captive_hotspot = {
+        .uri = "/hotspot-detect.html", .method = HTTP_GET, .handler = api_captive_portal_handler};
+    err = httpd_register_uri_handler(server, &captive_hotspot);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t captive_connecttest = {
+        .uri = "/connecttest.txt", .method = HTTP_GET, .handler = api_captive_portal_handler};
+    err = httpd_register_uri_handler(server, &captive_connecttest);
+    if (err != ESP_OK)
+        return err;
+
+    // OPTIONS handler for CORS preflight (wildcard)
+    httpd_uri_t options = {.uri = "/api/*", .method = HTTP_OPTIONS, .handler = options_handler};
+    err = httpd_register_uri_handler(server, &options);
+    if (err != ESP_OK)
+        return err;
+
+    // Static file handler (must be last due to wildcard)
+    httpd_uri_t static_files = {.uri = "/*", .method = HTTP_GET, .handler = api_static_file_handler};
+    err = httpd_register_uri_handler(server, &static_files);
+    if (err != ESP_OK)
+        return err;
+
+    ESP_LOGI(TAG, "All API handlers registered");
+    return ESP_OK;
+}
