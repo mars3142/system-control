@@ -56,9 +56,18 @@ esp_err_t api_capabilities_get_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "GET /api/capabilities");
 
-    // TODO: Implement actual capability detection
-    const char *response = "{\"thread\":false}";
-    return send_json_response(req, response);
+    // Thread nur für esp32c6 oder esp32h2 verfügbar
+    bool thread = false;
+#if defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
+    thread = true;
+#endif
+    cJSON *json = cJSON_CreateObject();
+    cJSON_AddBoolToObject(json, "thread", thread);
+    char *response = cJSON_PrintUnformatted(json);
+    cJSON_Delete(json);
+    esp_err_t res = send_json_response(req, response);
+    free(response);
+    return res;
 }
 
 // ============================================================================
