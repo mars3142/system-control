@@ -1,7 +1,9 @@
 #include "api_handlers.h"
 
+#include <cJSON.h>
 #include <esp_http_server.h>
 #include <esp_log.h>
+#include <esp_wifi.h>
 #include <string.h>
 #include <sys/stat.h>
 
@@ -67,12 +69,39 @@ esp_err_t api_wifi_scan_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "GET /api/wifi/scan");
 
-    // TODO: Implement actual WiFi scanning
-    const char *response = "["
-                           "{\"ssid\":\"Network1\",\"rssi\":-45},"
-                           "{\"ssid\":\"Network2\",\"rssi\":-72}"
-                           "]";
-    return send_json_response(req, response);
+    wifi_scan_config_t scan_config = {.ssid = NULL, .bssid = NULL, .channel = 0, .show_hidden = true};
+    esp_err_t err = esp_wifi_scan_start(&scan_config, true);
+    if (err != ESP_OK)
+    {
+        return send_error_response(req, 500, "WiFi scan failed");
+    }
+
+    uint16_t ap_num = 0;
+    esp_wifi_scan_get_ap_num(&ap_num);
+    wifi_ap_record_t *ap_list = calloc(ap_num, sizeof(wifi_ap_record_t));
+    if (!ap_list)
+    {
+        return send_error_response(req, 500, "Memory allocation failed");
+    }
+    esp_wifi_scan_get_ap_records(&ap_num, ap_list);
+
+    cJSON *json = cJSON_CreateArray();
+    for (int i = 0; i < ap_num; i++)
+    {
+        if (ap_list[i].ssid[0] != '\0')
+        {
+            cJSON *entry = cJSON_CreateObject();
+            cJSON_AddStringToObject(entry, "ssid", (const char *)ap_list[i].ssid);
+            cJSON_AddNumberToObject(entry, "rssi", ap_list[i].rssi);
+            cJSON_AddItemToArray(json, entry);
+        }
+    }
+    char *response = cJSON_PrintUnformatted(json);
+    cJSON_Delete(json);
+    free(ap_list);
+    esp_err_t res = send_json_response(req, response);
+    free(response);
+    return res;
 }
 
 esp_err_t api_wifi_config_handler(httpd_req_t *req)
@@ -99,14 +128,44 @@ esp_err_t api_wifi_status_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "GET /api/wifi/status");
 
-    // TODO: Implement actual WiFi status retrieval
-    const char *response = "{"
-                           "\"connected\":true,"
-                           "\"ssid\":\"NetworkName\","
-                           "\"ip\":\"192.168.1.100\","
-                           "\"rssi\":-45"
-                           "}";
-    return send_json_response(req, response);
+    wifi_ap_record_t ap_info;
+    bool connected = false;
+    char ssid[33] = "";
+    char ip[16] = "";
+    int rssi = 0;
+
+    wifi_mode_t mode;
+    esp_wifi_get_mode(&mode);
+    if (mode == WIFI_MODE_STA || mode == WIFI_MODE_APSTA)
+    {
+        if (esp_wifi_sta_get_ap_info(&ap_info) == ESP_OK)
+        {
+            connected = true;
+            strncpy(ssid, (const char *)ap_info.ssid, sizeof(ssid) - 1);
+            rssi = ap_info.rssi;
+        }
+        esp_netif_t *netif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+        if (netif)
+        {
+            esp_netif_ip_info_t ip_info;
+            if (esp_netif_get_ip_info(netif, &ip_info) == ESP_OK)
+            {
+                snprintf(ip, sizeof(ip), "%d.%d.%d.%d", esp_ip4_addr1(&ip_info.ip), esp_ip4_addr2(&ip_info.ip),
+                         esp_ip4_addr3(&ip_info.ip), esp_ip4_addr4(&ip_info.ip));
+            }
+        }
+    }
+
+    cJSON *json = cJSON_CreateObject();
+    cJSON_AddBoolToObject(json, "connected", connected);
+    cJSON_AddStringToObject(json, "ssid", ssid);
+    cJSON_AddStringToObject(json, "ip", ip);
+    cJSON_AddNumberToObject(json, "rssi", rssi);
+    char *response = cJSON_PrintUnformatted(json);
+    cJSON_Delete(json);
+    esp_err_t res = send_json_response(req, response);
+    free(response);
+    return res;
 }
 
 // ============================================================================

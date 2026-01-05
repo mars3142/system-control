@@ -784,7 +784,7 @@ Sent when WiFi connection status changes.
 
 ## Static Files
 
-The web interface files should be served from the `/storage/www/` directory:
+The web interface files should be served from the `/spiffs/www/` directory:
 
 | Path                 | Description                                    |
 |----------------------|------------------------------------------------|
