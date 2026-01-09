@@ -1,5 +1,6 @@
 idf_component_register(SRCS
             src/api_server.c
+            src/common.c
             src/api_handlers.c
             src/websocket_handler.c
         INCLUDE_DIRS "include"

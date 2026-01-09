@@ -1,4 +1,5 @@
 #include "websocket_handler.h"
+#include "common.h"
 
 #include <esp_http_server.h>
 #include <esp_log.h>
@@ -56,15 +57,11 @@ static esp_err_t handle_ws_message(httpd_req_t *req, httpd_ws_frame_t *ws_pkt)
     // For now, we just check if it's a status request
     if (ws_pkt->payload != NULL && strstr((char *)ws_pkt->payload, "getStatus") != NULL)
     {
-        // Send status response
-        // TODO: Get actual status values
-        const char *response = "{"
-                               "\"type\":\"status\","
-                               "\"on\":true,"
-                               "\"mode\":\"simulation\","
-                               "\"schema\":\"schema_01.csv\","
-                               "\"color\":{\"r\":255,\"g\":240,\"b\":220}"
-                               "}";
+        // Status-JSON generieren
+        cJSON *json = create_light_status_json();
+        cJSON_AddStringToObject(json, "type", "status");
+        char *response = cJSON_PrintUnformatted(json);
+        cJSON_Delete(json);
 
         httpd_ws_frame_t ws_resp = {.final = true,
                                     .fragmented = false,
@@ -72,7 +69,9 @@ static esp_err_t handle_ws_message(httpd_req_t *req, httpd_ws_frame_t *ws_pkt)
                                     .payload = (uint8_t *)response,
                                     .len = strlen(response)};
 
-        return httpd_ws_send_frame(req, &ws_resp);
+        esp_err_t ret = httpd_ws_send_frame(req, &ws_resp);
+        free(response);
+        return ret;
     }
 
     return ESP_OK;

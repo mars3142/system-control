@@ -1,4 +1,5 @@
 #include "api_handlers.h"
+#include "common.h"
 
 #include <cJSON.h>
 #include <esp_http_server.h>
@@ -102,6 +103,8 @@ esp_err_t api_wifi_scan_handler(httpd_req_t *req)
             cJSON *entry = cJSON_CreateObject();
             cJSON_AddStringToObject(entry, "ssid", (const char *)ap_list[i].ssid);
             cJSON_AddNumberToObject(entry, "rssi", ap_list[i].rssi);
+            bool secure = ap_list[i].authmode != WIFI_AUTH_OPEN;
+            cJSON_AddBoolToObject(entry, "secure", secure);
             cJSON_AddItemToArray(json, entry);
         }
     }
@@ -293,16 +296,12 @@ esp_err_t api_light_schema_handler(httpd_req_t *req)
 esp_err_t api_light_status_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "GET /api/light/status");
-
-    // TODO: Implement actual light status retrieval
-    const char *response = "{"
-                           "\"on\":true,"
-                           "\"thunder\":false,"
-                           "\"mode\":\"simulation\","
-                           "\"schema\":\"schema_01.csv\","
-                           "\"color\":{\"r\":255,\"g\":240,\"b\":220}"
-                           "}";
-    return send_json_response(req, response);
+    cJSON *json = create_light_status_json();
+    char *response = cJSON_PrintUnformatted(json);
+    cJSON_Delete(json);
+    esp_err_t res = send_json_response(req, response);
+    free(response);
+    return res;
 }
 
 // ============================================================================

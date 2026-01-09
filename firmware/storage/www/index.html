@@ -70,7 +70,7 @@
                             <span class="mode-icon">🌙</span>
                             <span class="mode-name" data-i18n="mode.night">Nacht</span>
                         </button>
-                        <button class="mode-btn active" id="mode-simulation" onclick="setMode('simulation')">
+                        <button class="mode-btn" id="mode-simulation" onclick="setMode('simulation')">
                             <span class="mode-icon">🔄</span>
                             <span class="mode-name" data-i18n="mode.simulation">Simulation</span>
                         </button>
@@ -109,7 +109,7 @@
             </div>
 
             <!-- Szenen Card -->
-            <div class="card" id="scenes-control-card">
+            <div class="card" id="scenes-control-card" style="display: none;">
                 <h2 data-i18n="scenes.title">Szenen</h2>
                 <div id="scenes-control-list" class="scenes-grid">
                     <!-- Wird dynamisch gefüllt -->
@@ -123,7 +123,7 @@
             </div>
 
             <!-- Externe Geräte Card -->
-            <div class="card" id="devices-control-card">
+            <div class="card" id="devices-control-card" style="display: none;">
                 <h2 data-i18n="devices.external">Externe Geräte</h2>
                 <div id="devices-control-list" class="devices-control-grid">
                     <!-- Wird dynamisch gefüllt -->

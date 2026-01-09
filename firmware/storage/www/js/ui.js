@@ -45,7 +45,7 @@ function switchSubTab(subTabName) {
     document.querySelector(`.sub-tab[onclick="switchSubTab('${subTabName}')"]`).classList.add('active');
     document.getElementById(`subtab-${subTabName}`).classList.add('active');
 
-    if (subTabName === 'schema' && schemaData.length === 0) {
+    if (subTabName === 'schema' && typeof schemaData !== 'undefined' && schemaData.length === 0) {
         loadSchema();
     }
 }

@@ -108,12 +108,16 @@ const translations = {
         'wifi.disconnected': '❌ Nicht verbunden',
         'wifi.unavailable': '⚠️ Status nicht verfügbar',
         'wifi.searching': 'Suche läuft...',
-        'wifi.scan.error': 'Fehler beim Scannen',
+        'wifi.scan.error': 'Fehler beim WLAN-Scan',
         'wifi.scan.failed': 'Netzwerksuche fehlgeschlagen',
         'wifi.saved': 'WLAN-Konfiguration gespeichert! Gerät verbindet sich...',
         'wifi.error.ssid': 'Bitte WLAN-Name eingeben',
         'wifi.error.save': 'Fehler beim Speichern',
         'wifi.networks.found': '{count} Netzwerk(e) gefunden',
+        'wifi.networks.notfound': 'Keine Netzwerke gefunden.',
+        'wifi.signal': 'Signal',
+        'wifi.secure': 'Gesichert',
+        'wifi.open': 'Offen',
 
         // Schema Editor
         'schema.editor.title': 'Licht-Schema Editor',
@@ -285,6 +289,10 @@ const translations = {
         'wifi.error.ssid': 'Please enter WiFi name',
         'wifi.error.save': 'Error saving',
         'wifi.networks.found': '{count} network(s) found',
+        'wifi.networks.notfound': 'No networks found.',
+        'wifi.signal': 'Signal',
+        'wifi.secure': 'Secured',
+        'wifi.open': 'Open',
 
         // Schema Editor
         'schema.editor.title': 'Light Schema Editor',
@@ -439,6 +447,10 @@ function updatePageLanguage() {
     const titleEl = document.querySelector('title[data-i18n]');
     if (titleEl) {
         document.title = t(titleEl.getAttribute('data-i18n'));
+    }
+    // WLAN-Optionen dynamisch übersetzen
+    if (typeof updateWifiOptionsLanguage === 'function') {
+        updateWifiOptionsLanguage();
     }
 }
 
