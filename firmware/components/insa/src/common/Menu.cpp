@@ -64,7 +64,7 @@ void Menu::setItemSize(const size_t size, int8_t startIndex)
                 constexpr int key_length = 20;
                 char key[key_length] = "";
                 snprintf(key, key_length, "section_%zu", i + 1 - startIndex);
-                index = m_options->persistenceManager->GetValue(key, index);
+                index = persistence_manager_get_int(m_options->persistenceManager, key, index);
             }
             addSelection(i + 1, caption, m_items.at(0).getValues(), index);
         }

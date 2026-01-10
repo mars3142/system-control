@@ -27,7 +27,7 @@ LightMenu::LightMenu(menu_options_t *options) : Menu(options), m_options(options
     bool active = false;
     if (m_options && m_options->persistenceManager)
     {
-        active = m_options->persistenceManager->GetValue(LightMenuOptions::LIGHT_ACTIVE, active);
+        active = persistence_manager_get_bool(m_options->persistenceManager, LightMenuOptions::LIGHT_ACTIVE, active);
     }
     addToggle(LightMenuItem::ACTIVATE, "Einschalten", active);
 
@@ -39,7 +39,8 @@ LightMenu::LightMenu(menu_options_t *options) : Menu(options), m_options(options
     int mode_value = 0;
     if (m_options && m_options->persistenceManager)
     {
-        mode_value = m_options->persistenceManager->GetValue(LightMenuOptions::LIGHT_MODE, mode_value);
+        mode_value =
+            persistence_manager_get_int(m_options->persistenceManager, LightMenuOptions::LIGHT_MODE, mode_value);
     }
     addSelection(LightMenuItem::MODE, "Modus", items, mode_value);
 
@@ -50,7 +51,9 @@ LightMenu::LightMenu(menu_options_t *options) : Menu(options), m_options(options
     int variant_value = 3;
     if (m_options && m_options->persistenceManager)
     {
-        variant_value = m_options->persistenceManager->GetValue(LightMenuOptions::LIGHT_VARIANT, variant_value) - 1;
+        variant_value =
+            persistence_manager_get_int(m_options->persistenceManager, LightMenuOptions::LIGHT_VARIANT, variant_value) -
+            1;
     }
     addSelection(LightMenuItem::VARIANT, "Variante", variants, variant_value);
 }
@@ -70,7 +73,7 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
             const auto value = getItem(menuItem.getId()).getValue() == "1";
             if (m_options && m_options->persistenceManager)
             {
-                m_options->persistenceManager->SetValue(LightMenuOptions::LIGHT_ACTIVE, value);
+                persistence_manager_set_bool(m_options->persistenceManager, LightMenuOptions::LIGHT_ACTIVE, value);
             }
 
             start_simulation();
@@ -86,8 +89,8 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
             const auto value = getItem(item.getId()).getIndex();
             if (m_options && m_options->persistenceManager)
             {
-                m_options->persistenceManager->SetValue(LightMenuOptions::LIGHT_MODE, value);
-                m_options->persistenceManager->Save();
+                persistence_manager_set_int(m_options->persistenceManager, LightMenuOptions::LIGHT_MODE, value);
+                persistence_manager_save(m_options->persistenceManager);
             }
 
             start_simulation();
@@ -103,8 +106,8 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
             const auto value = getItem(item.getId()).getIndex() + 1;
             if (m_options && m_options->persistenceManager)
             {
-                m_options->persistenceManager->SetValue(LightMenuOptions::LIGHT_VARIANT, value);
-                m_options->persistenceManager->Save();
+                persistence_manager_set_int(m_options->persistenceManager, LightMenuOptions::LIGHT_VARIANT, value);
+                persistence_manager_save(m_options->persistenceManager);
             }
 
             start_simulation();

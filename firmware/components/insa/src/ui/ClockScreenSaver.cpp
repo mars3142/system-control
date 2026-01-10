@@ -1,5 +1,5 @@
 #include "ui/ClockScreenSaver.h"
-#include "hal_esp32/PersistenceManager.h"
+#include "persistence_manager.h"
 #include "simulator.h"
 #include <cstring>
 #include <ctime>
@@ -38,8 +38,9 @@ void ClockScreenSaver::updateTextDimensions()
 
 void ClockScreenSaver::getCurrentTimeString(char *buffer, size_t bufferSize) const
 {
-    if (m_options && m_options->persistenceManager->GetValue("light_active", false) &&
-        m_options->persistenceManager->GetValue("light_mode", 0) == 0)
+    if (m_options && m_options->persistenceManager &&
+        persistence_manager_get_bool(m_options->persistenceManager, "light_active", false) &&
+        persistence_manager_get_int(m_options->persistenceManager, "light_mode", 0) == 0)
     {
         char *simulated_time = get_time();
         if (simulated_time != nullptr)

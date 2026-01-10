@@ -1,8 +1,8 @@
 #include "simulator.h"
 
 #include "color.h"
-#include "hal_esp32/PersistenceManager.h"
 #include "led_strip_ws2812.h"
+#include "persistence_manager.h"
 #include "storage.h"
 #include <esp_heap_caps.h>
 #include <esp_log.h>
@@ -145,10 +145,12 @@ static void initialize_light_items(void)
     initialize_storage();
 
     static char filename[30];
-    auto persistence = PersistenceManager();
-    int variant = persistence.GetValue("light_variant", 1);
+    persistence_manager_t persistence;
+    persistence_manager_init(&persistence, "config");
+    int variant = persistence_manager_get_int(&persistence, "light_variant", 1);
     snprintf(filename, sizeof(filename), "/spiffs/schema_%02d.csv", variant);
     load_file(filename);
+    persistence_manager_deinit(&persistence);
 
     if (head == NULL)
     {
@@ -398,25 +400,22 @@ void start_simulation(void)
 {
     stop_simulation_task();
 
-    auto persistence = PersistenceManager();
-    if (persistence.GetValue("light_active", false))
+    persistence_manager_t persistence;
+    persistence_manager_init(&persistence, "config");
+    if (persistence_manager_get_bool(&persistence, "light_active", false))
     {
-
-        int mode = persistence.GetValue("light_mode", 0);
+        int mode = persistence_manager_get_int(&persistence, "light_mode", 0);
         switch (mode)
         {
         case 0: // Simulation mode
             start_simulation_task();
             break;
-
         case 1: // Day mode
             start_simulate_day();
             break;
-
         case 2: // Night mode
             start_simulate_night();
             break;
-
         default:
             ESP_LOGW(TAG, "Unknown light mode: %d", mode);
             break;
@@ -426,4 +425,5 @@ void start_simulation(void)
     {
         led_strip_update(LED_STATE_OFF, rgb_t{});
     }
+    persistence_manager_deinit(&persistence);
 }

@@ -4,9 +4,9 @@
 #include "button_handling.h"
 #include "common/InactivityTracker.h"
 #include "hal/u8g2_esp32_hal.h"
-#include "hal_esp32/PersistenceManager.h"
 #include "i2c_checker.h"
 #include "led_status.h"
+#include "persistence_manager.h"
 #include "simulator.h"
 #include "ui/ClockScreenSaver.h"
 #include "ui/ScreenSaver.h"
@@ -33,7 +33,8 @@ uint8_t received_signal;
 std::shared_ptr<Widget> m_widget;
 std::vector<std::shared_ptr<Widget>> m_history;
 std::unique_ptr<InactivityTracker> m_inactivityTracker;
-std::shared_ptr<PersistenceManager> m_persistenceManager;
+// Persistence Manager für C-API
+persistence_manager_t g_persistence_manager;
 
 extern QueueHandle_t buttonQueue;
 
@@ -93,10 +94,7 @@ void popScreen()
         m_history.pop_back();
         if (m_widget)
         {
-            if (m_persistenceManager != nullptr)
-            {
-                m_persistenceManager->Save();
-            }
+            persistence_manager_save(&g_persistence_manager);
             m_widget->onExit();
         }
         m_widget = m_history.back();
@@ -107,14 +105,14 @@ void popScreen()
 
 static void init_ui(void)
 {
-    m_persistenceManager = std::make_shared<PersistenceManager>();
+    persistence_manager_init(&g_persistence_manager, "config");
     options = {
         .u8g2 = &u8g2,
         .setScreen = [](const std::shared_ptr<Widget> &screen) { setScreen(screen); },
         .pushScreen = [](const std::shared_ptr<Widget> &screen) { pushScreen(screen); },
         .popScreen = []() { popScreen(); },
         .onButtonClicked = nullptr,
-        .persistenceManager = m_persistenceManager,
+        .persistenceManager = &g_persistence_manager,
     };
     m_widget = std::make_shared<SplashScreen>(&options);
     m_inactivityTracker = std::make_unique<InactivityTracker>(60000, []() {
