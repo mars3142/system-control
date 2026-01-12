@@ -13,19 +13,19 @@
 </head>
 
 <body>
-    <div class="header-controls captive-header">
-        <button class="lang-toggle" onclick="toggleLanguage()" aria-label="Sprache wechseln">
-            <span class="lang-flag" id="lang-flag">🇩🇪</span>
-            <span id="lang-label">DE</span>
-        </button>
-        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Theme wechseln">
-            <span class="theme-toggle-icon" id="theme-icon">🌙</span>
-            <span id="theme-label">Dark</span>
-        </button>
-    </div>
 
     <div class="container">
         <div class="header">
+            <div class="header-controls">
+                <button class="lang-toggle" onclick="toggleLanguage()" aria-label="Sprache wechseln">
+                    <span class="lang-flag" id="lang-flag">🇩🇪</span>
+                    <span class="lang-label" id="lang-label">DE</span>
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Theme wechseln">
+                    <span class="theme-toggle-icon" id="theme-icon">🌙</span>
+                    <span class="theme-toggle-label" id="theme-label">Dark</span>
+                </button>
+            </div>
             <h1>🚂 System Control</h1>
             <p data-i18n="captive.subtitle">WLAN-Einrichtung</p>
         </div>

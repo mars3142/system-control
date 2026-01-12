@@ -627,12 +627,25 @@ static const char *get_mime_type(const char *path)
 esp_err_t api_static_file_handler(httpd_req_t *req)
 {
     char filepath[CONFIG_HTTPD_MAX_URI_LEN + 16];
-    const char *uri = req->uri;
 
-    // Default to index.html for root
-    if (strcmp(uri, "/") == 0)
+    const char *uri = req->uri;
+    wifi_mode_t mode = 0;
+    esp_wifi_get_mode(&mode);
+    // Im AP-Modus immer captive.html ausliefern
+    if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA)
     {
-        uri = "/index.html";
+        if (strcmp(uri, "/") == 0 || strcmp(uri, "/index.html") == 0)
+        {
+            uri = "/captive.html";
+        }
+    }
+    else
+    {
+        // Default to index.html for root
+        if (strcmp(uri, "/") == 0)
+        {
+            uri = "/index.html";
+        }
     }
 
     const char *base_path = CONFIG_API_SERVER_STATIC_FILES_PATH;
@@ -689,10 +702,32 @@ esp_err_t api_captive_portal_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "Captive portal detection: %s", req->uri);
 
-    // Redirect to captive portal page
-    httpd_resp_set_status(req, "302 Found");
-    httpd_resp_set_hdr(req, "Location", "/captive.html");
-    httpd_resp_send(req, NULL, 0);
+    // captive.html direkt ausliefern (Status 200, text/html)
+    const char *base_path = CONFIG_API_SERVER_STATIC_FILES_PATH;
+    char filepath[256];
+    snprintf(filepath, sizeof(filepath), "%s/captive.html", base_path);
+    FILE *f = fopen(filepath, "r");
+    if (!f)
+    {
+        ESP_LOGE(TAG, "captive.html not found: %s", filepath);
+        httpd_resp_set_status(req, "500 Internal Server Error");
+        httpd_resp_sendstr(req, "Captive Portal nicht verfügbar");
+        return ESP_FAIL;
+    }
+    httpd_resp_set_type(req, "text/html");
+    char buf[512];
+    size_t read_bytes;
+    while ((read_bytes = fread(buf, 1, sizeof(buf), f)) > 0)
+    {
+        if (httpd_resp_send_chunk(req, buf, read_bytes) != ESP_OK)
+        {
+            fclose(f);
+            ESP_LOGE(TAG, "Failed to send captive chunk");
+            return ESP_FAIL;
+        }
+    }
+    fclose(f);
+    httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }
 

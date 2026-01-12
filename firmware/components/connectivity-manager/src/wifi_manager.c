@@ -1,4 +1,5 @@
 #include "wifi_manager.h"
+#include "dns_hijack.h"
 
 #include "api_server.h"
 
@@ -13,6 +14,7 @@
 #include <led_status.h>
 #include <lwip/err.h>
 #include <lwip/sys.h>
+#include <mdns.h>
 #include <nvs_flash.h>
 #include <sdkconfig.h>
 #include <string.h>
@@ -185,50 +187,33 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
 
 void wifi_manager_init()
 {
-#if CONFIG_WIFI_ENABLED
     s_wifi_event_group = xEventGroupCreate();
-    s_current_network_index = 0;
     s_retry_num = 0;
 
     ESP_ERROR_CHECK(esp_netif_init());
-
     ESP_ERROR_CHECK(esp_event_loop_create_default());
-    esp_netif_create_default_wifi_sta();
+
+    // Access Point erstellen
+    esp_netif_create_default_wifi_ap();
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
-    esp_event_handler_instance_t instance_any_id;
-    esp_event_handler_instance_t instance_got_ip;
-    ESP_ERROR_CHECK(
-        esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler, NULL, &instance_any_id));
-    ESP_ERROR_CHECK(
-        esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &event_handler, NULL, &instance_got_ip));
-
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    wifi_config_t ap_config = {.ap = {.ssid = "system-control",
+                                      .ssid_len = strlen("system-control"),
+                                      .password = "",
+                                      .max_connection = 4,
+                                      .authmode = WIFI_AUTH_OPEN}};
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &ap_config));
     ESP_ERROR_CHECK(esp_wifi_start());
 
-    ESP_DIAG_EVENT(TAG, "WiFi manager initialized with %d network(s), waiting for connection...", s_wifi_network_count);
+    ESP_LOGI(TAG, "Access Point 'system-control' gestartet");
 
-    /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or
-       connection failed for all networks (WIFI_FAIL_BIT). The bits are set by event_handler() */
-    EventBits_t bits =
-        xEventGroupWaitBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
+    // DNS Hijack Server starten (alle DNS-Anfragen auf AP-IP umleiten)
+    dns_server_start("192.168.4.1"); // ggf. dynamisch ermitteln
 
-    if (bits & WIFI_CONNECTED_BIT)
-    {
-        ESP_DIAG_EVENT(TAG, "Connected to AP SSID:%s", s_wifi_networks[s_current_network_index].ssid);
-
-        api_server_config_t s_config = API_SERVER_CONFIG_DEFAULT();
-        ESP_ERROR_CHECK(api_server_start(&s_config));
-    }
-    else if (bits & WIFI_FAIL_BIT)
-    {
-        ESP_LOGE(TAG, "Failed to connect to any configured WiFi network");
-    }
-    else
-    {
-        ESP_LOGE(TAG, "Unexpected event");
-    }
-#endif
+    // API-Server starten
+    api_server_config_t s_config = API_SERVER_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(api_server_start(&s_config));
 }
