@@ -1,5 +1,6 @@
 #pragma once
 
+#include <esp_err.h>
 #include <nvs.h>
 #include <nvs_flash.h>
 #include <stdbool.h>
@@ -33,14 +34,14 @@ extern "C"
      * @param pm Pointer to the persistence manager structure.
      * @param nvs_namespace Namespace to use for NVS operations.
      */
-    void persistence_manager_init(persistence_manager_t *pm, const char *nvs_namespace);
+    esp_err_t persistence_manager_init(persistence_manager_t *pm, const char *nvs_namespace);
 
     /**
      * @brief Deinitialize the persistence manager and release resources.
      *
      * @param pm Pointer to the persistence manager structure.
      */
-    void persistence_manager_deinit(persistence_manager_t *pm);
+    esp_err_t persistence_manager_deinit(persistence_manager_t *pm);
 
     /**
      * @brief Check if the persistence manager is initialized.

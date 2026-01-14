@@ -51,7 +51,6 @@ static void dns_server_task(void *pvParameters)
         // Fragen: 1, Antworten: 1
         buf[7] = 1;
         // Antwort anhängen (Name Pointer auf Frage)
-        int qlen = len - 12;
         int pos = len;
         buf[pos++] = 0xC0;
         buf[pos++] = 0x0C; // Name pointer

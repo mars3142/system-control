@@ -16,204 +16,120 @@
 #include <lwip/sys.h>
 #include <mdns.h>
 #include <nvs_flash.h>
+#include <persistence_manager.h>
 #include <sdkconfig.h>
 #include <string.h>
 
-// Event group to signal when we are connected
+// Event group to signal WiFi connection status
 static EventGroupHandle_t s_wifi_event_group;
 
-// The bits for the event group
+// Event group bits
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
 
 static const char *TAG = "wifi_manager";
 
-static int s_retry_num = 0;
-static int s_current_network_index = 0;
-
-// WiFi network configuration structure
-typedef struct
+static void wifi_create_ap()
 {
-    const char *ssid;
-    const char *password;
-} wifi_network_config_t;
-
-// Array of configured WiFi networks
-static const wifi_network_config_t s_wifi_networks[] = {
-#if CONFIG_WIFI_ENABLED
-    {CONFIG_WIFI_SSID_1, CONFIG_WIFI_PASSWORD_1},
-#if CONFIG_WIFI_NETWORK_COUNT >= 2
-    {CONFIG_WIFI_SSID_2, CONFIG_WIFI_PASSWORD_2},
-#endif
-#if CONFIG_WIFI_NETWORK_COUNT >= 3
-    {CONFIG_WIFI_SSID_3, CONFIG_WIFI_PASSWORD_3},
-#endif
-#if CONFIG_WIFI_NETWORK_COUNT >= 4
-    {CONFIG_WIFI_SSID_4, CONFIG_WIFI_PASSWORD_4},
-#endif
-#if CONFIG_WIFI_NETWORK_COUNT >= 5
-    {CONFIG_WIFI_SSID_5, CONFIG_WIFI_PASSWORD_5},
-#endif
-#endif
-};
-
-static const int s_wifi_network_count = sizeof(s_wifi_networks) / sizeof(s_wifi_networks[0]);
-
-static void try_next_network(void);
-
-static void connect_to_network(int index)
-{
-#if CONFIG_WIFI_ENABLED
-    if (index >= s_wifi_network_count)
-    {
-        ESP_LOGE(TAG, "No more networks to try");
-        xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
-        return;
-    }
-
-    const wifi_network_config_t *network = &s_wifi_networks[index];
-
-    // Skip empty SSIDs
-    if (network->ssid == NULL || strlen(network->ssid) == 0)
-    {
-        ESP_LOGW(TAG, "Skipping empty SSID at index %d", index);
-        s_current_network_index++;
-        s_retry_num = 0;
-        try_next_network();
-        return;
-    }
-
-    ESP_DIAG_EVENT(TAG, "Trying to connect to network %d: %s", index + 1, network->ssid);
-
-    wifi_config_t wifi_config = {
-        .sta =
-            {
-                .threshold.authmode = WIFI_AUTH_WPA2_PSK,
-            },
-    };
-
-    strncpy((char *)wifi_config.sta.ssid, network->ssid, sizeof(wifi_config.sta.ssid) - 1);
-    strncpy((char *)wifi_config.sta.password, network->password, sizeof(wifi_config.sta.password) - 1);
-
-    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
-    esp_wifi_connect();
-#endif
-}
-
-static void try_next_network(void)
-{
-#if CONFIG_WIFI_ENABLED
-    s_current_network_index++;
-    s_retry_num = 0;
-
-    if (s_current_network_index < s_wifi_network_count)
-    {
-        connect_to_network(s_current_network_index);
-    }
-    else
-    {
-        ESP_LOGE(TAG, "Failed to connect to any configured network");
-        led_behavior_t led0_behavior = {
-            .index = 0,
-            .mode = LED_MODE_BLINK,
-            .color = {.red = 50, .green = 0, .blue = 0},
-            .on_time_ms = 1000,
-            .off_time_ms = 500,
-        };
-        led_status_set_behavior(led0_behavior);
-        xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
-    }
-#endif
-}
-
-static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
-{
-#if CONFIG_WIFI_ENABLED
-    if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START)
-    {
-        led_behavior_t led0_behavior = {
-            .index = 0,
-            .mode = LED_MODE_BLINK,
-            .color = {.red = 50, .green = 50, .blue = 0},
-            .on_time_ms = 200,
-            .off_time_ms = 200,
-        };
-        led_status_set_behavior(led0_behavior);
-
-        connect_to_network(s_current_network_index);
-    }
-    else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED)
-    {
-        if (s_retry_num < CONFIG_WIFI_CONNECT_RETRIES)
-        {
-            led_behavior_t led0_behavior = {
-                .index = 0,
-                .mode = LED_MODE_BLINK,
-                .color = {.red = 50, .green = 50, .blue = 0},
-                .on_time_ms = 200,
-                .off_time_ms = 200,
-            };
-            led_status_set_behavior(led0_behavior);
-
-            s_retry_num++;
-            ESP_DIAG_EVENT(TAG, "Retrying network %d (%d/%d)", s_current_network_index + 1, s_retry_num,
-                           CONFIG_WIFI_CONNECT_RETRIES);
-            esp_wifi_connect();
-            return;
-        }
-
-        // Retries exhausted for current network, try next one
-        ESP_LOGW(TAG, "Failed to connect to network %d after %d retries, trying next...", s_current_network_index + 1,
-                 CONFIG_WIFI_CONNECT_RETRIES);
-        try_next_network();
-    }
-    else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
-    {
-        led_behavior_t led0_behavior = {
-            .index = 0,
-            .mode = LED_MODE_SOLID,
-            .color = {.red = 0, .green = 50, .blue = 0},
-        };
-        led_status_set_behavior(led0_behavior);
-
-        ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
-        ESP_DIAG_EVENT(TAG, "Got IP address:" IPSTR " (network %d: %s)", IP2STR(&event->ip_info.ip),
-                       s_current_network_index + 1, s_wifi_networks[s_current_network_index].ssid);
-        s_retry_num = 0;
-        xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
-    }
-#endif
-}
-
-void wifi_manager_init()
-{
-    s_wifi_event_group = xEventGroupCreate();
-    s_retry_num = 0;
-
-    ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-
-    // Access Point erstellen
-    esp_netif_create_default_wifi_ap();
-
-    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-
+    ESP_ERROR_CHECK(esp_wifi_stop());
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
     wifi_config_t ap_config = {.ap = {.ssid = "system-control",
                                       .ssid_len = strlen("system-control"),
                                       .password = "",
                                       .max_connection = 4,
                                       .authmode = WIFI_AUTH_OPEN}};
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &ap_config));
     ESP_ERROR_CHECK(esp_wifi_start());
+    ESP_LOGI(TAG, "Access Point 'system-control' started");
+    dns_server_start("192.168.4.1");
 
-    ESP_LOGI(TAG, "Access Point 'system-control' gestartet");
+    led_behavior_t led_behavior = {
+        .color = {.red = 50, .green = 0, .blue = 0},
+        .index = 0,
+        .mode = LED_MODE_SOLID,
+    };
+    led_status_set_behavior(led_behavior);
+}
 
-    // DNS Hijack Server starten (alle DNS-Anfragen auf AP-IP umleiten)
-    dns_server_start("192.168.4.1"); // ggf. dynamisch ermitteln
+void wifi_manager_init()
+{
+    s_wifi_event_group = xEventGroupCreate();
 
-    // API-Server starten
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+
+    // Try to load stored WiFi configuration
+    persistence_manager_t pm;
+    char ssid[33] = {0};
+    char password[65] = {0};
+    bool have_ssid = false, have_password = false;
+    if (persistence_manager_init(&pm, "wifi_config") == ESP_OK)
+    {
+        persistence_manager_get_string(&pm, "ssid", ssid, sizeof(ssid), "");
+        persistence_manager_get_string(&pm, "password", password, sizeof(password), "");
+        have_ssid = strlen(ssid) > 0;
+        have_password = strlen(password) > 0;
+    }
+
+    if (have_ssid && have_password)
+    {
+        led_behavior_t led_behavior = {
+            .on_time_ms = 250,
+            .off_time_ms = 100,
+            .color = {.red = 50, .green = 50, .blue = 0},
+            .index = 0,
+            .mode = LED_MODE_BLINK,
+        };
+        led_status_set_behavior(led_behavior);
+
+        ESP_LOGI(TAG, "Found WiFi configuration: SSID='%s'", ssid);
+        wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+        ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+        wifi_config_t wifi_config = {0};
+        strncpy((char *)wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid) - 1);
+        strncpy((char *)wifi_config.sta.password, password, sizeof(wifi_config.sta.password) - 1);
+        wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
+        ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
+        ESP_ERROR_CHECK(esp_wifi_start());
+
+        int retries = 0;
+        EventBits_t bits;
+        do
+        {
+            esp_wifi_connect();
+            bits = xEventGroupWaitBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT, pdFALSE, pdFALSE,
+                                       5000 / portTICK_PERIOD_MS);
+            if (bits & WIFI_CONNECTED_BIT)
+            {
+                led_behavior_t led_behavior = {
+                    .index = 0,
+                    .color = {.red = 0, .green = 50, .blue = 0},
+                    .mode = LED_MODE_SOLID,
+                };
+                led_status_set_behavior(led_behavior);
+                ESP_LOGI(TAG, "WiFi connection established successfully");
+                break;
+            }
+            retries++;
+        } while (!(bits & WIFI_CONNECTED_BIT) && retries < CONFIG_WIFI_CONNECT_RETRIES);
+
+        if (!(bits & WIFI_CONNECTED_BIT))
+        {
+            ESP_LOGW(TAG, "WiFi connection failed, switching to Access Point mode");
+            wifi_create_ap();
+        }
+    }
+    else
+    {
+        // Create Access Point
+        esp_netif_create_default_wifi_ap();
+        wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+        ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+        wifi_create_ap();
+    }
+
+    // API server start
     api_server_config_t s_config = API_SERVER_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(api_server_start(&s_config));
 }

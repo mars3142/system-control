@@ -186,10 +186,7 @@ void app_task(void *args)
     setup_buttons();
     init_ui();
 
-#if CONFIG_WIFI_ENABLED
     wifi_manager_init();
-    analytics_init();
-#endif
 
     start_simulation();
 

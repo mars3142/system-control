@@ -18,7 +18,7 @@ static void ws_clients_init(void)
 }
 
 // Add a client to the list
-static void add_client(int fd)
+static bool add_client(int fd)
 {
     for (int i = 0; i < WS_MAX_CLIENTS; i++)
     {
@@ -27,10 +27,11 @@ static void add_client(int fd)
             ws_clients[i] = fd;
             ws_client_count++;
             ESP_LOGI(TAG, "WebSocket client connected: fd=%d (total: %d)", fd, ws_client_count);
-            return;
+            return true;
         }
     }
     ESP_LOGW(TAG, "Max WebSocket clients reached, cannot add fd=%d", fd);
+    return false;
 }
 
 // Remove a client from the list
@@ -83,6 +84,13 @@ esp_err_t websocket_handler(httpd_req_t *req)
     {
         // This is the handshake
         ESP_LOGI(TAG, "WebSocket handshake");
+        int fd = httpd_req_to_sockfd(req);
+        if (!add_client(fd))
+        {
+            // Zu viele Clients, Verbindung schließen
+            httpd_sess_trigger_close(req->handle, fd);
+            return ESP_FAIL;
+        }
         return ESP_OK;
     }
 

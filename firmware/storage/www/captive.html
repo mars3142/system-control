@@ -27,25 +27,9 @@
                 </button>
             </div>
             <h1>🚂 System Control</h1>
-            <p data-i18n="captive.subtitle">WLAN-Einrichtung</p>
         </div>
 
         <div class="card">
-            <div id="scan-section">
-                <button class="btn btn-secondary" onclick="scanNetworks()" data-i18n="captive.scan">
-                    📡 Netzwerke suchen
-                </button>
-
-                <div id="loading" class="loading">
-                    <div class="spinner"></div>
-                    <p data-i18n="captive.scanning">Suche nach Netzwerken...</p>
-                </div>
-
-                <div id="network-list" class="network-list" style="display: none;"></div>
-            </div>
-
-            <div class="divider"><span data-i18n="captive.or.manual">oder manuell eingeben</span></div>
-
             <div class="form-group">
                 <label for="ssid" data-i18n="wifi.ssid">WLAN-Name (SSID)</label>
                 <input type="text" id="ssid" data-i18n-placeholder="wifi.ssid.placeholder"
@@ -62,7 +46,8 @@
             </div>
 
             <div class="btn-group">
-                <button class="btn btn-primary" onclick="saveWifi()" data-i18n="captive.connect">
+                <button class="btn btn-primary" id="connect-btn" onclick="saveWifi()" data-i18n="captive.connect"
+                    disabled>
                     💾 Verbinden
                 </button>
             </div>
@@ -112,12 +97,21 @@
             setTheme(current === 'dark' ? 'light' : 'dark');
         }
 
+        // Button aktivieren/deaktivieren
+        function updateConnectBtn() {
+            const ssid = document.getElementById('ssid').value;
+            const pw = document.getElementById('password').value;
+            const btn = document.getElementById('connect-btn');
+            btn.disabled = !(ssid.length > 0 && pw.length > 0);
+        }
+
         // Initialize on load
         document.addEventListener('DOMContentLoaded', () => {
             initTheme();
             initI18n();
-            // Auto-scan on load
-            setTimeout(scanNetworks, 500);
+            document.getElementById('ssid').addEventListener('input', updateConnectBtn);
+            document.getElementById('password').addEventListener('input', updateConnectBtn);
+            updateConnectBtn();
         });
 
         // Toggle password visibility

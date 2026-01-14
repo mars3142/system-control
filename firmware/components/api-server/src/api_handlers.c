@@ -5,6 +5,7 @@
 #include <esp_http_server.h>
 #include <esp_log.h>
 #include <esp_wifi.h>
+#include <persistence_manager.h>
 #include <string.h>
 #include <sys/stat.h>
 
@@ -116,6 +117,17 @@ esp_err_t api_wifi_scan_handler(httpd_req_t *req)
     return res;
 }
 
+static void reboot_task(void *param)
+{
+    vTaskDelay(pdMS_TO_TICKS(100));
+    esp_restart();
+}
+
+static bool is_valid(const cJSON *string)
+{
+    return string && cJSON_IsString(string) && string->valuestring && strlen(string->valuestring) > 0;
+}
+
 esp_err_t api_wifi_config_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/wifi/config");
@@ -128,12 +140,22 @@ esp_err_t api_wifi_config_handler(httpd_req_t *req)
     }
     buf[ret] = '\0';
 
-    // Passwort maskieren
     cJSON *json = cJSON_Parse(buf);
     if (json)
     {
+        cJSON *ssid = cJSON_GetObjectItem(json, "ssid");
         cJSON *pw = cJSON_GetObjectItem(json, "password");
-        if (pw && cJSON_IsString(pw) && pw->valuestring)
+        if (is_valid(ssid) && is_valid(pw))
+        {
+            persistence_manager_t pm;
+            if (persistence_manager_init(&pm, "wifi_config") == ESP_OK)
+            {
+                persistence_manager_set_string(&pm, "ssid", ssid->valuestring);
+                persistence_manager_set_string(&pm, "password", pw->valuestring);
+                persistence_manager_deinit(&pm);
+            }
+        }
+        if (is_valid(pw))
         {
             size_t pwlen = strlen(pw->valuestring);
             char *masked = malloc(pwlen + 1);
@@ -163,7 +185,9 @@ esp_err_t api_wifi_config_handler(httpd_req_t *req)
         ESP_LOGI(TAG, "Received WiFi config: %s", buf);
     }
 
-    // TODO: Parse JSON and connect to WiFi
+    // Define a reboot task function
+    xTaskCreate(reboot_task, "reboot_task", 2048, NULL, 5, NULL);
+
     set_cors_headers(req);
     httpd_resp_set_status(req, "200 OK");
     return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");

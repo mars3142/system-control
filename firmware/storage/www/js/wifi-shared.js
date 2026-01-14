@@ -43,6 +43,13 @@ async function scanNetworks() {
 
     try {
         const response = await fetch('/api/wifi/scan');
+        if (!response.ok) {
+            // Fehlerhafte API-Antwort, aber ESP32 ist erreichbar
+            const errorText = await response.text();
+            showStatus('wifi-status', t('wifi.error.scan') + ': ' + errorText, 'error');
+            if (loading) loading.classList.remove('active');
+            return;
+        }
         const networks = await response.json();
 
         if (loading) {
@@ -92,43 +99,43 @@ async function scanNetworks() {
         if (loading) {
             loading.classList.remove('active');
         }
-
-        // Demo mode for local testing
-        const demoNetworks = [
-            { ssid: 'Demo-Netzwerk', rssi: -45 },
-            { ssid: 'Gast-WLAN', rssi: -67 },
-            { ssid: 'Nachbar-WiFi', rssi: -82 }
-        ];
-
-        if (networkList) {
-            demoNetworks.forEach(network => {
-                const signalIcon = getSignalIcon(network.rssi);
-                const item = document.createElement('div');
-                item.className = 'network-item';
-                item.onclick = () => selectNetwork(network.ssid, item);
-                item.innerHTML = `
-                    <span class="network-name">
-                        <span class="signal-icon">${signalIcon}</span>
-                        ${escapeHtml(network.ssid)}
-                    </span>
-                    <span class="network-signal">${network.rssi} dBm</span>
-                `;
-                networkList.appendChild(item);
-            });
-            networkList.style.display = 'block';
+        // Nur bei Netzwerkfehlern Demo-Daten anzeigen
+        if (error instanceof TypeError) {
+            const demoNetworks = [
+                { ssid: 'Demo-Netzwerk', rssi: -45 },
+                { ssid: 'Gast-WLAN', rssi: -67 },
+                { ssid: 'Nachbar-WiFi', rssi: -82 }
+            ];
+            if (networkList) {
+                demoNetworks.forEach(network => {
+                    const signalIcon = getSignalIcon(network.rssi);
+                    const item = document.createElement('div');
+                    item.className = 'network-item';
+                    item.onclick = () => selectNetwork(network.ssid, item);
+                    item.innerHTML = `
+                        <span class="network-name">
+                            <span class="signal-icon">${signalIcon}</span>
+                            ${escapeHtml(network.ssid)}
+                        </span>
+                        <span class="network-signal">${network.rssi} dBm</span>
+                    `;
+                    networkList.appendChild(item);
+                });
+                networkList.style.display = 'block';
+            }
+            if (select) {
+                select.innerHTML = `<option value="">${t('wifi.scan.hint')}</option>`;
+                demoNetworks.forEach(network => {
+                    const option = document.createElement('option');
+                    option.value = network.ssid;
+                    option.textContent = `${network.ssid} (${network.rssi} dBm)`;
+                    select.appendChild(option);
+                });
+            }
+            showStatus('wifi-status', 'Demo: ' + t('wifi.networks.found', { count: demoNetworks.length }), 'info');
+        } else {
+            showStatus('wifi-status', t('wifi.error.scan') + ': ' + error.message, 'error');
         }
-
-        if (select) {
-            select.innerHTML = `<option value="">${t('wifi.scan.hint')}</option>`;
-            demoNetworks.forEach(network => {
-                const option = document.createElement('option');
-                option.value = network.ssid;
-                option.textContent = `${network.ssid} (${network.rssi} dBm)`;
-                select.appendChild(option);
-            });
-        }
-
-        showStatus('wifi-status', 'Demo: ' + t('wifi.networks.found', { count: demoNetworks.length }), 'info');
     }
 }
 

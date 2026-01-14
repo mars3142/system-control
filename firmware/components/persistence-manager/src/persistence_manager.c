@@ -4,10 +4,10 @@
 
 #define TAG "persistence_manager"
 
-void persistence_manager_init(persistence_manager_t *pm, const char *nvs_namespace)
+esp_err_t persistence_manager_init(persistence_manager_t *pm, const char *nvs_namespace)
 {
     if (!pm)
-        return;
+        return ESP_ERR_INVALID_ARG;
     strncpy(pm->nvs_namespace, nvs_namespace ? nvs_namespace : "config", sizeof(pm->nvs_namespace) - 1);
     pm->nvs_namespace[sizeof(pm->nvs_namespace) - 1] = '\0';
     pm->initialized = false;
@@ -16,20 +16,20 @@ void persistence_manager_init(persistence_manager_t *pm, const char *nvs_namespa
     {
         pm->initialized = true;
         ESP_LOGI(TAG, "Initialized with namespace: %s", pm->nvs_namespace);
+        return ESP_OK;
     }
-    else
-    {
-        ESP_LOGE(TAG, "Failed to open NVS handle: %s", esp_err_to_name(err));
-    }
+    ESP_LOGE(TAG, "Failed to open NVS handle: %s", esp_err_to_name(err));
+    return err;
 }
 
-void persistence_manager_deinit(persistence_manager_t *pm)
+esp_err_t persistence_manager_deinit(persistence_manager_t *pm)
 {
     if (pm && pm->initialized)
     {
         nvs_close(pm->nvs_handle);
         pm->initialized = false;
     }
+    return ESP_OK;
 }
 
 bool persistence_manager_is_initialized(const persistence_manager_t *pm)

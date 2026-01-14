@@ -45,10 +45,10 @@ rgb_t interpolate_color_hsv(rgb_t start, rgb_t end, float factor)
 
     // Interpolate HSV values
     hsv_t interpolated_hsv;
-    interpolated_hsv.h = fmod(h1 + (h2 - h1) * factor, 360.0);
-    if (interpolated_hsv.h < 0)
+    interpolated_hsv.h = fmodf(h1 + (h2 - h1) * factor, 360.0f);
+    if (interpolated_hsv.h < 0.0f)
     {
-        interpolated_hsv.h += 360.0;
+        interpolated_hsv.h += 360.0f;
     }
     interpolated_hsv.s = start_hsv.s + (end_hsv.s - start_hsv.s) * factor;
     interpolated_hsv.v = start_hsv.v + (end_hsv.v - start_hsv.v) * factor;
