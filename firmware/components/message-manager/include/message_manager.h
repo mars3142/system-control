@@ -57,6 +57,10 @@ extern "C"
         } data;
     } message_t;
 
+    // Observer Pattern: Listener-Typ und Registrierungsfunktionen
+    typedef void (*message_listener_t)(const message_t *msg);
+    void message_manager_register_listener(message_listener_t listener);
+    void message_manager_unregister_listener(message_listener_t listener);
     void message_manager_init(void);
     bool message_manager_post(const message_t *msg, TickType_t timeout);
 

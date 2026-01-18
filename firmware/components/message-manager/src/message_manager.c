@@ -12,6 +12,34 @@
 static const char *TAG = "message_manager";
 static QueueHandle_t message_queue = NULL;
 
+// Observer Pattern: Listener-Liste
+#define MAX_MESSAGE_LISTENERS 8
+static message_listener_t message_listeners[MAX_MESSAGE_LISTENERS] = {0};
+static size_t message_listener_count = 0;
+
+void message_manager_register_listener(message_listener_t listener) {
+    if (listener && message_listener_count < MAX_MESSAGE_LISTENERS) {
+        // Doppelte Registrierung vermeiden
+        for (size_t i = 0; i < message_listener_count; ++i) {
+            if (message_listeners[i] == listener) return;
+        }
+        message_listeners[message_listener_count++] = listener;
+    }
+}
+
+void message_manager_unregister_listener(message_listener_t listener) {
+    for (size_t i = 0; i < message_listener_count; ++i) {
+        if (message_listeners[i] == listener) {
+            // Nachfolgende Listener nach vorne schieben
+            for (size_t j = i; j < message_listener_count - 1; ++j) {
+                message_listeners[j] = message_listeners[j + 1];
+            }
+            message_listeners[--message_listener_count] = NULL;
+            break;
+        }
+    }
+}
+
 static void message_manager_task(void *param)
 {
     message_t msg;
@@ -43,19 +71,18 @@ static void message_manager_task(void *param)
                     }
                     persistence_manager_deinit(&pm);
                     ESP_LOGI(TAG, "Setting written: %s", msg.data.settings.key);
-
-                    // Reagiere auf Änderung von light_active
-                    if (strcmp(msg.data.settings.key, "light_active") == 0)
-                    {
-                        extern void start_simulation(void);
-                        start_simulation();
-                    }
                 }
                 break;
             case MESSAGE_TYPE_BUTTON:
                 ESP_LOGI(TAG, "Button event: id=%d, type=%d", msg.data.button.button_id, msg.data.button.event_type);
                 // TODO: Weiterverarbeitung/Callback für Button-Events
                 break;
+            }
+            // Observer Pattern: Listener benachrichtigen
+            for (size_t i = 0; i < message_listener_count; ++i) {
+                if (message_listeners[i]) {
+                    message_listeners[i](&msg);
+                }
             }
         }
     }

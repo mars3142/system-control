@@ -14,6 +14,7 @@
 #include "ui/ScreenSaver.h"
 #include "ui/SplashScreen.h"
 #include "wifi_manager.h"
+#include <cstring>
 #include <driver/i2c.h>
 #include <esp_diagnostics.h>
 #include <esp_insights.h>
@@ -125,6 +126,15 @@ static void init_ui(void)
     u8g2_ClearBuffer(&u8g2);
     m_widget->Render();
     u8g2_SendBuffer(&u8g2);
+}
+
+static void on_message_received(const message_t *msg)
+{
+    if (msg && msg->type == MESSAGE_TYPE_SETTINGS && msg->data.settings.type == SETTINGS_TYPE_BOOL &&
+        std::strcmp(msg->data.settings.key, "light_active") == 0)
+    {
+        start_simulation();
+    }
 }
 
 static void handle_button(uint8_t button)
@@ -239,6 +249,8 @@ void app_task(void *args)
     init_ui();
 
     wifi_manager_init();
+
+    message_manager_register_listener(on_message_received);
 
     start_simulation();
 
