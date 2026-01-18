@@ -29,7 +29,13 @@ cJSON *create_light_status_json(void)
     }
     cJSON_AddStringToObject(json, "mode", mode_str);
 
-    cJSON_AddStringToObject(json, "schema", "schema_03.csv");
+    int variant = persistence_manager_get_int(&pm, "light_variant", 3);
+    char schema_filename[20];
+    snprintf(schema_filename, sizeof(schema_filename), "schema_%02d.csv", variant);
+    cJSON_AddStringToObject(json, "schema", schema_filename);
+
+    persistence_manager_deinit(&pm);
+
     cJSON *color = cJSON_CreateObject();
     cJSON_AddNumberToObject(color, "r", 255);
     cJSON_AddNumberToObject(color, "g", 240);
@@ -43,8 +49,6 @@ cJSON *create_light_status_json(void)
     char time_str[8];
     strftime(time_str, sizeof(time_str), "%H:%M", &tm_info);
     cJSON_AddStringToObject(json, "clock", time_str);
-
-    persistence_manager_deinit(&pm);
 
     return json;
 }
