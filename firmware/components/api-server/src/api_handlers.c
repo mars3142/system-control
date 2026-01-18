@@ -430,14 +430,41 @@ esp_err_t api_schema_get_handler(httpd_req_t *req)
 
     ESP_LOGI(TAG, "Requested schema: %s", filename);
 
-    // TODO: Read actual schema file from storage
-    // For now, return sample CSV data
+    // Schema-Datei lesen
+    char path[128];
+    snprintf(path, sizeof(path), "%s", filename);
+
+    int line_count = 0;
+    extern char **read_lines_filtered(const char *filename, int *out_count);
+    extern void free_lines(char **lines, int count);
+    char **lines = read_lines_filtered(path, &line_count);
+
     set_cors_headers(req);
     httpd_resp_set_type(req, "text/csv");
-    const char *sample_csv = "255,240,220,0,100,250\n"
-                             "255,230,200,0,120,250\n"
-                             "255,220,180,0,140,250\n";
-    return httpd_resp_sendstr(req, sample_csv);
+
+    if (!lines || line_count == 0)
+    {
+        return httpd_resp_sendstr(req, "");
+    }
+
+    // Gesamtlänge berechnen
+    size_t total_len = 0;
+    for (int i = 0; i < line_count; ++i)
+        total_len += strlen(lines[i]) + 1;
+    char *csv = malloc(total_len + 1);
+    char *p = csv;
+    for (int i = 0; i < line_count; ++i)
+    {
+        size_t l = strlen(lines[i]);
+        memcpy(p, lines[i], l);
+        p += l;
+        *p++ = '\n';
+    }
+    *p = '\0';
+    free_lines(lines, line_count);
+    esp_err_t res = httpd_resp_sendstr(req, csv);
+    free(csv);
+    return res;
 }
 
 esp_err_t api_schema_post_handler(httpd_req_t *req)

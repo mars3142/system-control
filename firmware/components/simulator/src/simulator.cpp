@@ -148,7 +148,7 @@ static void initialize_light_items(void)
     persistence_manager_t persistence;
     persistence_manager_init(&persistence, "config");
     int variant = persistence_manager_get_int(&persistence, "light_variant", 1);
-    snprintf(filename, sizeof(filename), "/spiffs/schema_%02d.csv", variant);
+    snprintf(filename, sizeof(filename), "schema_%02d.csv", variant);
     load_file(filename);
     persistence_manager_deinit(&persistence);
 
