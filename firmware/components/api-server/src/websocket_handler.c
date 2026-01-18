@@ -1,6 +1,8 @@
 #include "websocket_handler.h"
+#include "api_server.h"
 #include "common.h"
 
+#include "message_manager.h"
 #include <esp_http_server.h>
 #include <esp_log.h>
 #include <string.h>
@@ -10,6 +12,16 @@ static const char *TAG = "websocket_handler";
 // Store connected WebSocket client file descriptors
 static int ws_clients[WS_MAX_CLIENTS];
 static int ws_client_count = 0;
+
+static void on_message_received(const message_t *msg)
+{
+    cJSON *json = create_light_status_json();
+    cJSON_AddStringToObject(json, "type", "status");
+    char *response = cJSON_PrintUnformatted(json);
+    cJSON_Delete(json);
+    api_server_ws_broadcast(response);
+    free(response);
+}
 
 static void ws_clients_init(void)
 {
@@ -179,6 +191,8 @@ static void ws_async_send(void *arg)
 
 esp_err_t websocket_handler_init(httpd_handle_t server)
 {
+    message_manager_register_listener(on_message_received);
+
     ws_clients_init();
     // Register WebSocket URI handler
     httpd_uri_t ws_uri = {.uri = "/ws",
