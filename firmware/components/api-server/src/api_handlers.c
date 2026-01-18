@@ -358,7 +358,25 @@ esp_err_t api_light_schema_handler(httpd_req_t *req)
 
     ESP_LOGI(TAG, "Received schema setting: %s", buf);
 
-    // TODO: Parse JSON and set active schema
+    cJSON *json = cJSON_Parse(buf);
+    if (json)
+    {
+        cJSON *schema_file = cJSON_GetObjectItem(json, "schema");
+        if (cJSON_IsString(schema_file))
+        {
+            int schema_id = 0;
+            sscanf(schema_file->valuestring, "schema_%d.csv", &schema_id);
+
+            message_t msg = {};
+            msg.type = MESSAGE_TYPE_SETTINGS;
+            msg.data.settings.type = SETTINGS_TYPE_INT;
+            strncpy(msg.data.settings.key, "light_variant", sizeof(msg.data.settings.key) - 1);
+            msg.data.settings.value.int_value = schema_id;
+            message_manager_post(&msg, pdMS_TO_TICKS(100));
+        }
+        cJSON_Delete(json);
+    }
+
     set_cors_headers(req);
     return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
 }

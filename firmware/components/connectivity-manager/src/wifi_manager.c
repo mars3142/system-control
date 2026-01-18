@@ -1,8 +1,8 @@
 #include "wifi_manager.h"
 #include "dns_hijack.h"
 
+#include "analytics.h"
 #include "api_server.h"
-
 #include <esp_event.h>
 #include <esp_insights.h>
 #include <esp_log.h>
@@ -59,6 +59,7 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t e
     {
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
         ESP_LOGI(TAG, "IP_EVENT_STA_GOT_IP: IP-Adresse erhalten: " IPSTR, IP2STR(&event->ip_info.ip));
+        analytics_init();
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
     }
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_LOST_IP)
