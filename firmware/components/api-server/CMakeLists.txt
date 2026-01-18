@@ -11,7 +11,9 @@ idf_component_register(SRCS
             esp_netif
             esp_event
             json
+            led-manager
             simulator
             persistence-manager
             message-manager
+            simulator
 )

@@ -13,7 +13,8 @@ extern "C"
     typedef enum
     {
         MESSAGE_TYPE_SETTINGS,
-        MESSAGE_TYPE_BUTTON
+        MESSAGE_TYPE_BUTTON,
+        MESSAGE_TYPE_SIMULATION
     } message_type_t;
 
     typedef enum
@@ -50,10 +51,19 @@ extern "C"
 
     typedef struct
     {
+        char time[6];
+        uint8_t red;
+        uint8_t green;
+        uint8_t blue;
+    } simulation_message_t;
+
+    typedef struct
+    {
         message_type_t type;
         union {
             settings_message_t settings;
             button_message_t button;
+            simulation_message_t simulation;
         } data;
     } message_t;
 

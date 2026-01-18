@@ -2,6 +2,7 @@
 #include "api_handlers.h"
 #include "websocket_handler.h"
 
+#include "common.h"
 #include "storage.h"
 #include <esp_http_server.h>
 #include <esp_log.h>
@@ -85,6 +86,9 @@ static esp_err_t start_webserver(void)
         s_server = NULL;
         return err;
     }
+
+    // Common initialization
+    common_init();
 
     ESP_LOGI(TAG, "HTTP server started successfully");
     return ESP_OK;

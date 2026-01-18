@@ -65,17 +65,31 @@ function updateStatusFromData(status) {
     }
 
     if (status.schema) {
-        document.getElementById('active-schema').value = status.schema;
+        const activeSchemaEl = document.getElementById('active-schema');
+        if (activeSchemaEl) {
+            activeSchemaEl.value = status.schema;
+        }
         const schemaNames = {
             'schema_01.csv': 'Schema 1',
             'schema_02.csv': 'Schema 2',
             'schema_03.csv': 'Schema 3'
         };
-        document.getElementById('current-schema').textContent = schemaNames[status.schema] || status.schema;
+        const currentSchemaEl = document.getElementById('current-schema');
+        if (currentSchemaEl) {
+            currentSchemaEl.textContent = schemaNames[status.schema] || status.schema;
+        }
     }
 
     if (status.color) {
         updateColorPreview(status.color.r, status.color.g, status.color.b);
+    }
+
+    // Update clock/time
+    if (status.clock) {
+        const clockEl = document.getElementById('current-clock');
+        if (clockEl) {
+            clockEl.textContent = status.clock + ' ' + (typeof t === 'function' ? t('clock.suffix') : '');
+        }
     }
 }
 

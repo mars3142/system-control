@@ -2,8 +2,39 @@
 #include <cJSON.h>
 #include <stdbool.h>
 
+#include "api_server.h"
+#include "color.h"
+#include "message_manager.h"
 #include "persistence_manager.h"
+#include "simulator.h"
+#include <string.h>
 #include <time.h>
+
+const char *system_time = NULL;
+rgb_t color = {0, 0, 0};
+
+static void on_message_received(const message_t *msg)
+{
+    if (msg->type == MESSAGE_TYPE_SIMULATION)
+    {
+        system_time = msg->data.simulation.time;
+        color.red = msg->data.simulation.red;
+        color.green = msg->data.simulation.green;
+        color.blue = msg->data.simulation.blue;
+
+        cJSON *json = create_light_status_json();
+        cJSON_AddStringToObject(json, "type", "status");
+        char *response = cJSON_PrintUnformatted(json);
+        cJSON_Delete(json);
+        api_server_ws_broadcast(response);
+        free(response);
+    }
+}
+
+void common_init(void)
+{
+    message_manager_register_listener(on_message_received);
+}
 
 // Gibt ein cJSON-Objekt with dem aktuellen Lichtstatus zurück
 cJSON *create_light_status_json(void)
@@ -36,19 +67,13 @@ cJSON *create_light_status_json(void)
 
     persistence_manager_deinit(&pm);
 
-    cJSON *color = cJSON_CreateObject();
-    cJSON_AddNumberToObject(color, "r", 255);
-    cJSON_AddNumberToObject(color, "g", 240);
-    cJSON_AddNumberToObject(color, "b", 220);
-    cJSON_AddItemToObject(json, "color", color);
+    cJSON *c = cJSON_CreateObject();
+    cJSON_AddNumberToObject(c, "r", color.red);
+    cJSON_AddNumberToObject(c, "g", color.green);
+    cJSON_AddNumberToObject(c, "b", color.blue);
+    cJSON_AddItemToObject(json, "color", c);
 
-    // Add current time as HH:MM only (suffix is handled in the frontend)
-    time_t now = time(NULL);
-    struct tm tm_info;
-    localtime_r(&now, &tm_info);
-    char time_str[8];
-    strftime(time_str, sizeof(time_str), "%H:%M", &tm_info);
-    cJSON_AddStringToObject(json, "clock", time_str);
+    cJSON_AddStringToObject(json, "clock", system_time);
 
     return json;
 }

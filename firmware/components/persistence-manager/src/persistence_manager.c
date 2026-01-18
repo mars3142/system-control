@@ -27,7 +27,7 @@ esp_err_t persistence_manager_init(persistence_manager_t *pm, const char *nvs_na
     if (err == ESP_OK)
     {
         pm->initialized = true;
-        ESP_LOGI(TAG, "Initialized with namespace: %s", pm->nvs_namespace);
+        ESP_LOGD(TAG, "Initialized with namespace: %s", pm->nvs_namespace);
         return ESP_OK;
     }
     ESP_LOGE(TAG, "Failed to open NVS handle: %s", esp_err_to_name(err));

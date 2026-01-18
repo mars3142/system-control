@@ -2,6 +2,7 @@
 
 #include "color.h"
 #include "led_strip_ws2812.h"
+#include "message_manager.h"
 #include "persistence_manager.h"
 #include "storage.h"
 #include <esp_heap_caps.h>
@@ -15,12 +16,12 @@
 #include <string.h>
 
 static const char *TAG = "simulator";
-static char *time;
+static char *time = NULL;
 
 static char *time_to_string(int hhmm)
 {
     static char buffer[20];
-    snprintf(buffer, sizeof(buffer), "%02d:%02d Uhr", hhmm / 100, hhmm % 100);
+    snprintf(buffer, sizeof(buffer), "%02d:%02d", hhmm / 100, hhmm % 100);
     return buffer;
 }
 
@@ -235,6 +236,17 @@ static light_item_node_t *find_next_light_item_for_time(int hhmm)
     return next_item;
 }
 
+static void send_simulation_message(const char *time, rgb_t color)
+{
+    message_t msg = {};
+    msg.type = MESSAGE_TYPE_SIMULATION;
+    strncpy(msg.data.simulation.time, time, sizeof(msg.data.simulation.time) - 1);
+    msg.data.simulation.red = color.red;
+    msg.data.simulation.green = color.green;
+    msg.data.simulation.blue = color.blue;
+    message_manager_post(&msg, pdMS_TO_TICKS(100));
+}
+
 void start_simulate_day(void)
 {
     initialize_light_items();
@@ -242,8 +254,9 @@ void start_simulate_day(void)
     light_item_node_t *current_item = find_best_light_item_for_time(1200);
     if (current_item != NULL)
     {
-        led_strip_update(LED_STATE_DAY,
-                         (rgb_t){.red = current_item->red, .green = current_item->green, .blue = current_item->blue});
+        rgb_t color = {.red = current_item->red, .green = current_item->green, .blue = current_item->blue};
+        led_strip_update(LED_STATE_DAY, color);
+        send_simulation_message("12:00", color);
     }
 }
 
@@ -254,8 +267,9 @@ void start_simulate_night(void)
     light_item_node_t *current_item = find_best_light_item_for_time(0);
     if (current_item != NULL)
     {
-        led_strip_update(LED_STATE_NIGHT,
-                         (rgb_t){.red = current_item->red, .green = current_item->green, .blue = current_item->blue});
+        rgb_t color = {.red = current_item->red, .green = current_item->green, .blue = current_item->blue};
+        led_strip_update(LED_STATE_NIGHT, color);
+        send_simulation_message("00:00", color);
     }
 }
 
@@ -296,45 +310,51 @@ void simulate_cycle(void *args)
         light_item_node_t *current_item = find_best_light_item_for_time(hhmm);
         light_item_node_t *next_item = find_next_light_item_for_time(hhmm);
 
-        if (current_item != NULL && next_item != NULL)
+        if (current_item != NULL)
         {
-            int current_item_time_min = (atoi(current_item->time) / 100) * 60 + (atoi(current_item->time) % 100);
-            int next_item_time_min = (atoi(next_item->time) / 100) * 60 + (atoi(next_item->time) % 100);
+            rgb_t color = {0, 0, 0};
 
-            if (next_item_time_min < current_item_time_min)
+            // Use head as fallback if next_item is NULL
+            next_item = next_item ? next_item : head;
+            if (next_item != NULL)
             {
-                next_item_time_min += total_minutes_in_day;
-            }
+                int current_item_time_min = (atoi(current_item->time) / 100) * 60 + (atoi(current_item->time) % 100);
+                int next_item_time_min = (atoi(next_item->time) / 100) * 60 + (atoi(next_item->time) % 100);
 
-            int minutes_since_current_item_start = current_minute_of_day - current_item_time_min;
-            if (minutes_since_current_item_start < 0)
+                if (next_item_time_min < current_item_time_min)
+                {
+                    next_item_time_min += total_minutes_in_day;
+                }
+
+                int minutes_since_current_item_start = current_minute_of_day - current_item_time_min;
+                if (minutes_since_current_item_start < 0)
+                {
+                    minutes_since_current_item_start += total_minutes_in_day;
+                }
+
+                int interval_duration = next_item_time_min - current_item_time_min;
+                if (interval_duration == 0)
+                {
+                    interval_duration = 1;
+                }
+
+                float interpolation_factor = (float)minutes_since_current_item_start / (float)interval_duration;
+
+                // Prepare colors for interpolation
+                rgb_t start_rgb = {.red = current_item->red, .green = current_item->green, .blue = current_item->blue};
+                rgb_t end_rgb = {.red = next_item->red, .green = next_item->green, .blue = next_item->blue};
+
+                // Use the interpolation function
+                color = interpolate_color(start_rgb, end_rgb, interpolation_factor);
+                led_strip_update(LED_STATE_SIMULATION, color);
+            }
+            else
             {
-                minutes_since_current_item_start += total_minutes_in_day;
+                // No next_item and no head, use only current
+                color = (rgb_t){.red = current_item->red, .green = current_item->green, .blue = current_item->blue};
+                led_strip_update(LED_STATE_SIMULATION, color);
             }
-
-            int interval_duration = next_item_time_min - current_item_time_min;
-            if (interval_duration == 0)
-            {
-                interval_duration = 1;
-            }
-
-            float interpolation_factor = (float)minutes_since_current_item_start / (float)interval_duration;
-
-            // Prepare colors for interpolation
-            rgb_t start_rgb = {.red = current_item->red, .green = current_item->green, .blue = current_item->blue};
-            rgb_t end_rgb = {.red = next_item->red, .green = next_item->green, .blue = next_item->blue};
-
-            // Use the interpolation function
-            rgb_t final_rgb = interpolate_color(start_rgb, end_rgb, interpolation_factor);
-
-            led_strip_update(LED_STATE_SIMULATION, final_rgb);
-        }
-        else if (current_item != NULL)
-        {
-            // No next item, just use current
-            led_strip_update(
-                LED_STATE_SIMULATION,
-                (rgb_t){.red = current_item->red, .green = current_item->green, .blue = current_item->blue});
+            send_simulation_message(time, color);
         }
 
         vTaskDelay(pdMS_TO_TICKS(delay_ms));

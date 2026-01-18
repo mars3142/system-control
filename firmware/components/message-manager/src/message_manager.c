@@ -17,21 +17,29 @@ static QueueHandle_t message_queue = NULL;
 static message_listener_t message_listeners[MAX_MESSAGE_LISTENERS] = {0};
 static size_t message_listener_count = 0;
 
-void message_manager_register_listener(message_listener_t listener) {
-    if (listener && message_listener_count < MAX_MESSAGE_LISTENERS) {
+void message_manager_register_listener(message_listener_t listener)
+{
+    if (listener && message_listener_count < MAX_MESSAGE_LISTENERS)
+    {
         // Doppelte Registrierung vermeiden
-        for (size_t i = 0; i < message_listener_count; ++i) {
-            if (message_listeners[i] == listener) return;
+        for (size_t i = 0; i < message_listener_count; ++i)
+        {
+            if (message_listeners[i] == listener)
+                return;
         }
         message_listeners[message_listener_count++] = listener;
     }
 }
 
-void message_manager_unregister_listener(message_listener_t listener) {
-    for (size_t i = 0; i < message_listener_count; ++i) {
-        if (message_listeners[i] == listener) {
+void message_manager_unregister_listener(message_listener_t listener)
+{
+    for (size_t i = 0; i < message_listener_count; ++i)
+    {
+        if (message_listeners[i] == listener)
+        {
             // Nachfolgende Listener nach vorne schieben
-            for (size_t j = i; j < message_listener_count - 1; ++j) {
+            for (size_t j = i; j < message_listener_count - 1; ++j)
+            {
                 message_listeners[j] = message_listeners[j + 1];
             }
             message_listeners[--message_listener_count] = NULL;
@@ -70,17 +78,23 @@ static void message_manager_task(void *param)
                         break;
                     }
                     persistence_manager_deinit(&pm);
-                    ESP_LOGI(TAG, "Setting written: %s", msg.data.settings.key);
+                    ESP_LOGD(TAG, "Setting written: %s", msg.data.settings.key);
                 }
                 break;
             case MESSAGE_TYPE_BUTTON:
-                ESP_LOGI(TAG, "Button event: id=%d, type=%d", msg.data.button.button_id, msg.data.button.event_type);
-                // TODO: Weiterverarbeitung/Callback für Button-Events
+                ESP_LOGD(TAG, "Button event: id=%d, type=%d", msg.data.button.button_id, msg.data.button.event_type);
+                break;
+            case MESSAGE_TYPE_SIMULATION:
+                /// just logging
+                ESP_LOGD(TAG, "Simulation event: time=%s, color=(%d,%d,%d)", msg.data.simulation.time,
+                         msg.data.simulation.red, msg.data.simulation.green, msg.data.simulation.blue);
                 break;
             }
             // Observer Pattern: Listener benachrichtigen
-            for (size_t i = 0; i < message_listener_count; ++i) {
-                if (message_listeners[i]) {
+            for (size_t i = 0; i < message_listener_count; ++i)
+            {
+                if (message_listeners[i])
+                {
                     message_listeners[i](&msg);
                 }
             }
@@ -101,6 +115,6 @@ bool message_manager_post(const message_t *msg, TickType_t timeout)
 {
     if (!message_queue)
         return false;
-    ESP_LOGI(TAG, "Post: type=%d", msg->type);
+    ESP_LOGD(TAG, "Post: type=%d", msg->type);
     return xQueueSend(message_queue, msg, timeout) == pdTRUE;
 }

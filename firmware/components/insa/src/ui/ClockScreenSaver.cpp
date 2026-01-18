@@ -45,7 +45,7 @@ void ClockScreenSaver::getCurrentTimeString(char *buffer, size_t bufferSize) con
         char *simulated_time = get_time();
         if (simulated_time != nullptr)
         {
-            strncpy(buffer, simulated_time, bufferSize);
+            snprintf(buffer, bufferSize, "%s Uhr", simulated_time);
             return;
         }
     }
