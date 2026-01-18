@@ -2,6 +2,7 @@
 
 #include "analytics.h"
 #include "button_handling.h"
+#include "common.h"
 #include "common/InactivityTracker.h"
 #include "hal/u8g2_esp32_hal.h"
 #include "i2c_checker.h"
@@ -182,7 +183,55 @@ void app_task(void *args)
         return;
     }
 
+    // Display initialisieren, damit Info angezeigt werden kann
     setup_screen();
+
+    // BACK-Button prüfen und ggf. Einstellungen löschen (mit Countdown)
+    gpio_config_t io_conf = {};
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+    io_conf.mode = GPIO_MODE_INPUT;
+    io_conf.pin_bit_mask = (1ULL << BUTTON_BACK);
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
+    gpio_config(&io_conf);
+
+    vTaskDelay(pdMS_TO_TICKS(10));
+    if (gpio_get_level(BUTTON_BACK) == 0)
+    {
+        u8g2_SetFont(&u8g2, u8g2_font_ncenB08_tr);
+        for (int i = 5; i > 0; --i)
+        {
+            u8g2_ClearBuffer(&u8g2);
+            u8g2_DrawStr(&u8g2, 5, 20, "BACK gedrueckt!");
+            u8g2_DrawStr(&u8g2, 5, 35, "Halte fuer Reset...");
+            char buf[32];
+            snprintf(buf, sizeof(buf), "Loesche in %d s", i);
+            u8g2_DrawStr(&u8g2, 5, 55, buf);
+            u8g2_SendBuffer(&u8g2);
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            if (gpio_get_level(BUTTON_BACK) != 0)
+            {
+                // Button losgelassen, abbrechen
+                break;
+            }
+            if (i == 1)
+            {
+                // After 5 seconds still pressed: perform factory reset
+                u8g2_ClearBuffer(&u8g2);
+                u8g2_DrawStr(&u8g2, 5, 30, "Alle Einstellungen ");
+                u8g2_DrawStr(&u8g2, 5, 45, "werden geloescht...");
+                u8g2_SendBuffer(&u8g2);
+                persistence_manager_factory_reset();
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                u8g2_ClearBuffer(&u8g2);
+                u8g2_DrawStr(&u8g2, 5, 35, "Fertig. Neustart...");
+                u8g2_SendBuffer(&u8g2);
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                esp_restart();
+            }
+        }
+    }
+
     setup_buttons();
     init_ui();
 

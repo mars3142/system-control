@@ -1,8 +1,20 @@
+
 #include "persistence_manager.h"
 #include <esp_log.h>
 #include <string.h>
 
 #define TAG "persistence_manager"
+
+esp_err_t persistence_manager_factory_reset(void)
+{
+    // Erase the entire NVS flash (factory reset)
+    esp_err_t err = nvs_flash_erase();
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Factory reset failed: %s", esp_err_to_name(err));
+    }
+    return err;
+}
 
 esp_err_t persistence_manager_init(persistence_manager_t *pm, const char *nvs_namespace)
 {

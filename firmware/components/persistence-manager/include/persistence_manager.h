@@ -29,6 +29,15 @@ extern "C"
     } persistence_manager_t;
 
     /**
+     * @brief Erases the entire NVS flash (factory reset).
+     *
+     * Warning: This will remove all stored data and namespaces!
+     *
+     * @return esp_err_t ESP_OK on success, otherwise error code.
+     */
+    esp_err_t persistence_manager_factory_reset(void);
+
+    /**
      * @brief Initialize the persistence manager with a given NVS namespace.
      *
      * @param pm Pointer to the persistence manager structure.
