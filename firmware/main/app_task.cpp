@@ -130,8 +130,10 @@ static void init_ui(void)
 
 static void on_message_received(const message_t *msg)
 {
-    if (msg && msg->type == MESSAGE_TYPE_SETTINGS && msg->data.settings.type == SETTINGS_TYPE_BOOL &&
-        std::strcmp(msg->data.settings.key, "light_active") == 0)
+    if (msg && msg->type == MESSAGE_TYPE_SETTINGS &&
+        (std::strcmp(msg->data.settings.key, "light_active") == 0 ||
+         std::strcmp(msg->data.settings.key, "light_variant") == 0 ||
+         std::strcmp(msg->data.settings.key, "light_mode") == 0))
     {
         start_simulation();
     }

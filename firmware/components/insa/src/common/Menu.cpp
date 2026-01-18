@@ -126,6 +126,15 @@ MenuItem Menu::switchValue(const MenuItem &menuItem, ButtonType button)
     return result;
 }
 
+void Menu::setSelectionIndex(const MenuItem &menuItem, int index)
+{
+    if (index >= 0 && index < menuItem.getItemCount())
+    {
+        auto item = menuItem.copyWith(index);
+        replaceItem(menuItem.getId(), item);
+    }
+}
+
 MenuItem Menu::replaceItem(const int index, const MenuItem &item)
 {
     m_items.at(index) = item;

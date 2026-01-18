@@ -206,6 +206,8 @@ class Menu : public Widget
      */
     MenuItem switchValue(const MenuItem &menuItem, ButtonType button);
 
+    void setSelectionIndex(const MenuItem &menuItem, int index);
+
   private:
     MenuItem replaceItem(int index, const MenuItem &item);
 

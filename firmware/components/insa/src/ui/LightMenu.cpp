@@ -91,11 +91,14 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
             const auto value = getItem(item.getId()).getIndex();
             if (m_options && m_options->persistenceManager)
             {
-                persistence_manager_set_int(m_options->persistenceManager, LightMenuOptions::LIGHT_MODE, value);
-                persistence_manager_save(m_options->persistenceManager);
+                // Post change via message_manager
+                message_t msg = {};
+                msg.type = MESSAGE_TYPE_SETTINGS;
+                msg.data.settings.type = SETTINGS_TYPE_INT;
+                strncpy(msg.data.settings.key, LightMenuOptions::LIGHT_MODE, sizeof(msg.data.settings.key) - 1);
+                msg.data.settings.value.int_value = value;
+                message_manager_post(&msg, pdMS_TO_TICKS(100));
             }
-
-            start_simulation();
         }
         break;
     }
@@ -108,11 +111,14 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
             const auto value = getItem(item.getId()).getIndex() + 1;
             if (m_options && m_options->persistenceManager)
             {
-                persistence_manager_set_int(m_options->persistenceManager, LightMenuOptions::LIGHT_VARIANT, value);
-                persistence_manager_save(m_options->persistenceManager);
+                // Post change via message_manager
+                message_t msg = {};
+                msg.type = MESSAGE_TYPE_SETTINGS;
+                msg.data.settings.type = SETTINGS_TYPE_INT;
+                strncpy(msg.data.settings.key, LightMenuOptions::LIGHT_VARIANT, sizeof(msg.data.settings.key) - 1);
+                msg.data.settings.value.int_value = value;
+                message_manager_post(&msg, pdMS_TO_TICKS(100));
             }
-
-            start_simulation();
         }
         break;
     }
@@ -133,10 +139,20 @@ void LightMenu::onMessageReceived(const message_t *msg)
 {
     // Here you can react to messages, e.g. set toggle status
     // Example: If light_active was changed, synchronize toggle
-    if (msg && msg->type == MESSAGE_TYPE_SETTINGS && msg->data.settings.type == SETTINGS_TYPE_BOOL &&
-        std::strcmp(msg->data.settings.key, "light_active") == 0)
+    if (msg && msg->type == MESSAGE_TYPE_SETTINGS)
     {
-        setToggle(getItem(LightMenuItem::ACTIVATE), msg->data.settings.value.bool_value);
+        if (std::strcmp(msg->data.settings.key, LightMenuOptions::LIGHT_ACTIVE) == 0)
+        {
+            setToggle(getItem(LightMenuItem::ACTIVATE), msg->data.settings.value.bool_value);
+        }
+        if (std::strcmp(msg->data.settings.key, LightMenuOptions::LIGHT_MODE) == 0)
+        {
+            setSelectionIndex(getItem(LightMenuItem::MODE), msg->data.settings.value.int_value);
+        }
+        if (std::strcmp(msg->data.settings.key, LightMenuOptions::LIGHT_VARIANT) == 0)
+        {
+            setSelectionIndex(getItem(LightMenuItem::VARIANT), msg->data.settings.value.int_value - 1);
+        }
     }
 }
 

@@ -13,8 +13,21 @@ cJSON *create_light_status_json(void)
 
     bool light_active = persistence_manager_get_bool(&pm, "light_active", false);
     cJSON_AddBoolToObject(json, "on", light_active);
+
     cJSON_AddBoolToObject(json, "thunder", false);
-    cJSON_AddStringToObject(json, "mode", "day");
+
+    int mode = persistence_manager_get_int(&pm, "light_mode", 0);
+    const char *mode_str = "simulation";
+    if (mode == 1)
+    {
+        mode_str = "day";
+    }
+    else if (mode == 2)
+    {
+        mode_str = "night";
+    }
+    cJSON_AddStringToObject(json, "mode", mode_str);
+
     cJSON_AddStringToObject(json, "schema", "schema_03.csv");
     cJSON *color = cJSON_CreateObject();
     cJSON_AddNumberToObject(color, "r", 255);

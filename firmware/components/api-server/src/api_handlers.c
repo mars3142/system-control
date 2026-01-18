@@ -309,7 +309,37 @@ esp_err_t api_light_mode_handler(httpd_req_t *req)
 
     ESP_LOGI(TAG, "Received light mode: %s", buf);
 
-    // TODO: Parse JSON and set light mode
+    cJSON *json = cJSON_Parse(buf);
+    if (json)
+    {
+        cJSON *mode = cJSON_GetObjectItem(json, "mode");
+        if (cJSON_IsString(mode))
+        {
+            message_t msg = {};
+            msg.type = MESSAGE_TYPE_SETTINGS;
+            msg.data.settings.type = SETTINGS_TYPE_INT;
+            strncpy(msg.data.settings.key, "light_mode", sizeof(msg.data.settings.key) - 1);
+            if (strcmp(mode->valuestring, "simulation") == 0)
+            {
+                msg.data.settings.value.int_value = 0;
+            }
+            else if (strcmp(mode->valuestring, "day") == 0)
+            {
+                msg.data.settings.value.int_value = 1;
+            }
+            else if (strcmp(mode->valuestring, "night") == 0)
+            {
+                msg.data.settings.value.int_value = 2;
+            }
+            else
+            {
+                msg.data.settings.value.int_value = -1; // Unbekannter Modus
+            }
+            message_manager_post(&msg, pdMS_TO_TICKS(100));
+        }
+        cJSON_Delete(json);
+    }
+
     set_cors_headers(req);
     return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
 }
