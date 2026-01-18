@@ -36,7 +36,7 @@ uint8_t received_signal;
 std::shared_ptr<Widget> m_widget;
 std::vector<std::shared_ptr<Widget>> m_history;
 std::unique_ptr<InactivityTracker> m_inactivityTracker;
-// Persistence Manager für C-API
+// Persistence Manager for C-API
 persistence_manager_t g_persistence_manager;
 
 extern QueueHandle_t buttonQueue;
@@ -196,10 +196,10 @@ void app_task(void *args)
         return;
     }
 
-    // Display initialisieren, damit Info angezeigt werden kann
+    // Initialize display so that info can be shown
     setup_screen();
 
-    // BACK-Button prüfen und ggf. Einstellungen löschen (mit Countdown)
+    // Check BACK button and delete settings if necessary (with countdown)
     gpio_config_t io_conf = {};
     io_conf.intr_type = GPIO_INTR_DISABLE;
     io_conf.mode = GPIO_MODE_INPUT;
@@ -224,7 +224,7 @@ void app_task(void *args)
             vTaskDelay(pdMS_TO_TICKS(1000));
             if (gpio_get_level(BUTTON_BACK) != 0)
             {
-                // Button losgelassen, abbrechen
+                // Button released, abort
                 break;
             }
             if (i == 1)

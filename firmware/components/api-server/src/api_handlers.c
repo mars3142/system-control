@@ -746,7 +746,7 @@ esp_err_t api_static_file_handler(httpd_req_t *req)
     const char *uri = req->uri;
     wifi_mode_t mode = 0;
     esp_wifi_get_mode(&mode);
-    // Im AP-Modus immer captive.html ausliefern
+    // Always serve captive.html in AP mode
     if (mode == WIFI_MODE_AP || mode == WIFI_MODE_APSTA)
     {
         if (strcmp(uri, "/") == 0 || strcmp(uri, "/index.html") == 0)
