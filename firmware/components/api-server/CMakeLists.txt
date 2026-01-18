@@ -13,4 +13,5 @@ idf_component_register(SRCS
             json
             simulator
             persistence-manager
+            message-manager
 )

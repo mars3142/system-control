@@ -7,6 +7,7 @@
 #include "hal/u8g2_esp32_hal.h"
 #include "i2c_checker.h"
 #include "led_status.h"
+#include "message_manager.h"
 #include "persistence_manager.h"
 #include "simulator.h"
 #include "ui/ClockScreenSaver.h"
@@ -231,6 +232,8 @@ void app_task(void *args)
             }
         }
     }
+
+    message_manager_init();
 
     setup_buttons();
     init_ui();

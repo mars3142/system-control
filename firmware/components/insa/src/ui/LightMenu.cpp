@@ -1,6 +1,7 @@
 #include "ui/LightMenu.h"
 
 #include "led_strip_ws2812.h"
+#include "message_manager.h"
 #include "simulator.h"
 
 /**
@@ -71,12 +72,13 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
         {
             toggle(menuItem);
             const auto value = getItem(menuItem.getId()).getValue() == "1";
-            if (m_options && m_options->persistenceManager)
-            {
-                persistence_manager_set_bool(m_options->persistenceManager, LightMenuOptions::LIGHT_ACTIVE, value);
-            }
-
-            start_simulation();
+            // Änderung über message_manager posten
+            message_t msg = {};
+            msg.type = MESSAGE_TYPE_SETTINGS;
+            msg.data.settings.type = SETTINGS_TYPE_BOOL;
+            strncpy(msg.data.settings.key, LightMenuOptions::LIGHT_ACTIVE, sizeof(msg.data.settings.key) - 1);
+            msg.data.settings.value.bool_value = value;
+            message_manager_post(&msg, pdMS_TO_TICKS(100));
         }
         break;
     }

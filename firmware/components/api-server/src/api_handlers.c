@@ -1,5 +1,6 @@
 #include "api_handlers.h"
 #include "common.h"
+#include "message_manager.h"
 
 #include <cJSON.h>
 #include <esp_http_server.h>
@@ -255,7 +256,22 @@ esp_err_t api_light_power_handler(httpd_req_t *req)
 
     ESP_LOGI(TAG, "Received light power: %s", buf);
 
-    // TODO: Parse JSON and control light
+    cJSON *json = cJSON_Parse(buf);
+    if (json)
+    {
+        cJSON *active = cJSON_GetObjectItem(json, "on");
+        if (cJSON_IsBool(active))
+        {
+            message_t msg = {};
+            msg.type = MESSAGE_TYPE_SETTINGS;
+            msg.data.settings.type = SETTINGS_TYPE_BOOL;
+            strncpy(msg.data.settings.key, "light_active", sizeof(msg.data.settings.key) - 1);
+            msg.data.settings.value.bool_value = cJSON_IsTrue(active);
+            message_manager_post(&msg, pdMS_TO_TICKS(100));
+        }
+        cJSON_Delete(json);
+    }
+
     set_cors_headers(req);
     return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
 }
