@@ -40,7 +40,6 @@ document.addEventListener('touchend', (e) => {
     lastTouchEnd = now;
 }, false);
 
-// Initialization
 document.addEventListener('DOMContentLoaded', async () => {
     initI18n();
     initTheme();

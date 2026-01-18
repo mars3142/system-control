@@ -41,6 +41,7 @@ const translations = {
         'control.status.mode': 'Modus',
         'control.status.schema': 'Schema',
         'control.status.color': 'Aktuelle Farbe',
+        'control.status.clock': 'Uhrzeit',
 
         // Common
         'common.on': 'AN',
@@ -174,7 +175,8 @@ const translations = {
         // General
         'loading': 'Laden...',
         'error': 'Fehler',
-        'success': 'Erfolg'
+        'success': 'Erfolg',
+        'clock.suffix': 'Uhr'
     },
 
     en: {
@@ -216,6 +218,7 @@ const translations = {
         'control.status.mode': 'Mode',
         'control.status.schema': 'Schema',
         'control.status.color': 'Current Color',
+        'control.status.clock': "Time",
 
         // Common
         'common.on': 'ON',
@@ -349,7 +352,8 @@ const translations = {
         // General
         'loading': 'Loading...',
         'error': 'Error',
-        'success': 'Success'
+        'success': 'Success',
+        'clock.suffix': "o'clock"
     }
 };
 

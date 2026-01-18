@@ -115,6 +115,20 @@ function updateSimulationOptions() {
     } else {
         options.classList.remove('visible');
     }
+
+    [
+        'control.status.clock'
+    ].forEach(i18nKey => {
+        const label = document.querySelector(`.status-item .status-label[data-i18n="${i18nKey}"]`);
+        const item = label ? label.closest('.status-item') : null;
+        if (item) {
+            if (currentMode === 'simulation') {
+                item.classList.add('visible');
+            } else {
+                item.classList.remove('visible');
+            }
+        }
+    });
 }
 
 async function setActiveSchema() {
@@ -173,8 +187,6 @@ async function loadLightStatus() {
             // Update schema
             if (status.schema) {
                 document.getElementById('active-schema').value = status.schema;
-                const schemaNum = status.schema.replace('schema_0', '').replace('.csv', '');
-                document.getElementById('current-schema').textContent = t(`schema.name.${schemaNum}`);
             }
 
             // Update current color
@@ -182,6 +194,15 @@ async function loadLightStatus() {
                 const colorPreview = document.getElementById('current-color');
                 if (colorPreview) {
                     colorPreview.style.backgroundColor = `rgb(${status.color.r}, ${status.color.g}, ${status.color.b})`;
+                }
+            }
+
+            // Update clock/time
+            if (status.clock) {
+                const clockEl = document.getElementById('current-clock');
+                if (clockEl) {
+                    // Use one translation key for the suffix, language is handled by t()
+                    clockEl.textContent = status.clock + ' ' + t('clock.suffix');
                 }
             }
         }

@@ -557,6 +557,11 @@ body {
     align-items: center;
     padding: 10px 0;
     border-bottom: 1px solid var(--border);
+    display: none;
+}
+
+.status-item.visible {
+    display: flex;
 }
 
 .status-item:last-child {

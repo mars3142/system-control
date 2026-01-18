@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "persistence_manager.h"
+#include <time.h>
 
 // Gibt ein cJSON-Objekt with dem aktuellen Lichtstatus zurück
 cJSON *create_light_status_json(void)
@@ -34,6 +35,14 @@ cJSON *create_light_status_json(void)
     cJSON_AddNumberToObject(color, "g", 240);
     cJSON_AddNumberToObject(color, "b", 220);
     cJSON_AddItemToObject(json, "color", color);
+
+    // Add current time as HH:MM only (suffix is handled in the frontend)
+    time_t now = time(NULL);
+    struct tm tm_info;
+    localtime_r(&now, &tm_info);
+    char time_str[8];
+    strftime(time_str, sizeof(time_str), "%H:%M", &tm_info);
+    cJSON_AddStringToObject(json, "clock", time_str);
 
     persistence_manager_deinit(&pm);
 
