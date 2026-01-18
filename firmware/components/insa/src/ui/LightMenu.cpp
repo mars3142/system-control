@@ -1,8 +1,8 @@
 #include "ui/LightMenu.h"
-
 #include "led_strip_ws2812.h"
 #include "message_manager.h"
 #include "simulator.h"
+#include <cstring>
 
 /**
  * @namespace LightMenuItem
@@ -72,7 +72,7 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
         {
             toggle(menuItem);
             const auto value = getItem(menuItem.getId()).getValue() == "1";
-            // Änderung über message_manager posten
+            // Post change via message_manager
             message_t msg = {};
             msg.type = MESSAGE_TYPE_SETTINGS;
             msg.data.settings.type = SETTINGS_TYPE_BOOL;
@@ -126,6 +126,17 @@ void LightMenu::onButtonPressed(const MenuItem &menuItem, const ButtonType butto
     if (m_options && m_options->pushScreen)
     {
         m_options->pushScreen(widget);
+    }
+}
+
+void LightMenu::onMessageReceived(const message_t *msg)
+{
+    // Here you can react to messages, e.g. set toggle status
+    // Example: If light_active was changed, synchronize toggle
+    if (msg && msg->type == MESSAGE_TYPE_SETTINGS && msg->data.settings.type == SETTINGS_TYPE_BOOL &&
+        std::strcmp(msg->data.settings.key, "light_active") == 0)
+    {
+        setToggle(getItem(LightMenuItem::ACTIVATE), msg->data.settings.value.bool_value);
     }
 }
 

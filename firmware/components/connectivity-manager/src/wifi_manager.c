@@ -29,6 +29,18 @@ static EventGroupHandle_t s_wifi_event_group;
 
 static const char *TAG = "wifi_manager";
 
+static void led_status_reconnect()
+{
+    led_behavior_t led_behavior = {
+        .on_time_ms = 250,
+        .off_time_ms = 100,
+        .color = {.red = 50, .green = 50, .blue = 0},
+        .index = 0,
+        .mode = LED_MODE_BLINK,
+    };
+    led_status_set_behavior(led_behavior);
+}
+
 static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START)
@@ -40,6 +52,8 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t e
     {
         ESP_LOGW(TAG, "WIFI_EVENT_STA_DISCONNECTED: Verbindung verloren, versuche erneut...");
         xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
+        led_status_reconnect();
+        esp_wifi_connect();
     }
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
     {
@@ -49,8 +63,10 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base, int32_t e
     }
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_LOST_IP)
     {
-        ESP_LOGW(TAG, "IP_EVENT_STA_LOST_IP: IP-Adresse verloren!");
+        ESP_LOGW(TAG, "IP_EVENT_STA_LOST_IP: IP-Adresse verloren! Versuche Reconnect...");
         xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
+        led_status_reconnect();
+        esp_wifi_connect();
     }
 }
 
@@ -105,14 +121,7 @@ void wifi_manager_init()
 
     if (have_ssid && have_password)
     {
-        led_behavior_t led_behavior = {
-            .on_time_ms = 250,
-            .off_time_ms = 100,
-            .color = {.red = 50, .green = 50, .blue = 0},
-            .index = 0,
-            .mode = LED_MODE_BLINK,
-        };
-        led_status_set_behavior(led_behavior);
+        led_status_reconnect();
 
         ESP_LOGI(TAG, "Found WiFi configuration: SSID='%s'", ssid);
         wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();

@@ -13,6 +13,7 @@
 #include "u8g2.h"
 
 #include "common/Common.h"
+#include "message_manager.h"
 
 /**
  * @class Widget
@@ -49,7 +50,9 @@ class Widget
      * @details Ensures that derived class destructors are called correctly when
      *          a widget is destroyed through a base class pointer.
      */
-    virtual ~Widget() = default;
+    virtual ~Widget();
+
+    virtual void onMessageReceived(const message_t *msg);
 
     /**
      * @brief Called when the widget becomes active or enters the foreground
@@ -178,4 +181,8 @@ class Widget
      *          the u8g2 context and assumes it is managed externally.
      */
     u8g2_t *u8g2;
+
+  private:
+    static std::vector<Widget *> s_instances;
+    static void globalMessageCallback(const message_t *msg);
 };
