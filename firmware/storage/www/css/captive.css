@@ -1,28 +1,56 @@
+@media (max-width: 600px) {
+    .header {
+        flex-direction: row;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .header h1 {
+        flex: 1 1 100%;
+        text-align: center;
+        order: 2;
+        margin-top: 8px;
+    }
+
+    .header-controls {
+        order: 1;
+        flex: 1 1 auto;
+        justify-content: flex-start;
+        display: flex;
+        gap: 8px;
+    }
+}
+
 /* Captive Portal CSS - WiFi setup specific styles */
 /* Base styles are in shared.css */
 
+
 body {
-    padding: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 12px;
 }
 
 .container {
+    max-width: 900px;
+    margin: 0 auto;
     width: 100%;
-    max-width: 400px;
 }
 
 /* Header */
+
 .header {
-    text-align: center;
-    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .header h1 {
-    font-size: 1.4rem;
-    margin-bottom: 8px;
+    font-size: 1.5rem;
+    margin: 0;
 }
+
 
 .header p {
     color: var(--text-muted);
@@ -163,27 +191,6 @@ select {
     font-size: 1.1rem;
 }
 
-/* Password Toggle */
-.password-toggle {
-    position: relative;
-}
-
-.password-toggle input {
-    padding-right: 50px;
-}
-
-.password-toggle button {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 4px;
-}
 
 /* Info Box */
 .info-box {

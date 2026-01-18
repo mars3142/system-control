@@ -162,8 +162,11 @@
 
                     <div class="form-group">
                         <label for="password" data-i18n="wifi.password">WLAN Passwort</label>
-                        <input type="password" id="password" data-i18n-placeholder="wifi.password.placeholder"
-                            placeholder="Passwort eingeben" autocomplete="off">
+                        <div class="password-toggle">
+                            <input type="password" id="password" data-i18n-placeholder="wifi.password.placeholder"
+                                placeholder="Passwort eingeben" autocomplete="off">
+                            <button type="button" onclick="togglePassword()" id="password-btn">👁️</button>
+                        </div>
                     </div>
 
                     <div class="form-group">

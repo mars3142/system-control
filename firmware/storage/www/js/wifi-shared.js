@@ -1,3 +1,18 @@
+/**
+ * Passwortfeld sichtbar/unsichtbar schalten (shared)
+ */
+function togglePassword() {
+    const input = document.getElementById('password');
+    const btn = document.getElementById('password-btn');
+    if (!input || !btn) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+    } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
+    }
+}
 // Shared WiFi configuration functions
 // Used by both captive.html and index.html
 
