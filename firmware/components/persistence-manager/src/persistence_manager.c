@@ -1,4 +1,3 @@
-
 #include "persistence_manager.h"
 #include <esp_log.h>
 #include <string.h>
@@ -174,6 +173,17 @@ void persistence_manager_set_string(persistence_manager_t *pm, const char *key, 
     }
 }
 
+void persistence_manager_set_blob(persistence_manager_t *pm, const char *key, const void *value, size_t length)
+{
+    if (!persistence_manager_is_initialized(pm) || !value || length == 0)
+        return;
+    esp_err_t err = nvs_set_blob(pm->nvs_handle, key, value, length);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to set blob key '%s': %s", key, esp_err_to_name(err));
+    }
+}
+
 bool persistence_manager_get_bool(const persistence_manager_t *pm, const char *key, bool default_value)
 {
     if (!persistence_manager_is_initialized(pm))
@@ -244,4 +254,21 @@ void persistence_manager_get_string(const persistence_manager_t *pm, const char 
         out_value[max_len - 1] = '\0';
         return;
     }
+}
+
+bool persistence_manager_get_blob(const persistence_manager_t *pm, const char *key, void *out_value, size_t max_length,
+                                  size_t *out_length)
+{
+    if (!persistence_manager_is_initialized(pm) || !out_value || max_length == 0)
+        return false;
+    size_t required_size = 0;
+    esp_err_t err = nvs_get_blob(pm->nvs_handle, key, NULL, &required_size);
+    if (err != ESP_OK || required_size == 0 || required_size > max_length)
+        return false;
+    err = nvs_get_blob(pm->nvs_handle, key, out_value, &required_size);
+    if (err != ESP_OK)
+        return false;
+    if (out_length)
+        *out_length = required_size;
+    return true;
 }

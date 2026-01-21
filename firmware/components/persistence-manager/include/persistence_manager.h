@@ -205,6 +205,33 @@ extern "C"
     void persistence_manager_get_string(const persistence_manager_t *pm, const char *key, char *out_value,
                                         size_t max_len, const char *default_value);
 
+    /**
+     * @brief Set a blob (binary data) value for a key in NVS storage.
+     *
+     * This function stores arbitrary binary data under the given key.
+     *
+     * @param pm Pointer to the persistence manager structure.
+     * @param key Key to set.
+     * @param value Pointer to the data to store.
+     * @param length Length of the data in bytes.
+     */
+    void persistence_manager_set_blob(persistence_manager_t *pm, const char *key, const void *value, size_t length);
+
+    /**
+     * @brief Get a blob (binary data) value for a key from NVS storage.
+     *
+     * This function retrieves binary data previously stored under the given key.
+     *
+     * @param pm Pointer to the persistence manager structure.
+     * @param key Key to retrieve.
+     * @param out_value Buffer to store the retrieved data.
+     * @param max_length Maximum length of the output buffer in bytes.
+     * @param out_length Pointer to variable to receive the actual data length.
+     * @return true if the blob was found and read successfully, false otherwise.
+     */
+    bool persistence_manager_get_blob(const persistence_manager_t *pm, const char *key, void *out_value,
+                                      size_t max_length, size_t *out_length);
+
 #ifdef __cplusplus
 }
 #endif

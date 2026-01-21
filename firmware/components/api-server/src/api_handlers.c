@@ -2,13 +2,16 @@
 #include "common.h"
 #include "message_manager.h"
 
+#include "led_segment.h"
+#include "persistence_manager.h"
 #include <cJSON.h>
 #include <esp_http_server.h>
 #include <esp_log.h>
 #include <esp_wifi.h>
-#include <persistence_manager.h>
 #include <string.h>
 #include <sys/stat.h>
+
+#define MAX_BODY_SIZE 4096
 
 static const char *TAG = "api_handlers";
 
@@ -400,31 +403,113 @@ esp_err_t api_wled_config_get_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "GET /api/wled/config");
 
-    // TODO: Implement actual LED config retrieval
-    const char *response = "{"
-                           "\"segments\":["
-                           "{\"name\":\"Main Light\",\"start\":0,\"leds\":60},"
-                           "{\"name\":\"Accent Light\",\"start\":60,\"leds\":30}"
-                           "]"
-                           "}";
-    return send_json_response(req, response);
+    extern led_segment_t segments[LED_SEGMENT_MAX_LEN];
+    extern size_t segment_count;
+    size_t required_size = sizeof(segments) * segment_count;
+
+    cJSON *json = cJSON_CreateObject();
+
+    persistence_manager_t pm;
+    if (persistence_manager_init(&pm, "led_config") == ESP_OK)
+    {
+        persistence_manager_get_blob(&pm, "segments", segments, required_size, NULL);
+        uint8_t segment_count = persistence_manager_get_int(&pm, "segment_count", 0);
+        persistence_manager_deinit(&pm);
+
+        cJSON *segments_arr = cJSON_CreateArray();
+        for (uint8_t i = 0; i < segment_count; ++i)
+        {
+            cJSON *seg = cJSON_CreateObject();
+            cJSON_AddStringToObject(seg, "name", segments[i].name);
+            cJSON_AddNumberToObject(seg, "start", segments[i].start);
+            cJSON_AddNumberToObject(seg, "leds", segments[i].leds);
+            cJSON_AddItemToArray(segments_arr, seg);
+        }
+        cJSON_AddItemToObject(json, "segments", segments_arr);
+    }
+    else
+    {
+        cJSON_AddItemToObject(json, "segments", cJSON_CreateArray());
+    }
+
+    char *response = cJSON_PrintUnformatted(json);
+    cJSON_Delete(json);
+    esp_err_t res = send_json_response(req, response);
+    free(response);
+    return res;
 }
 
 esp_err_t api_wled_config_post_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/wled/config");
 
-    char buf[512];
-    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
-    if (ret <= 0)
+    char *buf = malloc(MAX_BODY_SIZE);
+    if (!buf)
+        return send_error_response(req, 500, "Memory allocation failed");
+    int total = 0, ret;
+    while (total < MAX_BODY_SIZE - 1)
     {
-        return send_error_response(req, 400, "Failed to receive request body");
+        ret = httpd_req_recv(req, buf + total, MAX_BODY_SIZE - 1 - total);
+        if (ret <= 0)
+            break;
+        total += ret;
     }
-    buf[ret] = '\0';
+    buf[total] = '\0';
 
     ESP_LOGI(TAG, "Received WLED config: %s", buf);
 
-    // TODO: Parse JSON and save LED configuration
+    cJSON *json = cJSON_Parse(buf);
+    free(buf);
+
+    if (!json)
+    {
+        return send_error_response(req, 400, "Invalid JSON");
+    }
+
+    cJSON *segments_arr = cJSON_GetObjectItem(json, "segments");
+    if (!cJSON_IsArray(segments_arr))
+    {
+        cJSON_Delete(json);
+        return send_error_response(req, 400, "Missing segments array");
+    }
+
+    extern led_segment_t segments[LED_SEGMENT_MAX_LEN];
+    extern size_t segment_count;
+    size_t count = cJSON_GetArraySize(segments_arr);
+    if (count > LED_SEGMENT_MAX_LEN)
+        count = LED_SEGMENT_MAX_LEN;
+    segment_count = count;
+    for (size_t i = 0; i < LED_SEGMENT_MAX_LEN; ++i)
+    {
+        cJSON *seg = cJSON_GetArrayItem(segments_arr, i);
+        cJSON *name = cJSON_GetObjectItem(seg, "name");
+        cJSON *start = cJSON_GetObjectItem(seg, "start");
+        cJSON *leds = cJSON_GetObjectItem(seg, "leds");
+        if (cJSON_IsString(name) && cJSON_IsNumber(start) && cJSON_IsNumber(leds) && i < count)
+        {
+            strncpy(segments[i].name, name->valuestring, sizeof(segments[i].name) - 1);
+            segments[i].name[sizeof(segments[i].name) - 1] = '\0';
+            segments[i].start = (uint16_t)start->valuedouble;
+            segments[i].leds = (uint16_t)leds->valuedouble;
+        }
+        else
+        {
+            // Invalid entry, skip or set defaults
+            segments[i].name[0] = '\0';
+            segments[i].start = 0;
+            segments[i].leds = 0;
+        }
+    }
+    cJSON_Delete(json);
+
+    persistence_manager_t pm;
+    if (persistence_manager_init(&pm, "led_config") == ESP_OK)
+    {
+        persistence_manager_set_blob(&pm, "segments", segments, sizeof(led_segment_t) * segment_count);
+        persistence_manager_set_int(&pm, "segment_count", (int32_t)segment_count);
+        persistence_manager_deinit(&pm);
+    }
+
     set_cors_headers(req);
     return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
 }
