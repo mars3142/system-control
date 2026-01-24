@@ -64,7 +64,7 @@ esp_err_t api_capabilities_get_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "GET /api/capabilities");
 
-    // Thread nur für esp32c6 oder esp32h2 verfügbar
+    // Thread only available for esp32c6 or esp32h2
     bool thread = false;
 #if defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
     thread = true;
@@ -95,7 +95,7 @@ esp_err_t api_wifi_scan_handler(httpd_req_t *req)
 
     uint16_t ap_num = 0;
     esp_wifi_scan_get_ap_num(&ap_num);
-    wifi_ap_record_t *ap_list = heap_caps_calloc(ap_num, sizeof(wifi_ap_record_t), MALLOC_CAP_SPIRAM);
+    wifi_ap_record_t *ap_list = heap_caps_calloc(ap_num, sizeof(wifi_ap_record_t), MALLOC_CAP_DEFAULT);
     if (!ap_list)
     {
         return send_error_response(req, 500, "Memory allocation failed");
@@ -164,7 +164,7 @@ esp_err_t api_wifi_config_handler(httpd_req_t *req)
         if (is_valid(pw))
         {
             size_t pwlen = strlen(pw->valuestring);
-            char *masked = heap_caps_malloc(pwlen + 1, MALLOC_CAP_SPIRAM);
+            char *masked = heap_caps_malloc(pwlen + 1, MALLOC_CAP_DEFAULT);
             if (masked)
             {
                 memset(masked, '*', pwlen);
@@ -338,7 +338,7 @@ esp_err_t api_light_mode_handler(httpd_req_t *req)
             }
             else
             {
-                msg.data.settings.value.int_value = -1; // Unbekannter Modus
+                msg.data.settings.value.int_value = -1; // Unknown mode
             }
             message_manager_post(&msg, pdMS_TO_TICKS(100));
         }
@@ -445,7 +445,7 @@ esp_err_t api_wled_config_post_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/wled/config");
 
-    char *buf = heap_caps_malloc(MAX_BODY_SIZE, MALLOC_CAP_SPIRAM);
+    char *buf = heap_caps_malloc(MAX_BODY_SIZE, MALLOC_CAP_DEFAULT);
     if (!buf)
         return send_error_response(req, 500, "Memory allocation failed");
     int total = 0, ret;
@@ -545,7 +545,7 @@ esp_err_t api_schema_get_handler(httpd_req_t *req)
 
     ESP_LOGI(TAG, "Requested schema: %s", filename);
 
-    // Schema-Datei lesen
+    // Read schema file
     char path[128];
     snprintf(path, sizeof(path), "%s", filename);
 
@@ -560,11 +560,11 @@ esp_err_t api_schema_get_handler(httpd_req_t *req)
         return httpd_resp_sendstr(req, "");
     }
 
-    // Gesamtlänge berechnen
+    // Calculate total length
     size_t total_len = 0;
     for (int i = 0; i < line_count; ++i)
         total_len += strlen(lines[i]) + 1;
-    char *csv = heap_caps_malloc(total_len + 1, MALLOC_CAP_SPIRAM);
+    char *csv = heap_caps_malloc(total_len + 1, MALLOC_CAP_DEFAULT);
     char *p = csv;
     for (int i = 0; i < line_count; ++i)
     {
@@ -607,7 +607,7 @@ esp_err_t api_schema_post_handler(httpd_req_t *req)
     ESP_LOGI(TAG, "Extracted filename: %s", filename);
 
     // Dynamically read POST body (like api_wled_config_post_handler)
-    char *buf = heap_caps_malloc(MAX_BODY_SIZE, MALLOC_CAP_SPIRAM);
+    char *buf = heap_caps_malloc(MAX_BODY_SIZE, MALLOC_CAP_DEFAULT);
     if (!buf)
     {
         ESP_LOGE(TAG, "Memory allocation failed for POST body");
@@ -634,7 +634,7 @@ esp_err_t api_schema_post_handler(httpd_req_t *req)
     if (total > 0 && buf[total - 1] != '\n')
         line_count++; // last line without \n
 
-    char **lines = (char **)heap_caps_malloc(line_count * sizeof(char *), MALLOC_CAP_SPIRAM);
+    char **lines = (char **)heap_caps_malloc(line_count * sizeof(char *), MALLOC_CAP_DEFAULT);
     int idx = 0;
     char *saveptr = NULL;
     char *line = strtok_r(buf, "\n", &saveptr);
@@ -642,7 +642,7 @@ esp_err_t api_schema_post_handler(httpd_req_t *req)
     {
         // Ignore empty lines
         if (line[0] != '\0')
-            lines[idx++] = heap_caps_strdup(line, MALLOC_CAP_SPIRAM);
+            lines[idx++] = heap_caps_strdup(line, MALLOC_CAP_DEFAULT);
         line = strtok_r(NULL, "\n", &saveptr);
     }
     int actual_count = idx;
@@ -961,7 +961,7 @@ esp_err_t api_captive_portal_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "Captive portal detection: %s", req->uri);
 
-    // captive.html direkt ausliefern (Status 200, text/html)
+    // Serve captive.html directly (status 200, text/html)
     const char *base_path = CONFIG_API_SERVER_STATIC_FILES_PATH;
     char filepath[256];
     snprintf(filepath, sizeof(filepath), "%s/captive.html", base_path);
@@ -970,7 +970,7 @@ esp_err_t api_captive_portal_handler(httpd_req_t *req)
     {
         ESP_LOGE(TAG, "captive.html not found: %s", filepath);
         httpd_resp_set_status(req, "500 Internal Server Error");
-        httpd_resp_sendstr(req, "Captive Portal nicht verfügbar");
+        httpd_resp_sendstr(req, "Captive portal not available");
         return ESP_FAIL;
     }
     httpd_resp_set_type(req, "text/html");

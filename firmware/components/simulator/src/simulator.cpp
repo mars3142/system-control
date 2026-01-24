@@ -82,10 +82,10 @@ esp_err_t add_light_item(const char time[5], uint8_t red, uint8_t green, uint8_t
                          uint8_t brightness, uint8_t saturation)
 {
     // Allocate memory for a new node in PSRAM.
-    light_item_node_t *new_node = (light_item_node_t *)heap_caps_malloc(sizeof(light_item_node_t), MALLOC_CAP_SPIRAM);
+    light_item_node_t *new_node = (light_item_node_t *)heap_caps_malloc(sizeof(light_item_node_t), MALLOC_CAP_DEFAULT);
     if (new_node == NULL)
     {
-        ESP_LOGE(TAG, "Failed to allocate memory in PSRAM for new light_item_node_t.");
+        ESP_LOGE(TAG, "Failed to allocate memory for new light_item_node_t.");
         return ESP_FAIL;
     }
 
@@ -372,8 +372,7 @@ void start_simulation_task(void)
 {
     stop_simulation_task();
 
-    simulation_config_t *config =
-        (simulation_config_t *)heap_caps_malloc(sizeof(simulation_config_t), MALLOC_CAP_SPIRAM);
+    simulation_config_t *config = (simulation_config_t *)heap_caps_malloc(sizeof(simulation_config_t), 0);
     if (config == NULL)
     {
         ESP_LOGE(TAG, "Failed to allocate memory for simulation config.");
