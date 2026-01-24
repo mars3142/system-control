@@ -1,7 +1,14 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { svelte } from '@sveltejs/vite-plugin-svelte'
+import viteCompression from 'vite-plugin-compression';
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+	plugins: [
+		svelte(),
+		viteCompression()
+	],
+	build: {
+		outDir: '../storage/website',
+		assetsDir: '',
+	},
 })

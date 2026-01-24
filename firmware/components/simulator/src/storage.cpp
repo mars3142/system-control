@@ -130,3 +130,27 @@ void free_lines(char **lines, int count)
         free(lines[i]);
     free(lines);
 }
+
+esp_err_t write_lines(const char *filename, char **lines, int count)
+{
+    char fullpath[128];
+    snprintf(fullpath, sizeof(fullpath), "/spiffs/%s", filename[0] == '/' ? filename + 1 : filename);
+    FILE *f = fopen(fullpath, "w");
+    if (!f)
+    {
+        ESP_LOGE(TAG, "Failed to open file for writing: %s", fullpath);
+        return ESP_FAIL;
+    }
+    for (int i = 0; i < count; ++i)
+    {
+        if (fprintf(f, "%s\n", lines[i]) < 0)
+        {
+            ESP_LOGE(TAG, "Failed to write line %d", i);
+            fclose(f);
+            return ESP_FAIL;
+        }
+    }
+    fclose(f);
+    ESP_LOGI(TAG, "Wrote %d lines to %s", count, fullpath);
+    return ESP_OK;
+}

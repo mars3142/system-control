@@ -2,8 +2,10 @@
 #include "common.h"
 #include "message_manager.h"
 
+#include "esp_heap_caps.h"
 #include "led_segment.h"
 #include "persistence_manager.h"
+#include "storage.h"
 #include <cJSON.h>
 #include <esp_http_server.h>
 #include <esp_log.h>
@@ -93,7 +95,7 @@ esp_err_t api_wifi_scan_handler(httpd_req_t *req)
 
     uint16_t ap_num = 0;
     esp_wifi_scan_get_ap_num(&ap_num);
-    wifi_ap_record_t *ap_list = calloc(ap_num, sizeof(wifi_ap_record_t));
+    wifi_ap_record_t *ap_list = heap_caps_calloc(ap_num, sizeof(wifi_ap_record_t), MALLOC_CAP_SPIRAM);
     if (!ap_list)
     {
         return send_error_response(req, 500, "Memory allocation failed");
@@ -162,7 +164,7 @@ esp_err_t api_wifi_config_handler(httpd_req_t *req)
         if (is_valid(pw))
         {
             size_t pwlen = strlen(pw->valuestring);
-            char *masked = malloc(pwlen + 1);
+            char *masked = heap_caps_malloc(pwlen + 1, MALLOC_CAP_SPIRAM);
             if (masked)
             {
                 memset(masked, '*', pwlen);
@@ -443,7 +445,7 @@ esp_err_t api_wled_config_post_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/wled/config");
 
-    char *buf = malloc(MAX_BODY_SIZE);
+    char *buf = heap_caps_malloc(MAX_BODY_SIZE, MALLOC_CAP_SPIRAM);
     if (!buf)
         return send_error_response(req, 500, "Memory allocation failed");
     int total = 0, ret;
@@ -517,6 +519,16 @@ esp_err_t api_wled_config_post_handler(httpd_req_t *req)
 // ============================================================================
 // Schema API
 // ============================================================================
+static char *heap_caps_strdup(const char *src, uint32_t caps)
+{
+    if (!src)
+        return NULL;
+    size_t len = strlen(src) + 1;
+    char *dst = heap_caps_malloc(len, caps);
+    if (dst)
+        memcpy(dst, src, len);
+    return dst;
+}
 
 esp_err_t api_schema_get_handler(httpd_req_t *req)
 {
@@ -538,8 +550,6 @@ esp_err_t api_schema_get_handler(httpd_req_t *req)
     snprintf(path, sizeof(path), "%s", filename);
 
     int line_count = 0;
-    extern char **read_lines_filtered(const char *filename, int *out_count);
-    extern void free_lines(char **lines, int count);
     char **lines = read_lines_filtered(path, &line_count);
 
     set_cors_headers(req);
@@ -554,7 +564,7 @@ esp_err_t api_schema_get_handler(httpd_req_t *req)
     size_t total_len = 0;
     for (int i = 0; i < line_count; ++i)
         total_len += strlen(lines[i]) + 1;
-    char *csv = malloc(total_len + 1);
+    char *csv = heap_caps_malloc(total_len + 1, MALLOC_CAP_SPIRAM);
     char *p = csv;
     for (int i = 0; i < line_count; ++i)
     {
@@ -575,26 +585,75 @@ esp_err_t api_schema_post_handler(httpd_req_t *req)
     ESP_LOGI(TAG, "POST /api/schema/*");
 
     // Extract filename from URI
-    const char *uri = req->uri;
-    const char *filename = strrchr(uri, '/');
-    if (filename == NULL)
+    if (!req)
     {
+        ESP_LOGE(TAG, "Request pointer is NULL");
+        return send_error_response(req, 500, "Internal error: req is NULL");
+    }
+    const char *uri = req->uri;
+    ESP_LOGI(TAG, "Request URI: %s", uri ? uri : "(null)");
+    if (!uri)
+    {
+        ESP_LOGE(TAG, "Request URI is NULL");
+        return send_error_response(req, 400, "Invalid schema path (no URI)");
+    }
+    const char *filename = strrchr(uri, '/');
+    if (filename == NULL || filename[1] == '\0')
+    {
+        ESP_LOGE(TAG, "Could not extract filename from URI: %s", uri);
         return send_error_response(req, 400, "Invalid schema path");
     }
     filename++;
+    ESP_LOGI(TAG, "Extracted filename: %s", filename);
 
-    char buf[2048];
-    int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
-    if (ret <= 0)
+    // Dynamically read POST body (like api_wled_config_post_handler)
+    char *buf = heap_caps_malloc(MAX_BODY_SIZE, MALLOC_CAP_SPIRAM);
+    if (!buf)
     {
-        return send_error_response(req, 400, "Failed to receive request body");
+        ESP_LOGE(TAG, "Memory allocation failed for POST body");
+        return send_error_response(req, 500, "Memory allocation failed");
     }
-    buf[ret] = '\0';
+    int total = 0, ret;
+    while (total < MAX_BODY_SIZE - 1)
+    {
+        ret = httpd_req_recv(req, buf + total, MAX_BODY_SIZE - 1 - total);
+        if (ret <= 0)
+            break;
+        total += ret;
+    }
+    buf[total] = '\0';
 
-    ESP_LOGI(TAG, "Saving schema %s, size: %d bytes", filename, ret);
+    ESP_LOGI(TAG, "Saving schema %s, size: %d bytes", filename, total);
 
-    // TODO: Save schema to storage
+    // Split CSV body into line array
+    int line_count = 0;
+    // Count lines
+    for (int i = 0; i < total; ++i)
+        if (buf[i] == '\n')
+            line_count++;
+    if (total > 0 && buf[total - 1] != '\n')
+        line_count++; // last line without \n
+
+    char **lines = (char **)heap_caps_malloc(line_count * sizeof(char *), MALLOC_CAP_SPIRAM);
+    int idx = 0;
+    char *saveptr = NULL;
+    char *line = strtok_r(buf, "\n", &saveptr);
+    while (line && idx < line_count)
+    {
+        // Ignore empty lines
+        if (line[0] != '\0')
+            lines[idx++] = heap_caps_strdup(line, MALLOC_CAP_SPIRAM);
+        line = strtok_r(NULL, "\n", &saveptr);
+    }
+    int actual_count = idx;
+    esp_err_t err = write_lines(filename, lines, actual_count);
+    for (int i = 0; i < actual_count; ++i)
+        free(lines[i]);
+    free(lines);
     set_cors_headers(req);
+
+    if (err != ESP_OK)
+        return send_error_response(req, 500, "Failed to save schema");
     return httpd_resp_sendstr(req, "{\"status\":\"ok\"}");
 }
 
