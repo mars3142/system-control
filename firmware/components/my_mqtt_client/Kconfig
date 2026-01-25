@@ -1,0 +1,21 @@
+menu "MQTT Client Settings"
+
+config MQTT_CLIENT_BROKER_URL
+    string "MQTT Broker URL (TLS)"
+    default "mqtts://example.com:8883"
+    help
+        Die Adresse des MQTT-Brokers (z.B. mqtts://broker.example.com:8883)
+
+config MQTT_CLIENT_USERNAME
+    string "MQTT Username"
+    default "user"
+    help
+        Benutzername für die Authentifizierung (optional)
+
+config MQTT_CLIENT_PASSWORD
+    string "MQTT Password"
+    default "password"
+    help
+        Passwort für die Authentifizierung (optional)
+
+endmenu

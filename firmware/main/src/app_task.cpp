@@ -8,6 +8,7 @@
 #include "i2c_checker.h"
 #include "led_status.h"
 #include "message_manager.h"
+#include "my_mqtt_client.h"
 #include "persistence_manager.h"
 #include "simulator.h"
 #include "ui/ClockScreenSaver.h"
@@ -251,6 +252,8 @@ void app_task(void *args)
     init_ui();
 
     wifi_manager_init();
+
+    mqtt_client_start();
 
     message_manager_register_listener(on_message_received);
 

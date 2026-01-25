@@ -372,7 +372,8 @@ void start_simulation_task(void)
 {
     stop_simulation_task();
 
-    simulation_config_t *config = (simulation_config_t *)heap_caps_malloc(sizeof(simulation_config_t), 0);
+    simulation_config_t *config =
+        (simulation_config_t *)heap_caps_malloc(sizeof(simulation_config_t), MALLOC_CAP_DEFAULT);
     if (config == NULL)
     {
         ESP_LOGE(TAG, "Failed to allocate memory for simulation config.");
