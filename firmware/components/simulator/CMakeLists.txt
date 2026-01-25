@@ -5,5 +5,6 @@ idf_component_register(SRCS
                     PRIV_REQUIRES
                         led-manager
                         persistence-manager
+                        message-manager
                         spiffs
 )

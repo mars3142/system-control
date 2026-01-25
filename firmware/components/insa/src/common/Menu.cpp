@@ -28,7 +28,7 @@ constexpr int BOTTOM_OFFSET = 10;
 
 Menu::Menu(menu_options_t *options) : Widget(options->u8g2), m_options(options)
 {
-    // Set up button callback using lambda to forward to member function
+    // Set up button callback using a lambda to forward to the member function
     m_options->onButtonClicked = [this](const ButtonType button) { OnButtonClicked(button); };
 }
 
@@ -64,7 +64,7 @@ void Menu::setItemSize(const size_t size, int8_t startIndex)
                 constexpr int key_length = 20;
                 char key[key_length] = "";
                 snprintf(key, key_length, "section_%zu", i + 1 - startIndex);
-                index = m_options->persistenceManager->GetValue(key, index);
+                index = persistence_manager_get_int(m_options->persistenceManager, key, index);
             }
             addSelection(i + 1, caption, m_items.at(0).getValues(), index);
         }
@@ -79,6 +79,12 @@ void Menu::toggle(const MenuItem &menuItem)
 {
     const auto item =
         menuItem.copyWith(menuItem.getValue() == std::to_string(true) ? std::to_string(false) : std::to_string(true));
+    replaceItem(menuItem.getId(), item);
+}
+
+void Menu::setToggle(const MenuItem &menuItem, const bool state)
+{
+    const auto item = menuItem.copyWith(state ? std::to_string(true) : std::to_string(false));
     replaceItem(menuItem.getId(), item);
 }
 
@@ -120,6 +126,15 @@ MenuItem Menu::switchValue(const MenuItem &menuItem, ButtonType button)
     return result;
 }
 
+void Menu::setSelectionIndex(const MenuItem &menuItem, int index)
+{
+    if (index >= 0 && index < menuItem.getItemCount())
+    {
+        auto item = menuItem.copyWith(index);
+        replaceItem(menuItem.getId(), item);
+    }
+}
+
 MenuItem Menu::replaceItem(const int index, const MenuItem &item)
 {
     m_items.at(index) = item;
@@ -134,13 +149,13 @@ void Menu::Render()
         m_selected_item = 0;
     }
 
-    // Early return if no items to render
+    // Early return if there are no items to render
     if (m_items.empty())
     {
         return;
     }
 
-    // Clear screen with black background
+    // Clear the screen with a black background
     u8g2_SetDrawColor(u8g2, 0);
     u8g2_DrawBox(u8g2, 0, 0, u8g2->width, u8g2->height);
 
@@ -151,7 +166,7 @@ void Menu::Render()
     drawScrollBar();
     drawSelectionBox();
 
-    // Calculate center position for main item
+    // Calculate center position for the main item
     const int centerY = u8g2->height / 2 + 3;
 
     // Render the currently selected item (main/center item)
@@ -176,7 +191,7 @@ void Menu::Render()
 
 void Menu::renderWidget(const MenuItem *item, const uint8_t *font, const int x, const int y) const
 {
-    // Set font and draw main text
+    // Set font and draw the main text
     u8g2_SetFont(u8g2, font);
     u8g2_DrawStr(u8g2, x, y, item->getText().c_str());
 
@@ -206,7 +221,7 @@ void Menu::renderWidget(const MenuItem *item, const uint8_t *font, const int x, 
     }
 
     case MenuItemTypes::TOGGLE: {
-        // Draw checkbox frame
+        // Draw the checkbox frame
         const int frameX = u8g2->width - UIConstants::FRAME_BOX_SIZE - UIConstants::SELECTION_MARGIN;
         const int frameY = y - UIConstants::FRAME_OFFSET;
         u8g2_DrawFrame(u8g2, frameX, frameY, UIConstants::FRAME_BOX_SIZE, UIConstants::FRAME_BOX_SIZE);
@@ -272,7 +287,7 @@ void Menu::onPressedDown()
     if (m_items.empty())
         return;
 
-    // Wrap around to first item when at the end
+    // Wrap around to the first item when at the end
     m_selected_item = (m_selected_item + 1) % m_items.size();
 }
 
@@ -281,7 +296,7 @@ void Menu::onPressedUp()
     if (m_items.empty())
         return;
 
-    // Wrap around to last item when at the beginning
+    // Wrap around to the last item when at the beginning
     m_selected_item = (m_selected_item == 0) ? m_items.size() - 1 : m_selected_item - 1;
 }
 
@@ -314,7 +329,7 @@ void Menu::onPressedSelect() const
 
 void Menu::onPressedBack() const
 {
-    // Navigate back to previous screen if callback is available
+    // Navigate back to the previous screen if callback is available
     if (m_options && m_options->popScreen)
     {
         m_options->popScreen();

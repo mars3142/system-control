@@ -176,6 +176,21 @@ class Menu : public Widget
     void toggle(const MenuItem &menuItem);
 
     /**
+     * @brief Setzt den Zustand eines Toggle-Menüeintrags explizit
+     * @param menuItem Der zu ändernde Toggle-Menüeintrag
+     * @param state Neuer Zustand (true = aktiviert, false = deaktiviert)
+     *
+     * @pre menuItem muss vom Typ TOGGLE sein
+     * @post Der Wert des Menüeintrags wird auf den angegebenen Zustand gesetzt
+     *
+     * @details Diese Methode setzt den Wert eines Toggle-Menüeintrags gezielt auf den gewünschten Zustand.
+     *          Der geänderte Eintrag ersetzt das Original in der internen Menüstruktur.
+     *
+     * @note Diese Methode verändert direkt den internen Zustand des Menüs.
+     */
+    void setToggle(const MenuItem &menuItem, const bool state);
+
+    /**
      * @brief Changes the selected value of a selection menu item based on button input
      * @param menuItem The selection menu item to modify
      * @param button The directional button pressed (LEFT or RIGHT)
@@ -190,6 +205,8 @@ class Menu : public Widget
      * @note The modified item replaces the original in the menu's item collection
      */
     MenuItem switchValue(const MenuItem &menuItem, ButtonType button);
+
+    void setSelectionIndex(const MenuItem &menuItem, int index);
 
   private:
     MenuItem replaceItem(int index, const MenuItem &item);

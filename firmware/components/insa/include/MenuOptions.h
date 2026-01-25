@@ -17,7 +17,7 @@
 
 // Project-specific headers
 #include "common/Widget.h"
-#include "IPersistenceManager.h"
+#include "persistence_manager.h"
 #include "u8g2.h"
 
 class MenuItem;
@@ -28,7 +28,7 @@ class MenuItem;
  * @details This structure serves as a configuration container that provides menu widgets
  *          with access to the display system, screen management functions, input
  *          handling callbacks, and persistent storage.
- * 
+ *
  * @see Widget
  * @see ButtonType
  * @see IPersistenceManager
@@ -61,14 +61,8 @@ typedef struct
     std::function<void(ButtonType button)> onButtonClicked;
 
     /**
-     * @brief Shared pointer to platform-independent persistence manager
-     * @details This provides access to persistent key-value storage across different
-     *          platforms. The actual implementation (SDL3 or ESP32/NVS) is determined
-     *          at compile time based on the target platform.
-     * 
-     * @note The persistence manager is shared across all menu widgets and maintains
-     *       its state throughout the application lifecycle.
+     * @brief Zeiger auf C-Persistence-Manager-Instanz
      */
-    std::shared_ptr<IPersistenceManager> persistenceManager;
+    persistence_manager_t *persistenceManager;
 
 } menu_options_t;

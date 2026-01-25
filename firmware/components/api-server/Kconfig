@@ -1,0 +1,38 @@
+menu "API Server Configuration"
+
+    config API_SERVER_HOSTNAME
+        string "mDNS Hostname"
+        default "system-control"
+        help
+            The mDNS hostname for the API server.
+            The device will be accessible at <hostname>.local
+
+    config API_SERVER_PORT
+        int "HTTP Server Port"
+        default 80
+        range 1 65535
+        help
+            The port number for the HTTP server.
+
+    config API_SERVER_MAX_WS_CLIENTS
+        int "Maximum WebSocket Clients"
+        default 4
+        range 1 8
+        help
+            Maximum number of concurrent WebSocket connections.
+
+    config API_SERVER_ENABLE_CORS
+        bool "Enable CORS"
+        default y
+        help
+            Enable Cross-Origin Resource Sharing (CORS) headers.
+            This is required for web interfaces served from different origins.
+
+    config API_SERVER_STATIC_FILES_PATH
+        string "Static Files Path"
+        default "/spiffs/www"
+        help
+            Base path for serving static web files.
+
+endmenu
+

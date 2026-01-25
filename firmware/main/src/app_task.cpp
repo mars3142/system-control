@@ -2,16 +2,20 @@
 
 #include "analytics.h"
 #include "button_handling.h"
+#include "common.h"
 #include "common/InactivityTracker.h"
 #include "hal/u8g2_esp32_hal.h"
-#include "hal_esp32/PersistenceManager.h"
 #include "i2c_checker.h"
 #include "led_status.h"
+#include "message_manager.h"
+#include "my_mqtt_client.h"
+#include "persistence_manager.h"
 #include "simulator.h"
 #include "ui/ClockScreenSaver.h"
 #include "ui/ScreenSaver.h"
 #include "ui/SplashScreen.h"
 #include "wifi_manager.h"
+#include <cstring>
 #include <driver/i2c.h>
 #include <esp_diagnostics.h>
 #include <esp_insights.h>
@@ -33,7 +37,8 @@ uint8_t received_signal;
 std::shared_ptr<Widget> m_widget;
 std::vector<std::shared_ptr<Widget>> m_history;
 std::unique_ptr<InactivityTracker> m_inactivityTracker;
-std::shared_ptr<PersistenceManager> m_persistenceManager;
+// Persistence Manager for C-API
+persistence_manager_t g_persistence_manager;
 
 extern QueueHandle_t buttonQueue;
 
@@ -93,10 +98,7 @@ void popScreen()
         m_history.pop_back();
         if (m_widget)
         {
-            if (m_persistenceManager != nullptr)
-            {
-                m_persistenceManager->Save();
-            }
+            persistence_manager_save(&g_persistence_manager);
             m_widget->onExit();
         }
         m_widget = m_history.back();
@@ -107,14 +109,14 @@ void popScreen()
 
 static void init_ui(void)
 {
-    m_persistenceManager = std::make_shared<PersistenceManager>();
+    persistence_manager_init(&g_persistence_manager, "config");
     options = {
         .u8g2 = &u8g2,
         .setScreen = [](const std::shared_ptr<Widget> &screen) { setScreen(screen); },
         .pushScreen = [](const std::shared_ptr<Widget> &screen) { pushScreen(screen); },
         .popScreen = []() { popScreen(); },
         .onButtonClicked = nullptr,
-        .persistenceManager = m_persistenceManager,
+        .persistenceManager = &g_persistence_manager,
     };
     m_widget = std::make_shared<SplashScreen>(&options);
     m_inactivityTracker = std::make_unique<InactivityTracker>(60000, []() {
@@ -125,6 +127,17 @@ static void init_ui(void)
     u8g2_ClearBuffer(&u8g2);
     m_widget->Render();
     u8g2_SendBuffer(&u8g2);
+}
+
+static void on_message_received(const message_t *msg)
+{
+    if (msg && msg->type == MESSAGE_TYPE_SETTINGS &&
+        (std::strcmp(msg->data.settings.key, "light_active") == 0 ||
+         std::strcmp(msg->data.settings.key, "light_variant") == 0 ||
+         std::strcmp(msg->data.settings.key, "light_mode") == 0))
+    {
+        start_simulation();
+    }
 }
 
 static void handle_button(uint8_t button)
@@ -184,14 +197,65 @@ void app_task(void *args)
         return;
     }
 
+    // Initialize display so that info can be shown
     setup_screen();
+
+    // Check BACK button and delete settings if necessary (with countdown)
+    gpio_config_t io_conf = {};
+    io_conf.intr_type = GPIO_INTR_DISABLE;
+    io_conf.mode = GPIO_MODE_INPUT;
+    io_conf.pin_bit_mask = (1ULL << BUTTON_BACK);
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
+    gpio_config(&io_conf);
+
+    vTaskDelay(pdMS_TO_TICKS(10));
+    if (gpio_get_level(BUTTON_BACK) == 0)
+    {
+        u8g2_SetFont(&u8g2, u8g2_font_ncenB08_tr);
+        for (int i = 5; i > 0; --i)
+        {
+            u8g2_ClearBuffer(&u8g2);
+            u8g2_DrawStr(&u8g2, 5, 20, "BACK gedrueckt!");
+            u8g2_DrawStr(&u8g2, 5, 35, "Halte fuer Reset...");
+            char buf[32];
+            snprintf(buf, sizeof(buf), "Loesche in %d s", i);
+            u8g2_DrawStr(&u8g2, 5, 55, buf);
+            u8g2_SendBuffer(&u8g2);
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            if (gpio_get_level(BUTTON_BACK) != 0)
+            {
+                // Button released, abort
+                break;
+            }
+            if (i == 1)
+            {
+                // After 5 seconds still pressed: perform factory reset
+                u8g2_ClearBuffer(&u8g2);
+                u8g2_DrawStr(&u8g2, 5, 30, "Alle Einstellungen ");
+                u8g2_DrawStr(&u8g2, 5, 45, "werden geloescht...");
+                u8g2_SendBuffer(&u8g2);
+                persistence_manager_factory_reset();
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                u8g2_ClearBuffer(&u8g2);
+                u8g2_DrawStr(&u8g2, 5, 35, "Fertig. Neustart...");
+                u8g2_SendBuffer(&u8g2);
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                esp_restart();
+            }
+        }
+    }
+
+    message_manager_init();
+
     setup_buttons();
     init_ui();
 
-#if CONFIG_WIFI_ENABLED
     wifi_manager_init();
-    analytics_init();
-#endif
+
+    mqtt_client_start();
+
+    message_manager_register_listener(on_message_received);
 
     start_simulation();
 

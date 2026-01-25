@@ -1,8 +1,9 @@
 #include "simulator.h"
 
 #include "color.h"
-#include "hal_esp32/PersistenceManager.h"
 #include "led_strip_ws2812.h"
+#include "message_manager.h"
+#include "persistence_manager.h"
 #include "storage.h"
 #include <esp_heap_caps.h>
 #include <esp_log.h>
@@ -15,12 +16,12 @@
 #include <string.h>
 
 static const char *TAG = "simulator";
-static char *time;
+static char *time = NULL;
 
 static char *time_to_string(int hhmm)
 {
     static char buffer[20];
-    snprintf(buffer, sizeof(buffer), "%02d:%02d Uhr", hhmm / 100, hhmm % 100);
+    snprintf(buffer, sizeof(buffer), "%02d:%02d", hhmm / 100, hhmm % 100);
     return buffer;
 }
 
@@ -81,10 +82,10 @@ esp_err_t add_light_item(const char time[5], uint8_t red, uint8_t green, uint8_t
                          uint8_t brightness, uint8_t saturation)
 {
     // Allocate memory for a new node in PSRAM.
-    light_item_node_t *new_node = (light_item_node_t *)heap_caps_malloc(sizeof(light_item_node_t), MALLOC_CAP_SPIRAM);
+    light_item_node_t *new_node = (light_item_node_t *)heap_caps_malloc(sizeof(light_item_node_t), MALLOC_CAP_DEFAULT);
     if (new_node == NULL)
     {
-        ESP_LOGE(TAG, "Failed to allocate memory in PSRAM for new light_item_node_t.");
+        ESP_LOGE(TAG, "Failed to allocate memory for new light_item_node_t.");
         return ESP_FAIL;
     }
 
@@ -145,10 +146,12 @@ static void initialize_light_items(void)
     initialize_storage();
 
     static char filename[30];
-    auto persistence = PersistenceManager();
-    int variant = persistence.GetValue("light_variant", 1);
-    snprintf(filename, sizeof(filename), "/spiffs/schema_%02d.csv", variant);
+    persistence_manager_t persistence;
+    persistence_manager_init(&persistence, "config");
+    int variant = persistence_manager_get_int(&persistence, "light_variant", 1);
+    snprintf(filename, sizeof(filename), "schema_%02d.csv", variant);
     load_file(filename);
+    persistence_manager_deinit(&persistence);
 
     if (head == NULL)
     {
@@ -233,6 +236,17 @@ static light_item_node_t *find_next_light_item_for_time(int hhmm)
     return next_item;
 }
 
+static void send_simulation_message(const char *time, rgb_t color)
+{
+    message_t msg = {};
+    msg.type = MESSAGE_TYPE_SIMULATION;
+    strncpy(msg.data.simulation.time, time, sizeof(msg.data.simulation.time) - 1);
+    msg.data.simulation.red = color.red;
+    msg.data.simulation.green = color.green;
+    msg.data.simulation.blue = color.blue;
+    message_manager_post(&msg, pdMS_TO_TICKS(100));
+}
+
 void start_simulate_day(void)
 {
     initialize_light_items();
@@ -240,8 +254,9 @@ void start_simulate_day(void)
     light_item_node_t *current_item = find_best_light_item_for_time(1200);
     if (current_item != NULL)
     {
-        led_strip_update(LED_STATE_DAY,
-                         (rgb_t){.red = current_item->red, .green = current_item->green, .blue = current_item->blue});
+        rgb_t color = {.red = current_item->red, .green = current_item->green, .blue = current_item->blue};
+        led_strip_update(LED_STATE_DAY, color);
+        send_simulation_message("12:00", color);
     }
 }
 
@@ -252,8 +267,9 @@ void start_simulate_night(void)
     light_item_node_t *current_item = find_best_light_item_for_time(0);
     if (current_item != NULL)
     {
-        led_strip_update(LED_STATE_NIGHT,
-                         (rgb_t){.red = current_item->red, .green = current_item->green, .blue = current_item->blue});
+        rgb_t color = {.red = current_item->red, .green = current_item->green, .blue = current_item->blue};
+        led_strip_update(LED_STATE_NIGHT, color);
+        send_simulation_message("00:00", color);
     }
 }
 
@@ -294,45 +310,51 @@ void simulate_cycle(void *args)
         light_item_node_t *current_item = find_best_light_item_for_time(hhmm);
         light_item_node_t *next_item = find_next_light_item_for_time(hhmm);
 
-        if (current_item != NULL && next_item != NULL)
+        if (current_item != NULL)
         {
-            int current_item_time_min = (atoi(current_item->time) / 100) * 60 + (atoi(current_item->time) % 100);
-            int next_item_time_min = (atoi(next_item->time) / 100) * 60 + (atoi(next_item->time) % 100);
+            rgb_t color = {0, 0, 0};
 
-            if (next_item_time_min < current_item_time_min)
+            // Use head as fallback if next_item is NULL
+            next_item = next_item ? next_item : head;
+            if (next_item != NULL)
             {
-                next_item_time_min += total_minutes_in_day;
-            }
+                int current_item_time_min = (atoi(current_item->time) / 100) * 60 + (atoi(current_item->time) % 100);
+                int next_item_time_min = (atoi(next_item->time) / 100) * 60 + (atoi(next_item->time) % 100);
 
-            int minutes_since_current_item_start = current_minute_of_day - current_item_time_min;
-            if (minutes_since_current_item_start < 0)
+                if (next_item_time_min < current_item_time_min)
+                {
+                    next_item_time_min += total_minutes_in_day;
+                }
+
+                int minutes_since_current_item_start = current_minute_of_day - current_item_time_min;
+                if (minutes_since_current_item_start < 0)
+                {
+                    minutes_since_current_item_start += total_minutes_in_day;
+                }
+
+                int interval_duration = next_item_time_min - current_item_time_min;
+                if (interval_duration == 0)
+                {
+                    interval_duration = 1;
+                }
+
+                float interpolation_factor = (float)minutes_since_current_item_start / (float)interval_duration;
+
+                // Prepare colors for interpolation
+                rgb_t start_rgb = {.red = current_item->red, .green = current_item->green, .blue = current_item->blue};
+                rgb_t end_rgb = {.red = next_item->red, .green = next_item->green, .blue = next_item->blue};
+
+                // Use the interpolation function
+                color = interpolate_color(start_rgb, end_rgb, interpolation_factor);
+                led_strip_update(LED_STATE_SIMULATION, color);
+            }
+            else
             {
-                minutes_since_current_item_start += total_minutes_in_day;
+                // No next_item and no head, use only current
+                color = (rgb_t){.red = current_item->red, .green = current_item->green, .blue = current_item->blue};
+                led_strip_update(LED_STATE_SIMULATION, color);
             }
-
-            int interval_duration = next_item_time_min - current_item_time_min;
-            if (interval_duration == 0)
-            {
-                interval_duration = 1;
-            }
-
-            float interpolation_factor = (float)minutes_since_current_item_start / (float)interval_duration;
-
-            // Prepare colors for interpolation
-            rgb_t start_rgb = {.red = current_item->red, .green = current_item->green, .blue = current_item->blue};
-            rgb_t end_rgb = {.red = next_item->red, .green = next_item->green, .blue = next_item->blue};
-
-            // Use the interpolation function
-            rgb_t final_rgb = interpolate_color(start_rgb, end_rgb, interpolation_factor);
-
-            led_strip_update(LED_STATE_SIMULATION, final_rgb);
-        }
-        else if (current_item != NULL)
-        {
-            // No next item, just use current
-            led_strip_update(
-                LED_STATE_SIMULATION,
-                (rgb_t){.red = current_item->red, .green = current_item->green, .blue = current_item->blue});
+            send_simulation_message(time, color);
         }
 
         vTaskDelay(pdMS_TO_TICKS(delay_ms));
@@ -351,7 +373,7 @@ void start_simulation_task(void)
     stop_simulation_task();
 
     simulation_config_t *config =
-        (simulation_config_t *)heap_caps_malloc(sizeof(simulation_config_t), MALLOC_CAP_SPIRAM);
+        (simulation_config_t *)heap_caps_malloc(sizeof(simulation_config_t), MALLOC_CAP_DEFAULT);
     if (config == NULL)
     {
         ESP_LOGE(TAG, "Failed to allocate memory for simulation config.");
@@ -398,25 +420,22 @@ void start_simulation(void)
 {
     stop_simulation_task();
 
-    auto persistence = PersistenceManager();
-    if (persistence.GetValue("light_active", false))
+    persistence_manager_t persistence;
+    persistence_manager_init(&persistence, "config");
+    if (persistence_manager_get_bool(&persistence, "light_active", false))
     {
-
-        int mode = persistence.GetValue("light_mode", 0);
+        int mode = persistence_manager_get_int(&persistence, "light_mode", 0);
         switch (mode)
         {
         case 0: // Simulation mode
             start_simulation_task();
             break;
-
         case 1: // Day mode
             start_simulate_day();
             break;
-
         case 2: // Night mode
             start_simulate_night();
             break;
-
         default:
             ESP_LOGW(TAG, "Unknown light mode: %d", mode);
             break;
@@ -426,4 +445,5 @@ void start_simulation(void)
     {
         led_strip_update(LED_STATE_OFF, rgb_t{});
     }
+    persistence_manager_deinit(&persistence);
 }

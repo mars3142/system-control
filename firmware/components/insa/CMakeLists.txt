@@ -18,4 +18,5 @@ idf_component_register(SRCS
             led-manager
             persistence-manager
             simulator
+            message-manager
 )

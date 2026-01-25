@@ -1,8 +1,8 @@
 #include "app_task.h"
 #include "color.h"
-#include "hal_esp32/PersistenceManager.h"
 #include "led_status.h"
 #include "led_strip_ws2812.h"
+#include "persistence_manager.h"
 #include "wifi_manager.h"
 #include <ble_manager.h>
 #include <esp_event.h>
@@ -24,8 +24,9 @@ void app_main(void)
         ESP_ERROR_CHECK(nvs_flash_init());
     }
 
-    auto persistence = PersistenceManager();
-    persistence.Load();
+    persistence_manager_t persistence;
+    persistence_manager_init(&persistence, "config");
+    persistence_manager_load(&persistence);
 
     led_status_init(CONFIG_STATUS_WLED_PIN);
 

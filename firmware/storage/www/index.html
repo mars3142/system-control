@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <title data-i18n="page.title">System Control</title>
+    <link rel="stylesheet" href="css/shared.css">
+    <link rel="stylesheet" href="css/index.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-controls">
+                <button class="lang-toggle" onclick="toggleLanguage()" aria-label="Sprache wechseln">
+                    <span class="lang-flag" id="lang-flag">🇩🇪</span>
+                    <span class="lang-label" id="lang-label">DE</span>
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Theme wechseln">
+                    <span class="theme-toggle-icon" id="theme-icon">🌙</span>
+                    <span class="theme-toggle-label" id="theme-label">Dark</span>
+                </button>
+            </div>
+            <h1>🚂 System Control</h1>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('control')" data-i18n="tab.control">🎛️ Bedienung</button>
+            <button class="tab" onclick="switchTab('config')" data-i18n="tab.config">⚙️ Konfiguration</button>
+        </div>
+
+        <!-- Bedienung Tab -->
+        <div id="tab-control" class="tab-content active">
+            <div class="card">
+                <h2 data-i18n="control.light.title">Lichtsteuerung</h2>
+
+                <div class="control-section">
+                    <div class="control-group">
+                        <div class="toggle-row">
+                            <span class="toggle-label" data-i18n="control.light.light">Licht</span>
+                            <button class="toggle-switch" id="light-toggle" onclick="toggleLight()">
+                                <span class="toggle-state" id="light-state" data-i18n="common.off">AUS</span>
+                                <span class="toggle-icon" id="light-icon">💡</span>
+                            </button>
+                        </div>
+                        <div class="toggle-row">
+                            <span class="toggle-label" data-i18n="control.light.thunder">Gewitter</span>
+                            <button class="toggle-switch" id="thunder-toggle" onclick="toggleThunder()">
+                                <span class="toggle-state" id="thunder-state" data-i18n="common.off">AUS</span>
+                                <span class="toggle-icon" id="thunder-icon">⚡</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="light-status" class="status"></div>
+                </div>
+
+                <div class="control-section">
+                    <h3 data-i18n="control.mode.title">Betriebsmodus</h3>
+                    <div class="mode-selector">
+                        <button class="mode-btn" id="mode-day" onclick="setMode('day')">
+                            <span class="mode-icon">☀️</span>
+                            <span class="mode-name" data-i18n="mode.day">Tag</span>
+                        </button>
+                        <button class="mode-btn" id="mode-night" onclick="setMode('night')">
+                            <span class="mode-icon">🌙</span>
+                            <span class="mode-name" data-i18n="mode.night">Nacht</span>
+                        </button>
+                        <button class="mode-btn" id="mode-simulation" onclick="setMode('simulation')">
+                            <span class="mode-icon">🔄</span>
+                            <span class="mode-name" data-i18n="mode.simulation">Simulation</span>
+                        </button>
+                    </div>
+
+                    <div id="simulation-options" class="simulation-options">
+                        <div class="form-group">
+                            <label for="active-schema" data-i18n="control.schema.active">Aktives Schema</label>
+                            <select id="active-schema" onchange="setActiveSchema()">
+                                <option value="schema_01.csv" data-i18n="schema.name.1">Schema 1 (Standard)</option>
+                                <option value="schema_02.csv" data-i18n="schema.name.2">Schema 2 (Warm)</option>
+                                <option value="schema_03.csv" data-i18n="schema.name.3">Schema 3 (Natur)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="mode-status" class="status"></div>
+                </div>
+
+                <div class="control-section">
+                    <h3 data-i18n="control.status.title">Aktueller Status</h3>
+                    <div class="status-display">
+                        <div class="status-item visible">
+                            <span class="status-label" data-i18n="control.status.mode">Modus</span>
+                            <span class="status-value" id="current-mode" data-i18n="mode.simulation">Simulation</span>
+                        </div>
+                        <div class="status-item visible">
+                            <span class="status-label" data-i18n="control.status.color">Aktuelle Farbe</span>
+                            <div class="current-color-preview" id="current-color"></div>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label" data-i18n="control.status.clock">Uhrzeit</span>
+                            <span class="status-value" id="current-clock">--:-- Uhr</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Szenen Card -->
+            <div class="card" id="scenes-control-card" style="display: none;">
+                <h2 data-i18n="scenes.title">Szenen</h2>
+                <div id="scenes-control-list" class="scenes-grid">
+                    <!-- Wird dynamisch gefüllt -->
+                    <div class="empty-state" id="no-scenes-control">
+                        <span class="empty-icon">🎬</span>
+                        <p data-i18n="scenes.empty">Keine Szenen definiert</p>
+                        <p class="empty-hint" data-i18n="scenes.empty.hint">Erstelle Szenen unter Konfiguration</p>
+                    </div>
+                </div>
+                <div id="scenes-control-status" class="status"></div>
+            </div>
+
+            <!-- Externe Geräte Card -->
+            <div class="card" id="devices-control-card" style="display: none;">
+                <h2 data-i18n="devices.external">Externe Geräte</h2>
+                <div id="devices-control-list" class="devices-control-grid">
+                    <!-- Wird dynamisch gefüllt -->
+                    <div class="empty-state" id="no-devices-control">
+                        <span class="empty-icon">🔗</span>
+                        <p data-i18n="devices.control.empty">Keine Geräte hinzugefügt</p>
+                        <p class="empty-hint" data-i18n="devices.control.empty.hint">Füge Geräte unter Konfiguration
+                            hinzu</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Konfiguration Tab -->
+        <div id="tab-config" class="tab-content">
+            <div class="sub-tabs">
+                <button class="sub-tab active" onclick="switchSubTab('wifi')" data-i18n="subtab.wifi">📶 WLAN</button>
+                <button class="sub-tab" onclick="switchSubTab('schema')" data-i18n="subtab.light">💡
+                    Lichtsteuerung</button>
+                <button class="sub-tab" id="subtab-btn-devices" onclick="switchSubTab('devices')"
+                    data-i18n="subtab.devices">🔗 Geräte</button>
+                <button class="sub-tab" id="subtab-btn-scenes" onclick="switchSubTab('scenes')"
+                    data-i18n="subtab.scenes">🎬 Szenen</button>
+            </div>
+
+            <!-- WLAN Sub-Tab -->
+            <div id="subtab-wifi" class="sub-tab-content active">
+                <div class="card">
+                    <h2 data-i18n="wifi.config.title">WLAN Konfiguration</h2>
+
+                    <div class="form-group">
+                        <label for="ssid" data-i18n="wifi.ssid">WLAN Name (SSID)</label>
+                        <input type="text" id="ssid" data-i18n-placeholder="wifi.ssid.placeholder"
+                            placeholder="Netzwerkname eingeben" autocomplete="off" autocapitalize="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" data-i18n="wifi.password">WLAN Passwort</label>
+                        <div class="password-toggle">
+                            <input type="password" id="password" data-i18n-placeholder="wifi.password.placeholder"
+                                placeholder="Passwort eingeben" autocomplete="off">
+                            <button type="button" onclick="togglePassword()" id="password-btn">👁️</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label data-i18n="wifi.available">Verfügbare Netzwerke</label>
+                        <select id="available-networks"
+                            onchange="if(this.value) document.getElementById('ssid').value = this.value">
+                            <option value="" data-i18n="wifi.scan.hint">Nach Netzwerken suchen...</option>
+                        </select>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="scanNetworks()" data-i18n="btn.scan">🔍
+                            Suchen</button>
+                        <button class="btn btn-primary" onclick="saveWifi()" data-i18n="btn.save">💾 Speichern</button>
+                    </div>
+
+                    <div id="wifi-status" class="status"></div>
+                </div>
+
+                <div class="card">
+                    <h2 data-i18n="wifi.status.title">Verbindungsstatus</h2>
+                    <div id="connection-info">
+                        <p><strong data-i18n="wifi.status.status">Status:</strong> <span id="conn-status"
+                                data-i18n="common.loading">Wird geladen...</span></p>
+                        <p><strong data-i18n="wifi.status.ip">IP-Adresse:</strong> <span id="conn-ip">-</span></p>
+                        <p><strong data-i18n="wifi.status.signal">Signal:</strong> <span id="conn-rssi">-</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schema Sub-Tab (Lichtsteuerung) -->
+            <div id="subtab-schema" class="sub-tab-content">
+                <!-- LED Konfiguration -->
+                <div class="card">
+                    <h2 data-i18n="wled.config.title">LED Konfiguration</h2>
+                    <p class="card-description" data-i18n="wled.config.desc">Konfiguriere die LED-Segmente und Anzahl
+                        LEDs pro
+                        Segment</p>
+
+                    <div class="segment-header">
+                        <h3 data-i18n="wled.segments.title">Segmente</h3>
+                        <button class="btn btn-secondary btn-small" onclick="addWledSegment()"
+                            data-i18n="wled.segment.add">➕ Segment hinzufügen</button>
+                    </div>
+
+                    <div id="wled-segments-list" class="wled-segments-list">
+                        <!-- Wird dynamisch gefüllt -->
+                        <div class="empty-state" id="no-wled-segments">
+                            <span class="empty-icon">💡</span>
+                            <p data-i18n="wled.segments.empty">Keine Segmente konfiguriert</p>
+                            <p class="empty-hint" data-i18n="wled.segments.empty.hint">Klicke auf "Segment hinzufügen"
+                                um ein Segment zu erstellen</p>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="saveWledConfig()" data-i18n="btn.save">💾
+                            Speichern</button>
+                    </div>
+
+                    <div id="wled-status" class="status"></div>
+                </div>
+
+                <!-- Schema Editor -->
+                <div class="card">
+                    <h2 data-i18n="schema.editor.title">Licht-Schema Editor</h2>
+
+                    <div class="schema-controls">
+                        <div class="form-group">
+                            <label for="schema-select" data-i18n="schema.file">Schema-Datei</label>
+                            <select id="schema-select" onchange="loadSchema()">
+                                <option value="schema_01.csv" data-i18n="schema.name.1">Schema 1 (Standard)</option>
+                                <option value="schema_02.csv" data-i18n="schema.name.2">Schema 2 (Warm)</option>
+                                <option value="schema_03.csv" data-i18n="schema.name.3">Schema 3 (Natur)</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-secondary" onclick="loadSchema()" data-i18n="btn.load">🔄 Laden</button>
+                        <button class="btn btn-primary" onclick="saveSchema()" data-i18n="btn.save">💾
+                            Speichern</button>
+                    </div>
+
+                    <div id="schema-status" class="status"></div>
+
+                    <div id="schema-loading" class="loading">
+                        <div class="spinner"></div>
+                        <p data-i18n="schema.loading">Schema wird geladen...</p>
+                    </div>
+
+                    <div class="value-header">
+                        <span data-i18n="schema.header.time">Zeit</span>
+                        <span data-i18n="schema.header.color">Farbe</span>
+                        <span>R</span>
+                        <span>G</span>
+                        <span>B</span>
+                        <span>V1</span>
+                        <span>V2</span>
+                        <span>V3</span>
+                    </div>
+
+                    <div id="schema-grid" class="time-grid">
+                        <!-- Wird dynamisch gefüllt -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Szenen Sub-Tab -->
+            <div id="subtab-scenes" class="sub-tab-content">
+                <div class="card">
+                    <h2 data-i18n="scenes.manage.title">Szenen verwalten</h2>
+                    <p class="card-description" data-i18n="scenes.manage.desc">Erstelle und bearbeite Szenen für
+                        schnellen Zugriff</p>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="openSceneModal()" data-i18n="btn.new.scene">➕ Neue
+                            Szene</button>
+                    </div>
+
+                    <div id="scenes-config-list" class="scenes-config-list">
+                        <!-- Wird dynamisch gefüllt -->
+                        <div class="empty-state" id="no-scenes-config">
+                            <span class="empty-icon">🎬</span>
+                            <p data-i18n="scenes.config.empty">Keine Szenen erstellt</p>
+                            <p class="empty-hint" data-i18n="scenes.config.empty.hint">Klicke auf "Neue Szene" um eine
+                                Szene zu erstellen</p>
+                        </div>
+                    </div>
+
+                    <div id="scenes-status" class="status"></div>
+                </div>
+            </div>
+
+            <!-- Geräte Sub-Tab -->
+            <div id="subtab-devices" class="sub-tab-content">
+                <div class="card">
+                    <h2 data-i18n="devices.new.title">Neue Geräte</h2>
+                    <p class="card-description" data-i18n="devices.new.desc">Unprovisionierte Matter-Geräte in der Nähe
+                    </p>
+
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="scanDevices()" data-i18n="btn.scan.devices">🔍 Geräte
+                            suchen</button>
+                    </div>
+
+                    <div id="devices-loading" class="loading">
+                        <div class="spinner"></div>
+                        <p data-i18n="devices.searching">Suche nach Geräten...</p>
+                    </div>
+
+                    <div id="unpaired-devices" class="device-list">
+                        <!-- Wird dynamisch gefüllt -->
+                        <div class="empty-state" id="no-unpaired-devices">
+                            <span class="empty-icon">📡</span>
+                            <p data-i18n="devices.unpaired.empty">Keine neuen Geräte gefunden</p>
+                            <p class="empty-hint" data-i18n="devices.unpaired.empty.hint">Drücke "Geräte suchen" um nach
+                                Matter-Geräten zu suchen</p>
+                        </div>
+                    </div>
+
+                    <div id="devices-status" class="status"></div>
+                </div>
+
+                <div class="card">
+                    <h2 data-i18n="devices.paired.title">Zugeordnete Geräte</h2>
+                    <p class="card-description" data-i18n="devices.paired.desc">Bereits hinzugefügte externe Geräte</p>
+
+                    <div id="paired-devices" class="device-list">
+                        <!-- Wird dynamisch gefüllt -->
+                        <div class="empty-state" id="no-paired-devices">
+                            <span class="empty-icon">📦</span>
+                            <p data-i18n="devices.paired.empty">Keine Geräte hinzugefügt</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Color Picker Modal -->
+    <div id="color-modal" class="modal-overlay">
+        <div class="modal">
+            <h3><span data-i18n="modal.color.title">Farbe wählen</span> - <span id="modal-time"></span></h3>
+
+            <div class="color-picker-container">
+                <div class="color-slider">
+                    <label style="color: #f66;">R</label>
+                    <input type="range" id="rangeR" min="0" max="255" value="255" oninput="updateModalColor()">
+                    <span id="valR" class="value">255</span>
+                </div>
+                <div class="color-slider">
+                    <label style="color: #6f6;">G</label>
+                    <input type="range" id="rangeG" min="0" max="255" value="255" oninput="updateModalColor()">
+                    <span id="valG" class="value">255</span>
+                </div>
+                <div class="color-slider">
+                    <label style="color: #66f;">B</label>
+                    <input type="range" id="rangeB" min="0" max="255" value="255" oninput="updateModalColor()">
+                    <span id="valB" class="value">255</span>
+                </div>
+
+                <div id="preview-large" class="preview-large"></div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeColorModal()" data-i18n="btn.cancel">Abbrechen</button>
+                <button class="btn btn-primary" onclick="applyColor()" data-i18n="btn.apply">Übernehmen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scene Modal -->
+    <div id="scene-modal" class="modal-overlay">
+        <div class="modal">
+            <h3 id="scene-modal-title" data-i18n="modal.scene.new">Neue Szene erstellen</h3>
+
+            <div class="form-group">
+                <label for="scene-name" data-i18n="scene.name">Name</label>
+                <input type="text" id="scene-name" data-i18n-placeholder="scene.name.placeholder"
+                    placeholder="z.B. Abendstimmung" autocomplete="off">
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="scene.icon">Icon auswählen</label>
+                <div class="icon-selector">
+                    <button type="button" class="icon-btn active" data-icon="🌅"
+                        onclick="selectSceneIcon('🌅')">🌅</button>
+                    <button type="button" class="icon-btn" data-icon="🌙" onclick="selectSceneIcon('🌙')">🌙</button>
+                    <button type="button" class="icon-btn" data-icon="☀️" onclick="selectSceneIcon('☀️')">☀️</button>
+                    <button type="button" class="icon-btn" data-icon="🎬" onclick="selectSceneIcon('🎬')">🎬</button>
+                    <button type="button" class="icon-btn" data-icon="💤" onclick="selectSceneIcon('💤')">💤</button>
+                    <button type="button" class="icon-btn" data-icon="🎉" onclick="selectSceneIcon('🎉')">🎉</button>
+                    <button type="button" class="icon-btn" data-icon="🍿" onclick="selectSceneIcon('🍿')">🍿</button>
+                    <button type="button" class="icon-btn" data-icon="📚" onclick="selectSceneIcon('📚')">📚</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="scene.actions">Aktionen</label>
+                <div class="scene-actions-editor">
+                    <div class="scene-action-row">
+                        <label>
+                            <input type="checkbox" id="scene-action-light" checked>
+                            <span data-i18n="scene.action.light">Licht Ein/Aus</span>
+                        </label>
+                        <select id="scene-light-state">
+                            <option value="on" data-i18n="scene.light.on">Einschalten</option>
+                            <option value="off" data-i18n="scene.light.off">Ausschalten</option>
+                        </select>
+                    </div>
+                    <div class="scene-action-row">
+                        <label>
+                            <input type="checkbox" id="scene-action-mode">
+                            <span data-i18n="scene.action.mode">Modus setzen</span>
+                        </label>
+                        <select id="scene-mode-value">
+                            <option value="day" data-i18n="mode.day">Tag</option>
+                            <option value="night" data-i18n="mode.night">Nacht</option>
+                            <option value="simulation" data-i18n="mode.simulation">Simulation</option>
+                        </select>
+                    </div>
+                    <div class="scene-action-row">
+                        <label>
+                            <input type="checkbox" id="scene-action-schema">
+                            <span data-i18n="scene.action.schema">Schema wählen</span>
+                        </label>
+                        <select id="scene-schema-value">
+                            <option value="schema_01.csv">Schema 1</option>
+                            <option value="schema_02.csv">Schema 2</option>
+                            <option value="schema_03.csv">Schema 3</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="devices.external">Externe Geräte</label>
+                <div id="scene-devices-list" class="scene-devices-list">
+                    <!-- Wird dynamisch gefüllt -->
+                    <div class="empty-state small" id="no-scene-devices">
+                        <span class="empty-icon">🔗</span>
+                        <p data-i18n="devices.none.available">Keine Geräte verfügbar</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeSceneModal()" data-i18n="btn.cancel">Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveScene()" data-i18n="btn.save">💾 Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/i18n.js"></script>
+    <script src="js/capabilities.js"></script>
+    <script src="js/wifi-shared.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/websocket.js"></script>
+    <script src="js/light.js"></script>
+    <script src="js/scenes.js"></script>
+    <script src="js/devices.js"></script>
+    <script src="js/schema.js"></script>
+    <script src="js/wled.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

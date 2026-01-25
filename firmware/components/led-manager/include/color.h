@@ -12,9 +12,9 @@ typedef struct
 
 typedef struct
 {
-    uint8_t h;
-    uint8_t s;
-    uint8_t v;
+    float h;
+    float s;
+    float v;
 } hsv_t;
 
 __BEGIN_DECLS

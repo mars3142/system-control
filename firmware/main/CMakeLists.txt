@@ -1,10 +1,10 @@
 idf_component_register(SRCS 
-        main.cpp
-        app_task.cpp
-        button_handling.c
-        i2c_checker.c
-        hal/u8g2_esp32_hal.c
-    INCLUDE_DIRS "."
+        src/main.cpp
+        src/app_task.cpp
+        src/button_handling.c
+        src/i2c_checker.c
+        src/hal/u8g2_esp32_hal.c
+    INCLUDE_DIRS "include"
     PRIV_REQUIRES
         analytics
         insa
@@ -21,6 +21,7 @@ idf_component_register(SRCS
         app_update
         rmaker_common
         driver
+        my_mqtt_client
 )
 
 spiffs_create_partition_image(storage ../storage FLASH_IN_PROJECT)

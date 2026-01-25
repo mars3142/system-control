@@ -120,6 +120,8 @@ class LightMenu final : public Menu
      */
     void onButtonPressed(const MenuItem &menuItem, ButtonType button) override;
 
+    void onMessageReceived(const message_t *msg);
+
     /**
      * @brief Pointer to menu options configuration structure
      * @details Stores a reference to the menu configuration passed during construction.
