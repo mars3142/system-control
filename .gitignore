@@ -24,3 +24,5 @@
 **/*_front.png
 **/*_schematic*.png
 **/wiki/*
+*.FCBak
+firmware/**/node_modules
