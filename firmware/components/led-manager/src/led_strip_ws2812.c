@@ -72,17 +72,21 @@ esp_err_t led_strip_init(void)
         .max_leds = MAX_LEDS,
         .led_model = LED_MODEL_WS2812,
         .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRB,
-        .flags = {.invert_out = false},
+        .flags = {.invert_out = 0},
     };
 
     led_strip_rmt_config_t rmt_config = {
         .clk_src = RMT_CLK_SRC_DEFAULT,
         .resolution_hz = 0,
         .mem_block_symbols = 0,
-        .flags = {.with_dma = true},
+        .flags = {.with_dma = 0},
     };
-
-    ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
+    esp_err_t ret = led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to init main LED strip: %s", esp_err_to_name(ret));
+        return ret;
+    }
 
     led_command_queue = xQueueCreate(5, sizeof(led_command_t));
     if (led_command_queue == NULL)

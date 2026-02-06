@@ -6,84 +6,6 @@ menu "System Control"
             help
                 Enable or disable WiFi connectivity.
 
-        config WIFI_NETWORK_COUNT
-            depends on WIFI_ENABLED
-            int     "Number of WiFi Networks"
-            default 1
-            range 1 5
-            help
-                Number of WiFi networks to configure (1-5).
-
-        config WIFI_SSID_1
-            depends on WIFI_ENABLED
-            string  "WiFi SSID 1"
-            default "YourSSID1"
-            help
-                The SSID of the first WiFi network.
-
-        config WIFI_PASSWORD_1
-            depends on WIFI_ENABLED
-            string  "WiFi Password 1"
-            default "YourPassword1"
-            help
-                The password of the first WiFi network.
-
-        config WIFI_SSID_2
-            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 2
-            string  "WiFi SSID 2"
-            default ""
-            help
-                The SSID of the second WiFi network.
-
-        config WIFI_PASSWORD_2
-            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 2
-            string  "WiFi Password 2"
-            default ""
-            help
-                The password of the second WiFi network.
-
-        config WIFI_SSID_3
-            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 3
-            string  "WiFi SSID 3"
-            default ""
-            help
-                The SSID of the third WiFi network.
-
-        config WIFI_PASSWORD_3
-            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 3
-            string  "WiFi Password 3"
-            default ""
-            help
-                The password of the third WiFi network.
-
-        config WIFI_SSID_4
-            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 4
-            string  "WiFi SSID 4"
-            default ""
-            help
-                The SSID of the fourth WiFi network.
-
-        config WIFI_PASSWORD_4
-            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 4
-            string  "WiFi Password 4"
-            default ""
-            help
-                The password of the fourth WiFi network.
-
-        config WIFI_SSID_5
-            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 5
-            string  "WiFi SSID 5"
-            default ""
-            help
-                The SSID of the fifth WiFi network.
-
-        config WIFI_PASSWORD_5
-            depends on WIFI_ENABLED && WIFI_NETWORK_COUNT >= 5
-            string  "WiFi Password 5"
-            default ""
-            help
-                The password of the fifth WiFi network.
-
         config WIFI_CONNECT_RETRIES
             depends on WIFI_ENABLED
             int     "WiFi Connection Retry Attempts per Network"
@@ -104,5 +26,43 @@ menu "System Control"
             default 36
             help
                 GPIO pin number for the SCL line of the display.
+    endmenu
+
+    menu "Button Configuration"
+        config BUTTON_UP
+            int     "Button UP GPIO Pin"
+            default 1
+            help
+                GPIO pin number for the up button.
+
+        config BUTTON_DOWN
+            int     "Button DOWN GPIO Pin"
+            default 6
+            help
+                GPIO pin number for the down button.
+
+        config BUTTON_LEFT
+            int     "Button LEFT GPIO Pin"
+            default 3
+            help
+                GPIO pin number for the left button.
+        
+        config BUTTON_RIGHT
+            int     "Button RIGHT GPIO Pin"
+            default 5
+            help
+                GPIO pin number for the right button.
+        
+        config BUTTON_SELECT
+            int     "Button SELECT GPIO Pin"
+            default 18
+            help
+                GPIO pin number for the select button.
+
+        config BUTTON_BACK
+            int     "Button BACK GPIO Pin"
+            default 16
+            help
+                GPIO pin number for the back button.
     endmenu
 endmenu

@@ -13,9 +13,10 @@
 #include "u8g2.h"
 
 #include "driver/gpio.h"
-#include "driver/i2c.h"
 #include "driver/spi_master.h"
 #include "hal/i2c_types.h"
+
+#include "driver/i2c_master.h"
 
 #define U8G2_ESP32_HAL_UNDEFINED GPIO_NUM_NC
 

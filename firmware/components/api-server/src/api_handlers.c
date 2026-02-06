@@ -137,6 +137,7 @@ static bool is_valid(const cJSON *string)
 esp_err_t api_wifi_config_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/wifi/config");
+    ESP_LOGI(TAG, "Request content length: %d", req->content_len);
 
     char buf[256];
     int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
@@ -250,6 +251,7 @@ esp_err_t api_wifi_status_handler(httpd_req_t *req)
 esp_err_t api_light_power_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/light/power");
+    ESP_LOGI(TAG, "Request content length: %d", req->content_len);
 
     char buf[64];
     int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
@@ -303,6 +305,7 @@ esp_err_t api_light_thunder_handler(httpd_req_t *req)
 esp_err_t api_light_mode_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/light/mode");
+    ESP_LOGI(TAG, "Request content length: %d", req->content_len);
 
     char buf[64];
     int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
@@ -352,6 +355,7 @@ esp_err_t api_light_mode_handler(httpd_req_t *req)
 esp_err_t api_light_schema_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/light/schema");
+    ESP_LOGI(TAG, "Request content length: %d", req->content_len);
 
     char buf[128];
     int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
@@ -444,6 +448,7 @@ esp_err_t api_wled_config_get_handler(httpd_req_t *req)
 esp_err_t api_wled_config_post_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/wled/config");
+    ESP_LOGI(TAG, "Request content length: %d", req->content_len);
 
     char *buf = heap_caps_malloc(MAX_BODY_SIZE, MALLOC_CAP_DEFAULT);
     if (!buf)
@@ -583,6 +588,7 @@ esp_err_t api_schema_get_handler(httpd_req_t *req)
 esp_err_t api_schema_post_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/schema/*");
+    ESP_LOGI(TAG, "Request content length: %d", req->content_len);
 
     // Extract filename from URI
     if (!req)
@@ -676,6 +682,7 @@ esp_err_t api_devices_scan_handler(httpd_req_t *req)
 esp_err_t api_devices_pair_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/devices/pair");
+    ESP_LOGI(TAG, "Request content length: %d", req->content_len);
 
     char buf[256];
     int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
@@ -706,6 +713,7 @@ esp_err_t api_devices_paired_handler(httpd_req_t *req)
 esp_err_t api_devices_update_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/devices/update");
+    ESP_LOGI(TAG, "Request content length: %d", req->content_len);
 
     char buf[256];
     int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
@@ -725,6 +733,7 @@ esp_err_t api_devices_update_handler(httpd_req_t *req)
 esp_err_t api_devices_unpair_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/devices/unpair");
+    ESP_LOGI(TAG, "Request content length: %d", req->content_len);
 
     char buf[128];
     int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
@@ -744,6 +753,7 @@ esp_err_t api_devices_unpair_handler(httpd_req_t *req)
 esp_err_t api_devices_toggle_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/devices/toggle");
+    ESP_LOGI(TAG, "Request content length: %d", req->content_len);
 
     char buf[128];
     int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
@@ -796,6 +806,7 @@ esp_err_t api_scenes_get_handler(httpd_req_t *req)
 esp_err_t api_scenes_post_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/scenes");
+    ESP_LOGI(TAG, "Request content length: %d", req->content_len);
 
     char buf[512];
     int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);
@@ -834,6 +845,7 @@ esp_err_t api_scenes_delete_handler(httpd_req_t *req)
 esp_err_t api_scenes_activate_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST /api/scenes/activate");
+    ESP_LOGI(TAG, "Request content length: %d", req->content_len);
 
     char buf[128];
     int ret = httpd_req_recv(req, buf, sizeof(buf) - 1);

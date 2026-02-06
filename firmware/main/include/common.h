@@ -1,8 +1,10 @@
 #pragma once
 
-#define BUTTON_UP GPIO_NUM_1
-#define BUTTON_DOWN GPIO_NUM_6
-#define BUTTON_LEFT GPIO_NUM_3
-#define BUTTON_RIGHT GPIO_NUM_5
-#define BUTTON_SELECT GPIO_NUM_18
-#define BUTTON_BACK GPIO_NUM_16
+#include "driver/gpio.h"
+
+#define BUTTON_UP ((gpio_num_t)CONFIG_BUTTON_UP)
+#define BUTTON_DOWN ((gpio_num_t)CONFIG_BUTTON_DOWN)
+#define BUTTON_LEFT ((gpio_num_t)CONFIG_BUTTON_LEFT)
+#define BUTTON_RIGHT ((gpio_num_t)CONFIG_BUTTON_RIGHT)
+#define BUTTON_SELECT ((gpio_num_t)CONFIG_BUTTON_SELECT)
+#define BUTTON_BACK ((gpio_num_t)CONFIG_BUTTON_BACK)
