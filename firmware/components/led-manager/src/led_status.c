@@ -97,22 +97,21 @@ esp_err_t led_status_init(int gpio_num)
         .max_leds = STATUS_LED_COUNT,
         .led_model = LED_MODEL_WS2812,
         .color_component_format = LED_STRIP_COLOR_COMPONENT_FMT_GRBW,
-        .flags =
-            {
-                .invert_out = false,
-            },
+        .flags = {.invert_out = 0},
     };
     led_strip_rmt_config_t rmt_config = {
         .clk_src = RMT_CLK_SRC_DEFAULT,
         .resolution_hz = 10 * 1000 * 1000, // 10MHz
         .mem_block_symbols = 0,
-        .flags =
-            {
-                .with_dma = false,
-            },
+        .flags = {.with_dma = 0},
     };
-    ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip));
-    ESP_LOGI(TAG, "LED strip initialized.");
+    esp_err_t ret = led_strip_new_rmt_device(&strip_config, &rmt_config, &led_strip);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to init status LED: %s", esp_err_to_name(ret));
+        return ret;
+    }
+    ESP_LOGI(TAG, "Status LED initialized.");
 
     // Create mutex
     mutex = xSemaphoreCreateMutex();

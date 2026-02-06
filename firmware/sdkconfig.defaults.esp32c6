@@ -1,2 +1,20 @@
 # default ESP target
 CONFIG_IDF_TARGET="esp32c6"
+
+#
+# Display Settings
+#
+CONFIG_DISPLAY_SDA_PIN=9
+CONFIG_DISPLAY_SCL_PIN=8
+# end of Display Settings
+
+#
+# Button Configuration
+#
+CONFIG_BUTTON_UP=7
+CONFIG_BUTTON_DOWN=4
+CONFIG_BUTTON_LEFT=6
+CONFIG_BUTTON_RIGHT=5
+CONFIG_BUTTON_SELECT=19
+CONFIG_BUTTON_BACK=20
+# end of Button Configuration

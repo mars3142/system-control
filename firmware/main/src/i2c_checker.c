@@ -1,56 +1,41 @@
 #include "i2c_checker.h"
 
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 #include "esp_insights.h"
 #include "esp_log.h"
 #include "hal/u8g2_esp32_hal.h"
 
 static const char *TAG = "i2c_checker";
 
-esp_err_t i2c_device_check(i2c_port_t i2c_port, uint8_t device_address)
+static esp_err_t i2c_device_check(i2c_master_bus_handle_t i2c_bus, uint8_t device_address)
 {
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    // Send the device address with the write bit (LSB = 0)
-    i2c_master_write_byte(cmd, (device_address << 1) | I2C_MASTER_WRITE, true);
-    i2c_master_stop(cmd);
-
-    esp_err_t ret = i2c_master_cmd_begin(i2c_port, cmd, pdMS_TO_TICKS(100));
-
-    i2c_cmd_link_delete(cmd);
-
-    return ret;
+    // Use the new I2C master driver to probe for the device.
+    return i2c_master_probe(i2c_bus, device_address, 100);
 }
 
 esp_err_t i2c_bus_scan_and_check(void)
 {
-    // 1. Configure and install I2C bus
-    i2c_config_t conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = I2C_MASTER_SDA_PIN,
+    // 1. Configure and create I2C master bus using the new driver API
+    i2c_master_bus_handle_t i2c_bus = NULL;
+    i2c_master_bus_config_t bus_cfg = {
+        .i2c_port = I2C_MASTER_NUM,
         .scl_io_num = I2C_MASTER_SCL_PIN,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = I2C_MASTER_FREQ_HZ,
+        .sda_io_num = I2C_MASTER_SDA_PIN,
+        .clk_source = I2C_CLK_SRC_DEFAULT,
+        .flags = {.enable_internal_pullup = true},
     };
-    esp_err_t err = i2c_param_config(I2C_MASTER_NUM, &conf);
+
+    esp_err_t err = i2c_new_master_bus(&bus_cfg, &i2c_bus);
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "I2C parameter configuration failed: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "I2C bus creation failed: %s", esp_err_to_name(err));
         return err;
     }
 
-    err = i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
-    if (err != ESP_OK)
-    {
-        ESP_LOGE(TAG, "I2C driver installation failed: %s", esp_err_to_name(err));
-        return err;
-    }
+    ESP_LOGI(TAG, "I2C master bus initialized. Searching for device...");
 
-    ESP_LOGI(TAG, "I2C driver initialized. Searching for device...");
-
-    // 2. Check if the device is present
-    err = i2c_device_check(I2C_MASTER_NUM, DISPLAY_I2C_ADDRESS);
+    // 2. Check if the device is present using the new API
+    err = i2c_device_check(i2c_bus, DISPLAY_I2C_ADDRESS);
 
     if (err == ESP_OK)
     {
@@ -66,9 +51,13 @@ esp_err_t i2c_bus_scan_and_check(void)
         ESP_LOGE(TAG, "Error communicating with address 0x%02X: %s", DISPLAY_I2C_ADDRESS, esp_err_to_name(err));
     }
 
-    // 3. Uninstall I2C driver if it is no longer needed
-    i2c_driver_delete(I2C_MASTER_NUM);
-    ESP_DIAG_EVENT(TAG, "I2C driver uninstalled.");
+    // 3. Delete I2C master bus if it is no longer needed
+    esp_err_t del_err = i2c_del_master_bus(i2c_bus);
+    if (del_err != ESP_OK)
+    {
+        ESP_LOGW(TAG, "Failed to delete I2C master bus: %s", esp_err_to_name(del_err));
+    }
+    ESP_DIAG_EVENT(TAG, "I2C master bus deleted.");
 
     return err;
 }
