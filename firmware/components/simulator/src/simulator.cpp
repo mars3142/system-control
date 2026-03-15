@@ -19,7 +19,7 @@
 // Type definitions
 typedef struct light_item_node_t
 {
-    char time[5];
+    char time[4];
     uint8_t red;
     uint8_t green;
     uint8_t blue;
@@ -210,6 +210,7 @@ static void send_simulation_message(const char *time, rgb_t color)
     message_t msg = {};
     msg.type = MESSAGE_TYPE_SIMULATION;
     strncpy(msg.data.simulation.time, time, sizeof(msg.data.simulation.time) - 1);
+    msg.data.simulation.time[sizeof(msg.data.simulation.time) - 1] = '\0';
     msg.data.simulation.red = color.red;
     msg.data.simulation.green = color.green;
     msg.data.simulation.blue = color.blue;

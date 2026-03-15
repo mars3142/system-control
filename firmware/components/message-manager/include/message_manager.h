@@ -51,7 +51,7 @@ extern "C"
 
     typedef struct
     {
-        char time[6];
+        char time[10];
         uint8_t red;
         uint8_t green;
         uint8_t blue;

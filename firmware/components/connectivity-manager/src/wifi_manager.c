@@ -101,7 +101,7 @@ void wifi_manager_init()
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     // Default WiFi Station
-    esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
+    esp_netif_create_default_wifi_sta();
 
     // Event Handler registrieren
     ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL, NULL));
@@ -130,7 +130,9 @@ void wifi_manager_init()
         ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
         wifi_config_t wifi_config = {0};
         strncpy((char *)wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid) - 1);
+        wifi_config.sta.ssid[sizeof(wifi_config.sta.ssid) - 1] = '\0';
         strncpy((char *)wifi_config.sta.password, password, sizeof(wifi_config.sta.password) - 1);
+        wifi_config.sta.password[sizeof(wifi_config.sta.password) - 1] = '\0';
         wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
         ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
         ESP_ERROR_CHECK(esp_wifi_start());
