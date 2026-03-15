@@ -1,6 +1,253 @@
 {
-    "hello": "Hallo Welt",
-    "welcome": "Willkommen",
-    "language": "Sprache",
-    "save": "Speichern"
+  "common": {
+    "language": "Deutsch",
+    "flag": "🇩🇪",
+    "save": "Speichern",
+    "on": "AN",
+    "off": "AUS",
+    "loading": "Wird geladen..."
+  },
+  "page": {
+    "title": "System Control"
+  },
+  "tab": {
+    "control": {
+      "title": "🎛️ Bedienung"
+    },
+    "config": {
+      "title": "⚙️ Konfiguration",
+      "subtab": {
+        "wifi": "📶 WLAN",
+        "light": "💡 Lichtsteuerung",
+        "devices": "🔗 Geräte",
+        "scenes": "🎬 Szenen"
+      }
+    }
+  },
+  "wled": {
+    "config": {
+      "title": "LED Konfiguration",
+      "desc": "Konfiguriere die LED-Segmente und Anzahl LEDs pro Segment"
+    },
+    "segments": {
+      "title": "Segmente",
+      "empty": "Keine Segmente konfiguriert",
+      "empty.hint": "Klicke auf \"Segment hinzufügen\" um ein Segment zu erstellen"
+    },
+    "segment": {
+      "add": "➕ Segment hinzufügen",
+      "name": "Segment {num}",
+      "leds": "Anzahl LEDs",
+      "start": "Start-LED",
+      "remove": "Entfernen"
+    },
+    "saved": "LED-Konfiguration gespeichert!",
+    "error": {
+      "save": "Fehler beim Speichern der LED-Konfiguration"
+    },
+    "loaded": "LED-Konfiguration geladen"
+  },
+  "control": {
+    "light": {
+      "title": "Lichtsteuerung",
+      "light": "Licht",
+      "thunder": "Gewitter"
+    },
+    "mode": {
+      "title": "Betriebsmodus"
+    },
+    "schema": {
+      "active": "Aktives Schema"
+    },
+    "status": {
+      "title": "Aktueller Status",
+      "mode": "Modus",
+      "schema": "Schema",
+      "color": "Aktuelle Farbe",
+      "clock": "Uhrzeit",
+      "stopped": "Angehalten"
+    }
+  },
+  "mode": {
+    "day": "Tag",
+    "night": "Nacht",
+    "simulation": "Simulation"
+  },
+  "schema": {
+    "name": {
+      "1": "Schema 1 (Standard)",
+      "2": "Schema 2 (Warm)",
+      "3": "Schema 3 (Natur)"
+    },
+    "editor": {
+      "title": "Licht-Schema Editor"
+    },
+    "file": "Schema-Datei",
+    "loading": "Schema wird geladen...",
+    "header": {
+      "time": "Zeit",
+      "color": "Farbe"
+    },
+    "loaded": "{file} erfolgreich geladen",
+    "saved": "{file} erfolgreich gespeichert!",
+    "demo": "Demo-Daten geladen (Server nicht erreichbar)"
+  },
+  "scenes": {
+    "title": "Szenen",
+    "empty": "Keine Szenen definiert",
+    "empty.hint": "Erstelle Szenen unter Konfiguration",
+    "manage": {
+      "title": "Szenen verwalten",
+      "desc": "Erstelle und bearbeite Szenen für schnellen Zugriff"
+    },
+    "config": {
+      "empty": "Keine Szenen erstellt",
+      "empty.hint": "Klicke auf \"Neue Szene\" um eine Szene zu erstellen"
+    },
+    "activated": "\"{name}\" aktiviert",
+    "created": "Szene erstellt",
+    "updated": "Szene aktualisiert",
+    "deleted": "\"{name}\" gelöscht",
+    "confirm": {
+      "delete": "\"{name}\" wirklich löschen?"
+    },
+    "error": {
+      "name": "Bitte Namen eingeben"
+    }
+  },
+  "devices": {
+    "external": "Externe Geräte",
+    "control": {
+      "empty": "Keine Geräte hinzugefügt",
+      "empty.hint": "Füge Geräte unter Konfiguration hinzu"
+    },
+    "new": {
+      "title": "Neue Geräte",
+      "desc": "Unprovisionierte Matter-Geräte in der Nähe"
+    },
+    "searching": "Suche nach Geräten...",
+    "unpaired": {
+      "empty": "Keine neuen Geräte gefunden",
+      "empty.hint": "Drücke \"Geräte suchen\" um nach Matter-Geräten zu suchen"
+    },
+    "paired": {
+      "title": "Zugeordnete Geräte",
+      "desc": "Bereits hinzugefügte externe Geräte",
+      "empty": "Keine Geräte hinzugefügt"
+    },
+    "none": {
+      "available": "Keine Geräte verfügbar"
+    },
+    "found": "{count} Gerät(e) gefunden",
+    "added": "\"{name}\" erfolgreich hinzugefügt",
+    "removed": "\"{name}\" entfernt",
+    "name": {
+      "updated": "Name aktualisiert"
+    },
+    "confirm": {
+      "remove": "\"{name}\" wirklich entfernen?"
+    }
+  },
+  "wifi": {
+    "config": {
+      "title": "WLAN Konfiguration"
+    },
+    "ssid": "WLAN Name (SSID)",
+    "ssid.placeholder": "Netzwerkname eingeben",
+    "password": "WLAN Passwort",
+    "password.short": "Passwort",
+    "password.placeholder": "Passwort eingeben",
+    "available": "Verfügbare Netzwerke",
+    "scan": {
+      "hint": "Nach Netzwerken suchen...",
+      "error": "Fehler beim WLAN-Scan",
+      "failed": "Netzwerksuche fehlgeschlagen"
+    },
+    "status": {
+      "title": "Verbindungsstatus",
+      "status": "Status:",
+      "ip": "IP-Adresse:",
+      "signal": "Signal:"
+    },
+    "connected": "✅ Verbunden",
+    "disconnected": "❌ Nicht verbunden",
+    "unavailable": "⚠️ Status nicht verfügbar",
+    "searching": "Suche läuft...",
+    "saved": "WLAN-Konfiguration gespeichert! Gerät verbindet sich...",
+    "error": {
+      "ssid": "Bitte WLAN-Name eingeben",
+      "save": "Fehler beim Speichern"
+    },
+    "networks": {
+      "found": "{count} Netzwerk(e) gefunden",
+      "notfound": "Keine Netzwerke gefunden."
+    },
+    "signal": "Signal",
+    "secure": "Gesichert",
+    "open": "Offen"
+  },
+  "modal": {
+    "color": {
+      "title": "Farbe wählen"
+    },
+    "scene": {
+      "new": "Neue Szene erstellen",
+      "edit": "Szene bearbeiten"
+    }
+  },
+  "scene": {
+    "name": "Name",
+    "name.placeholder": "z.B. Abendstimmung",
+    "icon": "Icon auswählen",
+    "actions": "Aktionen",
+    "action": {
+      "light": "Licht Ein/Aus",
+      "mode": "Modus setzen",
+      "schema": "Schema wählen"
+    },
+    "light": {
+      "on": "Einschalten",
+      "off": "Ausschalten"
+    }
+  },
+  "btn": {
+    "scan": "🔍 Suchen",
+    "save": "💾 Speichern",
+    "load": "🔄 Laden",
+    "cancel": "Abbrechen",
+    "apply": "Übernehmen",
+    "new": {
+      "scene": "➕ Neue Szene"
+    },
+    "scan.devices": "🔍 Geräte suchen",
+    "add": "Hinzufügen",
+    "remove": "Entfernen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen"
+  },
+  "captive": {
+    "title": "System Control - WLAN Setup",
+    "subtitle": "WLAN-Einrichtung",
+    "scan": "📡 Netzwerke suchen",
+    "scanning": "Suche nach Netzwerken...",
+    "or": {
+      "manual": "oder manuell eingeben"
+    },
+    "password": {
+      "placeholder": "WLAN-Passwort"
+    },
+    "connect": "💾 Verbinden",
+    "note": {
+      "title": "Hinweis:",
+      "text": "Nach dem Speichern verbindet sich das Gerät mit dem gewählten Netzwerk. Diese Seite wird dann nicht mehr erreichbar sein. Verbinden Sie sich mit Ihrem normalen WLAN, um auf das Gerät zuzugreifen."
+    },
+    "connecting": "Verbindung wird hergestellt... {seconds}s",
+    "done": "Gerät sollte jetzt verbunden sein. Sie können diese Seite schließen."
+  },
+  "loading": "Laden...",
+  "error": "Fehler",
+  "success": "Erfolg",
+  "clock": {
+    "suffix": "Uhr"
+  }
 }

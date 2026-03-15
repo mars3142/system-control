@@ -1,6 +1,253 @@
 {
-    "hello": "Hello World",
-    "welcome": "Welcome",
-    "language": "Language",
-    "save": "Save"
+  "common": {
+    "language": "English",
+    "flag": "🇬🇧",
+    "save": "Save",
+    "on": "ON",
+    "off": "OFF",
+    "loading": "Loading..."
+  },
+  "page": {
+    "title": "System Control"
+  },
+  "tab": {
+    "control": {
+      "title": "🎛️ Control"
+    },
+    "config": {
+      "title": "⚙️ Settings",
+      "subtab": {
+        "wifi": "📶 WiFi",
+        "light": "💡 Light Control",
+        "devices": "🔗 Devices",
+        "scenes": "🎬 Scenes"
+      }
+    }
+  },
+  "wled": {
+    "config": {
+      "title": "LED Configuration",
+      "desc": "Configure LED segments and number of LEDs per segment"
+    },
+    "segments": {
+      "title": "Segments",
+      "empty": "No segments configured",
+      "empty.hint": "Click \"Add Segment\" to create a segment"
+    },
+    "segment": {
+      "add": "➕ Add Segment",
+      "name": "Segment {num}",
+      "leds": "Number of LEDs",
+      "start": "Start LED",
+      "remove": "Remove"
+    },
+    "saved": "LED configuration saved!",
+    "error": {
+      "save": "Error saving LED configuration"
+    },
+    "loaded": "LED configuration loaded"
+  },
+  "control": {
+    "light": {
+      "title": "Light Control",
+      "light": "Light",
+      "thunder": "Thunder"
+    },
+    "mode": {
+      "title": "Operating Mode"
+    },
+    "schema": {
+      "active": "Active Schema"
+    },
+    "status": {
+      "title": "Current Status",
+      "mode": "Mode",
+      "schema": "Schema",
+      "color": "Current Color",
+      "clock": "Time",
+      "stopped": "Stopped"
+    }
+  },
+  "mode": {
+    "day": "Day",
+    "night": "Night",
+    "simulation": "Simulation"
+  },
+  "schema": {
+    "name": {
+      "1": "Schema 1 (Standard)",
+      "2": "Schema 2 (Warm)",
+      "3": "Schema 3 (Natural)"
+    },
+    "editor": {
+      "title": "Light Schema Editor"
+    },
+    "file": "Schema File",
+    "loading": "Loading schema...",
+    "header": {
+      "time": "Time",
+      "color": "Color"
+    },
+    "loaded": "{file} loaded successfully",
+    "saved": "{file} saved successfully!",
+    "demo": "Demo data loaded (server unreachable)"
+  },
+  "scenes": {
+    "title": "Scenes",
+    "empty": "No scenes defined",
+    "empty.hint": "Create scenes in settings",
+    "manage": {
+      "title": "Manage Scenes",
+      "desc": "Create and edit scenes for quick access"
+    },
+    "config": {
+      "empty": "No scenes created",
+      "empty.hint": "Click \"New Scene\" to create a scene"
+    },
+    "activated": "\"{name}\" activated",
+    "created": "Scene created",
+    "updated": "Scene updated",
+    "deleted": "\"{name}\" deleted",
+    "confirm": {
+      "delete": "Really delete \"{name}\"?"
+    },
+    "error": {
+      "name": "Please enter a name"
+    }
+  },
+  "devices": {
+    "external": "External Devices",
+    "control": {
+      "empty": "No devices added",
+      "empty.hint": "Add devices in settings"
+    },
+    "new": {
+      "title": "New Devices",
+      "desc": "Unprovisioned Matter devices nearby"
+    },
+    "searching": "Searching for devices...",
+    "unpaired": {
+      "empty": "No new devices found",
+      "empty.hint": "Press \"Scan devices\" to search for Matter devices"
+    },
+    "paired": {
+      "title": "Paired Devices",
+      "desc": "Already added external devices",
+      "empty": "No devices added"
+    },
+    "none": {
+      "available": "No devices available"
+    },
+    "found": "{count} device(s) found",
+    "added": "\"{name}\" added successfully",
+    "removed": "\"{name}\" removed",
+    "name": {
+      "updated": "Name updated"
+    },
+    "confirm": {
+      "remove": "Really remove \"{name}\"?"
+    }
+  },
+  "wifi": {
+    "config": {
+      "title": "WiFi Configuration"
+    },
+    "ssid": "WiFi Name (SSID)",
+    "ssid.placeholder": "Enter network name",
+    "password": "WiFi Password",
+    "password.short": "Password",
+    "password.placeholder": "Enter password",
+    "available": "Available Networks",
+    "scan": {
+      "hint": "Search for networks...",
+      "error": "Scan error",
+      "failed": "Network scan failed"
+    },
+    "status": {
+      "title": "Connection Status",
+      "status": "Status:",
+      "ip": "IP Address:",
+      "signal": "Signal:"
+    },
+    "connected": "✅ Connected",
+    "disconnected": "❌ Not connected",
+    "unavailable": "⚠️ Status unavailable",
+    "searching": "Searching...",
+    "saved": "WiFi configuration saved! Device connecting...",
+    "error": {
+      "ssid": "Please enter WiFi name",
+      "save": "Error saving"
+    },
+    "networks": {
+      "found": "{count} network(s) found",
+      "notfound": "No networks found."
+    },
+    "signal": "Signal",
+    "secure": "Secured",
+    "open": "Open"
+  },
+  "modal": {
+    "color": {
+      "title": "Choose Color"
+    },
+    "scene": {
+      "new": "Create New Scene",
+      "edit": "Edit Scene"
+    }
+  },
+  "scene": {
+    "name": "Name",
+    "name.placeholder": "e.g. Evening Mood",
+    "icon": "Choose Icon",
+    "actions": "Actions",
+    "action": {
+      "light": "Light On/Off",
+      "mode": "Set Mode",
+      "schema": "Choose Schema"
+    },
+    "light": {
+      "on": "Turn On",
+      "off": "Turn Off"
+    }
+  },
+  "btn": {
+    "scan": "🔍 Scan",
+    "save": "💾 Save",
+    "load": "🔄 Load",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "new": {
+      "scene": "➕ New Scene"
+    },
+    "scan.devices": "🔍 Scan Devices",
+    "add": "Add",
+    "remove": "Remove",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "captive": {
+    "title": "System Control - WiFi Setup",
+    "subtitle": "WiFi Setup",
+    "scan": "📡 Scan Networks",
+    "scanning": "Scanning for networks...",
+    "or": {
+      "manual": "or enter manually"
+    },
+    "password": {
+      "placeholder": "WiFi password"
+    },
+    "connect": "💾 Connect",
+    "note": {
+      "title": "Note:",
+      "text": "After saving, the device will connect to the selected network. This page will no longer be accessible. Connect to your regular WiFi to access the device."
+    },
+    "connecting": "Connecting... {seconds}s",
+    "done": "Device should now be connected. You can close this page."
+  },
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+  "clock": {
+    "suffix": "o'clock"
+  }
 }
