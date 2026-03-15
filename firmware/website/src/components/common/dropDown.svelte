@@ -71,7 +71,7 @@
 						type="button"
 						class="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-accent hover:text-accent-foreground {option.value ===
 						value
-							? 'bg-primary/10 text-primary font-medium'
+							? 'bg-primary text-primary-foreground font-medium'
 							: ''}"
 						role="option"
 						aria-selected={option.value === value}

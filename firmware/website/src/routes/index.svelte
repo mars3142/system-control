@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { t } from "./i18n/store";
-	import ControlTab from "./components/control/controlTab.svelte";
-	import ConfigTab from "./components/config/configTab.svelte";
-	import TabButton from "./components/common/tabButton.svelte";
-	import TabBar from "./components/common/tabBar.svelte";
-	import { controlStore } from "./stores/controlStore";
+	import { t } from "../i18n/store";
+	import ControlTab from "../components/control/controlTab.svelte";
+	import ConfigTab from "../components/config/configTab.svelte";
+	import TabButton from "../components/common/tabButton.svelte";
+	import TabBar from "../components/common/tabBar.svelte";
+	import { controlStore } from "../stores/controlStore";
 
 	let activeTab = "control";
 
