@@ -2,9 +2,10 @@
 #include "api_server.h"
 #include "common.h"
 
-#include "message_manager.h"
+#include "my_mqtt_client.h"
 #include <esp_http_server.h>
 #include <esp_log.h>
+#include <message_manager.h>
 #include <string.h>
 
 static const char *TAG = "websocket_handler";
@@ -266,6 +267,8 @@ esp_err_t websocket_broadcast(httpd_handle_t server, const char *message)
             }
         }
     }
+
+    mqtt_publish(message);
 
     return ret;
 }

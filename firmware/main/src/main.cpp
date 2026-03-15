@@ -5,6 +5,7 @@
 #include "persistence_manager.h"
 #include "wifi_manager.h"
 #include <ble_manager.h>
+#include <driver/gpio.h>
 #include <esp_event.h>
 #include <esp_insights.h>
 #include <esp_log.h>
@@ -13,9 +14,31 @@
 #include <nvs_flash.h>
 #include <sdkconfig.h>
 
+#define WIFI_ENABLE GPIO_NUM_3
+#define WIFI_ANT_CONFIG GPIO_NUM_14
+
 __BEGIN_DECLS
+
 void app_main(void)
 {
+#if defined(CONFIG_IDF_TARGET_ESP32C6)
+    // GPIO für WiFi Enable konfigurieren
+    gpio_config_t io_conf = {.pin_bit_mask = (1ULL << WIFI_ENABLE),
+                             .mode = GPIO_MODE_OUTPUT,
+                             .pull_up_en = GPIO_PULLUP_DISABLE,
+                             .pull_down_en = GPIO_PULLDOWN_DISABLE,
+                             .intr_type = GPIO_INTR_DISABLE};
+    gpio_config(&io_conf);
+    gpio_set_level(WIFI_ENABLE, 0); // LOW
+
+    vTaskDelay(pdMS_TO_TICKS(100));
+
+    // GPIO for WiFi antenna configuration
+    io_conf.pin_bit_mask = (1ULL << WIFI_ANT_CONFIG);
+    gpio_config(&io_conf);
+    gpio_set_level(WIFI_ANT_CONFIG, 1); // HIGH
+#endif
+
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)

@@ -4,6 +4,7 @@
 #include "led_strip_ws2812.h"
 #include "message_manager.h"
 #include "persistence_manager.h"
+#include "simulator.h"
 #include "storage.h"
 #include <esp_heap_caps.h>
 #include <esp_log.h>
@@ -15,28 +16,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static const char *TAG = "simulator";
-static char *time = NULL;
-
-static char *time_to_string(int hhmm)
-{
-    static char buffer[20];
-    snprintf(buffer, sizeof(buffer), "%02d:%02d", hhmm / 100, hhmm % 100);
-    return buffer;
-}
-
-static TaskHandle_t simulation_task_handle = NULL;
-static SemaphoreHandle_t simulation_mutex = NULL;
-
-static void ensure_mutex_initialized(void)
-{
-    if (simulation_mutex == NULL)
-    {
-        simulation_mutex = xSemaphoreCreateMutex();
-    }
-}
-
-// The struct is extended with a 'next' pointer to form a linked list.
+// Type definitions
 typedef struct light_item_node_t
 {
     char time[5];
@@ -46,23 +26,42 @@ typedef struct light_item_node_t
     struct light_item_node_t *next;
 } light_item_node_t;
 
-// Global pointers for the head and tail of the list.
-static light_item_node_t *head = NULL;
-static light_item_node_t *tail = NULL;
-
-// Interpolation mode selection
 typedef enum
 {
     INTERPOLATION_RGB,
     INTERPOLATION_HSV
 } interpolation_mode_t;
 
-// You can change this to test different interpolation methods
+// Constants and global variables
+static const char *TAG = "simulator";
+static char *time = NULL;
+static TaskHandle_t simulation_task_handle = NULL;
+static SemaphoreHandle_t simulation_mutex = NULL;
+static light_item_node_t *head = NULL;
 static const interpolation_mode_t interpolation_mode = INTERPOLATION_RGB;
 
-char *get_time(void)
+// Helper function: converts hhmm format to minutes of the day
+static int hhmm_to_minutes(const char time[5])
 {
-    return time;
+    int t = atoi(time);
+    return (t / 100) * 60 + (t % 100);
+}
+
+// Helper function: converts int hhmm to string
+static char *time_to_string(int hhmm)
+{
+    static char buffer[20];
+    snprintf(buffer, sizeof(buffer), "%02d:%02d", hhmm / 100, hhmm % 100);
+    return buffer;
+}
+
+// Helper function: ensures mutex is initialized
+static void ensure_mutex_initialized(void)
+{
+    if (simulation_mutex == NULL)
+    {
+        simulation_mutex = xSemaphoreCreateMutex();
+    }
 }
 
 // Main interpolation function that selects the appropriate method
@@ -78,10 +77,11 @@ static rgb_t interpolate_color(rgb_t start, rgb_t end, float factor)
     }
 }
 
+// Linked list management
 esp_err_t add_light_item(const char time[5], uint8_t red, uint8_t green, uint8_t blue, uint8_t white,
                          uint8_t brightness, uint8_t saturation)
 {
-    // Allocate memory for a new node in PSRAM.
+    // Allocate memory for new node in PSRAM.
     light_item_node_t *new_node = (light_item_node_t *)heap_caps_malloc(sizeof(light_item_node_t), MALLOC_CAP_DEFAULT);
     if (new_node == NULL)
     {
@@ -106,18 +106,22 @@ esp_err_t add_light_item(const char time[5], uint8_t red, uint8_t green, uint8_t
     new_node->blue = (uint8_t)(color.blue * brightness_factor);
     new_node->next = NULL;
 
-    // Append the new node to the end of the list.
-    if (head == NULL)
+    // Insert sorted: find the correct position
+    if (head == NULL || hhmm_to_minutes(new_node->time) < hhmm_to_minutes(head->time))
     {
-        // If the list is empty, the new node becomes both head and tail.
+        // New head
+        new_node->next = head;
         head = new_node;
-        tail = new_node;
     }
     else
     {
-        // Otherwise, append the new node to the end and update tail.
-        tail->next = new_node;
-        tail = new_node;
+        light_item_node_t *prev = head;
+        while (prev->next != NULL && hhmm_to_minutes(prev->next->time) < hhmm_to_minutes(new_node->time))
+        {
+            prev = prev->next;
+        }
+        new_node->next = prev->next;
+        prev->next = new_node;
     }
 
     return ESP_OK;
@@ -136,7 +140,6 @@ void cleanup_light_items(void)
     }
 
     head = NULL;
-    tail = NULL;
     ESP_LOGI(TAG, "Cleaned up all light items.");
 }
 
@@ -152,6 +155,8 @@ static void initialize_light_items(void)
     snprintf(filename, sizeof(filename), "schema_%02d.csv", variant);
     load_file(filename);
     persistence_manager_deinit(&persistence);
+
+    // The list is now sorted because add_light_item inserts sorted
 
     if (head == NULL)
     {
@@ -199,43 +204,7 @@ static light_item_node_t *find_best_light_item_for_time(int hhmm)
     return best_item;
 }
 
-static light_item_node_t *find_next_light_item_for_time(int hhmm)
-{
-    light_item_node_t *current = head;
-    light_item_node_t *next_item = NULL;
-    int next_time = 9999; // Initialize with a value larger than any possible time
-
-    // First pass: find the soonest time after hhmm
-    while (current != NULL)
-    {
-        int current_time = atoi(current->time);
-        if (current_time > hhmm && current_time < next_time)
-        {
-            next_time = current_time;
-            next_item = current;
-        }
-        current = current->next;
-    }
-
-    // If no item is found for the rest of the day, wrap around to the beginning of the next day
-    if (next_item == NULL)
-    {
-        current = head;
-        next_time = 9999;
-        while (current != NULL)
-        {
-            int current_time = atoi(current->time);
-            if (current_time < next_time)
-            {
-                next_time = current_time;
-                next_item = current;
-            }
-            current = current->next;
-        }
-    }
-    return next_item;
-}
-
+// Messaging
 static void send_simulation_message(const char *time, rgb_t color)
 {
     message_t msg = {};
@@ -245,6 +214,12 @@ static void send_simulation_message(const char *time, rgb_t color)
     msg.data.simulation.green = color.green;
     msg.data.simulation.blue = color.blue;
     message_manager_post(&msg, pdMS_TO_TICKS(100));
+}
+
+// Public API
+char *get_time(void)
+{
+    return time;
 }
 
 void start_simulate_day(void)
@@ -308,49 +283,55 @@ void simulate_cycle(void *args)
         time = time_to_string(hhmm);
 
         light_item_node_t *current_item = find_best_light_item_for_time(hhmm);
-        light_item_node_t *next_item = find_next_light_item_for_time(hhmm);
+        light_item_node_t *next_item = NULL;
 
         if (current_item != NULL)
         {
             rgb_t color = {0, 0, 0};
 
-            // Use head as fallback if next_item is NULL
-            next_item = next_item ? next_item : head;
+            // Cyclic interpolation: if current_item is the tail element, set next_item to head
+            if (current_item->next == NULL && head != NULL)
+            {
+                next_item = head;
+            }
+            else
+            {
+                next_item = current_item->next;
+            }
+
             if (next_item != NULL)
             {
-                int current_item_time_min = (atoi(current_item->time) / 100) * 60 + (atoi(current_item->time) % 100);
-                int next_item_time_min = (atoi(next_item->time) / 100) * 60 + (atoi(next_item->time) % 100);
+                int current_minutes = hhmm_to_minutes(current_item->time);
+                int next_minutes = hhmm_to_minutes(next_item->time);
 
-                if (next_item_time_min < current_item_time_min)
+                // Cyclic transition: if next_minutes < current_minutes, add day length
+                if (next_minutes < current_minutes)
                 {
-                    next_item_time_min += total_minutes_in_day;
+                    next_minutes += total_minutes_in_day;
                 }
 
-                int minutes_since_current_item_start = current_minute_of_day - current_item_time_min;
-                if (minutes_since_current_item_start < 0)
+                int minutes_since_current = current_minute_of_day - current_minutes;
+                if (minutes_since_current < 0)
                 {
-                    minutes_since_current_item_start += total_minutes_in_day;
+                    minutes_since_current += total_minutes_in_day;
                 }
 
-                int interval_duration = next_item_time_min - current_item_time_min;
-                if (interval_duration == 0)
+                int interval = next_minutes - current_minutes;
+                if (interval == 0)
                 {
-                    interval_duration = 1;
+                    interval = 1;
                 }
 
-                float interpolation_factor = (float)minutes_since_current_item_start / (float)interval_duration;
+                float factor = (float)minutes_since_current / (float)interval;
 
-                // Prepare colors for interpolation
                 rgb_t start_rgb = {.red = current_item->red, .green = current_item->green, .blue = current_item->blue};
                 rgb_t end_rgb = {.red = next_item->red, .green = next_item->green, .blue = next_item->blue};
 
-                // Use the interpolation function
-                color = interpolate_color(start_rgb, end_rgb, interpolation_factor);
+                color = interpolate_color(start_rgb, end_rgb, factor);
                 led_strip_update(LED_STATE_SIMULATION, color);
             }
             else
             {
-                // No next_item and no head, use only current
                 color = (rgb_t){.red = current_item->red, .green = current_item->green, .blue = current_item->blue};
                 led_strip_update(LED_STATE_SIMULATION, color);
             }
@@ -402,7 +383,7 @@ void stop_simulation_task(void)
             simulation_task_handle = NULL;
             xSemaphoreGive(simulation_mutex);
 
-            // Prüfe ob der Task noch existiert bevor er gelöscht wird
+            // Check if the task still exists before deleting it
             eTaskState state = eTaskGetState(handle_to_delete);
             if (state != eDeleted && state != eInvalid)
             {

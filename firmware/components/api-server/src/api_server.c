@@ -7,6 +7,7 @@
 #include <esp_http_server.h>
 #include <esp_log.h>
 #include <mdns.h>
+#include <sdkconfig.h>
 #include <string.h>
 
 static const char *TAG = "api_server";
@@ -55,7 +56,7 @@ static esp_err_t start_webserver(void)
     config.server_port = s_config.port;
     config.lru_purge_enable = true;
     config.max_uri_handlers = 32;
-    config.max_open_sockets = 7;
+    config.max_open_sockets = (CONFIG_LWIP_MAX_SOCKETS - 3);
     config.uri_match_fn = httpd_uri_match_wildcard;
 
     ESP_LOGI(TAG, "Starting HTTP server on port %d", config.server_port);
@@ -175,6 +176,7 @@ esp_err_t api_server_ws_broadcast_status(bool on, const char *mode, const char *
              "{\"type\":\"status\",\"on\":%s,\"mode\":\"%s\",\"schema\":\"%s\","
              "\"color\":{\"r\":%d,\"g\":%d,\"b\":%d}}",
              on ? "true" : "false", mode, schema, r, g, b);
+
     return api_server_ws_broadcast(buffer);
 }
 

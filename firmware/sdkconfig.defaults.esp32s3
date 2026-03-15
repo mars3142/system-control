@@ -1,2 +1,4 @@
 # default ESP target
 CONFIG_IDF_TARGET="esp32s3"
+
+CONFIG_API_SERVER_HOSTNAME="system-client"

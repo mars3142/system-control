@@ -103,15 +103,6 @@ static void message_manager_task(void *param)
                     message_listeners[i](&msg);
                 }
             }
-
-            uint8_t mac[6];
-            esp_read_mac(mac, ESP_MAC_WIFI_STA);
-            const esp_app_desc_t *app_desc = esp_app_get_description();
-            char topic[60];
-            snprintf(topic, sizeof(topic), "device/%s/%02x%02x", app_desc->project_name, mac[4], mac[5]);
-
-            char *data = "{\"key\":\"value\"}";
-            mqtt_client_publish(topic, data, strlen(data), 0, false);
         }
     }
 }

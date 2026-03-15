@@ -11,6 +11,7 @@
 #include "my_mqtt_client.h"
 #include "persistence_manager.h"
 #include "simulator.h"
+#include "u8g2_mqtt.h"
 #include "ui/ClockScreenSaver.h"
 #include "ui/ScreenSaver.h"
 #include "ui/SplashScreen.h"
@@ -33,6 +34,7 @@ u8g2_t u8g2;
 uint8_t last_value = 0;
 menu_options_t options;
 uint8_t received_signal;
+uint64_t last_mqtt_sync = 0;
 
 std::shared_ptr<Widget> m_widget;
 std::vector<std::shared_ptr<Widget>> m_history;
@@ -148,27 +150,27 @@ static void handle_button(uint8_t button)
     {
         switch (button)
         {
-        case 1:
+        case CONFIG_BUTTON_UP:
             m_widget->OnButtonClicked(ButtonType::UP);
             break;
 
-        case 3:
+        case CONFIG_BUTTON_LEFT:
             m_widget->OnButtonClicked(ButtonType::LEFT);
             break;
 
-        case 5:
+        case CONFIG_BUTTON_RIGHT:
             m_widget->OnButtonClicked(ButtonType::RIGHT);
             break;
 
-        case 6:
+        case CONFIG_BUTTON_DOWN:
             m_widget->OnButtonClicked(ButtonType::DOWN);
             break;
 
-        case 16:
+        case CONFIG_BUTTON_BACK:
             m_widget->OnButtonClicked(ButtonType::BACK);
             break;
 
-        case 18:
+        case CONFIG_BUTTON_SELECT:
             m_widget->OnButtonClicked(ButtonType::SELECT);
             break;
 
@@ -259,6 +261,10 @@ void app_task(void *args)
 
     start_simulation();
 
+    display_mqtt_queue = xQueueCreate(1, 1024);
+
+    xTaskCreatePinnedToCore(u8g2_mqtt_task, "mqtt_disp", 4096, nullptr, 5, nullptr, tskNO_AFFINITY);
+
     auto oldTime = esp_timer_get_time();
 
     while (true)
@@ -277,6 +283,15 @@ void app_task(void *args)
             m_widget->Render();
 
             m_inactivityTracker->update(deltaMs);
+        }
+
+        // MQTT
+        auto now = esp_timer_get_time();
+        if (now - last_mqtt_sync > 1000000)
+        {
+            uint8_t *u8g2_buf = u8g2_GetBufferPtr(&u8g2);
+            xQueueOverwrite(display_mqtt_queue, u8g2_buf);
+            last_mqtt_sync = now;
         }
 
         u8g2_SendBuffer(&u8g2);

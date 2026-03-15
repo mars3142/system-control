@@ -8,6 +8,12 @@
 #include "mqtt_client.h"
 #include "sdkconfig.h"
 
+#include <cJSON.h>
+#include <esp_timer.h>
+#include <sys/time.h>
+
+#define DEVICE_TOPIC_MAX_LEN 60
+
 static const char *TAG = "mqtt_client";
 static esp_mqtt_client_handle_t client = NULL;
 
@@ -108,12 +114,123 @@ void mqtt_client_start(void)
     }
 }
 
+void get_device_topic(char *topic, size_t topic_len)
+{
+    uint8_t mac[6];
+    esp_read_mac(mac, ESP_MAC_WIFI_STA);
+    const esp_app_desc_t *app_desc = esp_app_get_description();
+    snprintf(topic, topic_len, "device/%s/%02x%02x", app_desc->project_name, mac[4], mac[5]);
+}
+
+void mqtt_publish(const char *message)
+{
+    // Uptime in ms
+    int64_t uptime_ms = esp_timer_get_time() / 1000;
+
+    // UTC time as ISO8601
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    struct tm tm_utc;
+    gmtime_r(&tv.tv_sec, &tm_utc);
+    char timestamp[32];
+    strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%SZ", &tm_utc);
+
+    // Firmware version
+    const esp_app_desc_t *app_desc = esp_app_get_description();
+    const char *firmware = app_desc->version;
+
+    // Reset reason
+    esp_reset_reason_t reset_reason = esp_reset_reason();
+    const char *reset_reason_str = "UNKNOWN";
+    switch (reset_reason)
+    {
+    case ESP_RST_POWERON:
+        reset_reason_str = "POWERON";
+        break;
+    case ESP_RST_EXT:
+        reset_reason_str = "EXT";
+        break;
+    case ESP_RST_SW:
+        reset_reason_str = "SW";
+        break;
+    case ESP_RST_PANIC:
+        reset_reason_str = "PANIC";
+        break;
+    case ESP_RST_INT_WDT:
+        reset_reason_str = "INT_WDT";
+        break;
+    case ESP_RST_TASK_WDT:
+        reset_reason_str = "TASK_WDT";
+        break;
+    case ESP_RST_WDT:
+        reset_reason_str = "WDT";
+        break;
+    case ESP_RST_DEEPSLEEP:
+        reset_reason_str = "DEEPSLEEP";
+        break;
+    case ESP_RST_BROWNOUT:
+        reset_reason_str = "BROWNOUT";
+        break;
+    case ESP_RST_SDIO:
+        reset_reason_str = "SDIO";
+        break;
+    default:
+        break;
+    }
+
+    // Create JSON object
+    uint8_t mac[6];
+    esp_read_mac(mac, ESP_MAC_WIFI_STA);
+    cJSON *root = cJSON_CreateObject();
+    char mac_str[18];
+    snprintf(mac_str, sizeof(mac_str), "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    cJSON_AddStringToObject(root, "device_id", mac_str);
+    cJSON_AddNumberToObject(root, "uptime", uptime_ms);
+    cJSON_AddStringToObject(root, "timestamp", timestamp);
+    cJSON_AddStringToObject(root, "firmware", firmware);
+    cJSON_AddStringToObject(root, "reset_reason", reset_reason_str);
+
+    // Insert message as JSON object if possible
+    char topic_with_type[128];
+    strncpy(topic_with_type, "", sizeof(topic_with_type));
+    topic_with_type[sizeof(topic_with_type) - 1] = '\0';
+
+    cJSON *msg_obj = cJSON_Parse(message);
+    if (msg_obj)
+    {
+        cJSON *type_item = cJSON_DetachItemFromObject(msg_obj, "type");
+        if (type_item && cJSON_IsString(type_item))
+        {
+            // Extend topic
+            strncat(topic_with_type, type_item->valuestring, sizeof(topic_with_type) - strlen(topic_with_type) - 1);
+        }
+        cJSON_AddItemToObject(root, "message", msg_obj);
+        cJSON_Delete(type_item); // Free memory
+    }
+    else
+    {
+        cJSON_AddStringToObject(root, "message", message);
+    }
+
+    // Publish JSON via MQTT
+    char *json_str = cJSON_PrintUnformatted(root);
+    mqtt_client_publish(topic_with_type, json_str, strlen(json_str), 0, true);
+    cJSON_Delete(root);
+    free(json_str);
+}
+
 void mqtt_client_publish(const char *topic, const char *data, size_t len, int qos, bool retain)
 {
     if (client)
     {
-        int msg_id = esp_mqtt_client_publish(client, topic, data, len, qos, retain);
-        ESP_LOGI(TAG, "Publish: topic=%s, msg_id=%d, qos=%d, retain=%d, len=%d", topic, msg_id, qos, retain, (int)len);
+        char base_topic[DEVICE_TOPIC_MAX_LEN];
+        get_device_topic(base_topic, sizeof(base_topic));
+        char full_topic[DEVICE_TOPIC_MAX_LEN + 64];
+        snprintf(full_topic, sizeof(full_topic), "%s/%s", base_topic, topic);
+
+        int msg_id = esp_mqtt_client_publish(client, full_topic, data, len, qos, retain);
+        ESP_LOGV(TAG, "Publish: topic=%s, msg_id=%d, qos=%d, retain=%d, len=%d", full_topic, msg_id, qos, retain,
+                 (int)len);
     }
     else
     {

@@ -67,7 +67,7 @@ esp_err_t api_capabilities_get_handler(httpd_req_t *req)
     // Thread only available for esp32c6 or esp32h2
     bool thread = false;
 #if defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
-    thread = true;
+    thread = false;
 #endif
     cJSON *json = cJSON_CreateObject();
     cJSON_AddBoolToObject(json, "thread", thread);

@@ -15,5 +15,5 @@ idf_component_register(SRCS
             simulator
             persistence-manager
             message-manager
-            simulator
+            my_mqtt_client
 )

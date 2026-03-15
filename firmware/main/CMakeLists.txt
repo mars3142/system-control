@@ -3,6 +3,7 @@ idf_component_register(SRCS
         src/app_task.cpp
         src/button_handling.c
         src/i2c_checker.c
+        src/u8g2_mqtt.cpp
         src/hal/u8g2_esp32_hal.c
     INCLUDE_DIRS "include"
     PRIV_REQUIRES
