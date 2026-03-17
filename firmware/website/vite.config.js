@@ -14,6 +14,11 @@ export default defineConfig({
     __COMMIT_HASH__: JSON.stringify(commitHash),
     __APP_VERSION__: JSON.stringify(version),
   },
+  test: {
+    sequence: {
+      shuffle: true,
+    }
+  },
   plugins: [
     svelte({
       configFile: 'svelte.config.js'

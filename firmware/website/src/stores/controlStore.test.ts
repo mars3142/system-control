@@ -55,26 +55,6 @@ describe('controlStore', () => {
 		});
 	});
 
-	it('update values posts updates and applies returned state', async () => {
-		const { fetchMock, controlStore } = await setupStore(
-			vi.fn().mockResolvedValueOnce(okResponse({}))
-		);
-		await controlStore.setMode({ mode: 'night' });
-
-		expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/api\/light\/mode$/), {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ mode: 'night' })
-		});
-		expect(get(controlStore)).toEqual({
-			on: false,
-			mode: 'night',
-			schema: 'schema_01.csv',
-			color: { r: 0, g: 0, b: 0 },
-			clock: '00:00'
-		});
-	});
-
 	it('fetchState throws on non-ok response', async () => {
 		const { controlStore } = await setupStore(
 			vi.fn().mockResolvedValue({
@@ -109,6 +89,17 @@ describe('controlStore', () => {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ mode: 'night' })
+		});
+	});
+
+	it('setSchema posts to /api/light/schema', async () => {
+		const { fetchMock, controlStore } = await setupStore();
+		await controlStore.setSchema({ schema: 'schema_01.csv' });
+
+		expect(fetchMock).toHaveBeenCalledWith(expect.stringMatching(/\/api\/light\/schema$/), {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ schema: 'schema_01.csv' })
 		});
 	});
 

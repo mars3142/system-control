@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
-import { createLogger } from './logger';
-import { createLatestOnlySender } from './common';
+import { createLogger } from '../utils/logger';
+import { createLatestOnlySender } from './utils';
 
 // Types for state and REST/WebSocket messages
 export interface ControlState {
@@ -131,7 +131,6 @@ const createControlStore = () => {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload)
 			});
-			applyState(payload);
 		},
 		(current, incoming) => ({ ...(current ?? {}), ...incoming })
 	);
@@ -143,7 +142,6 @@ const createControlStore = () => {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload)
 			});
-			applyState(payload);
 		},
 		(current, incoming) => ({ ...(current ?? {}), ...incoming })
 	);
@@ -155,7 +153,6 @@ const createControlStore = () => {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload)
 			});
-			applyState(payload);
 		},
 		(current, incoming) => ({ ...(current ?? {}), ...incoming })
 	);
