@@ -38,6 +38,8 @@ static char *time = NULL;
 static TaskHandle_t simulation_task_handle = NULL;
 static SemaphoreHandle_t simulation_mutex = NULL;
 static light_item_node_t *head = NULL;
+static bool schema_loaded = false;
+static int loaded_variant = -1;
 static const interpolation_mode_t interpolation_mode = INTERPOLATION_RGB;
 
 // Helper function: converts hhmm format to minutes of the day
@@ -140,21 +142,37 @@ void cleanup_light_items(void)
     }
 
     head = NULL;
+    schema_loaded = false;
+    loaded_variant = -1;
     ESP_LOGI(TAG, "Cleaned up all light items.");
 }
 
-static void initialize_light_items(void)
+static void initialize_light_items(bool force_reload)
 {
-    cleanup_light_items();
-    initialize_storage();
-
     static char filename[30];
     persistence_manager_t persistence;
     persistence_manager_init(&persistence, "config");
     int variant = persistence_manager_get_int(&persistence, "light_variant", 1);
-    snprintf(filename, sizeof(filename), "schema_%02d.csv", variant);
-    load_file(filename);
     persistence_manager_deinit(&persistence);
+
+    bool variant_changed = (loaded_variant != variant);
+    bool needs_reload = force_reload || !schema_loaded || variant_changed;
+
+    if (needs_reload)
+    {
+        cleanup_light_items();
+        initialize_storage();
+
+        snprintf(filename, sizeof(filename), "schema_%02d.csv", variant);
+        load_file(filename);
+        schema_loaded = true;
+        loaded_variant = variant;
+        ESP_LOGI(TAG, "Schema loaded (variant=%d, force_reload=%s)", variant, force_reload ? "true" : "false");
+    }
+    else
+    {
+        ESP_LOGD(TAG, "Schema reload skipped (variant=%d unchanged)", variant);
+    }
 
     // The list is now sorted because add_light_item inserts sorted
 
@@ -225,7 +243,7 @@ char *get_time(void)
 
 void start_simulate_day(void)
 {
-    initialize_light_items();
+    initialize_light_items(false);
 
     light_item_node_t *current_item = find_best_light_item_for_time(1200);
     if (current_item != NULL)
@@ -238,7 +256,7 @@ void start_simulate_day(void)
 
 void start_simulate_night(void)
 {
-    initialize_light_items();
+    initialize_light_items(false);
 
     light_item_node_t *current_item = find_best_light_item_for_time(0);
     if (current_item != NULL)
@@ -267,7 +285,7 @@ void simulate_cycle(void *args)
         return;
     }
 
-    initialize_light_items();
+    initialize_light_items(false);
 
     const int total_minutes_in_day = 24 * 60;
     long delay_ms = (long)cycle_duration_minutes * 60 * 1000 / total_minutes_in_day;
@@ -398,7 +416,7 @@ void stop_simulation_task(void)
     }
 }
 
-void start_simulation(void)
+void start_simulation_with_reload(bool force_reload)
 {
     stop_simulation_task();
 
@@ -410,6 +428,10 @@ void start_simulation(void)
         switch (mode)
         {
         case 0: // Simulation mode
+            if (force_reload)
+            {
+                initialize_light_items(true);
+            }
             start_simulation_task();
             break;
         case 1: // Day mode
@@ -428,4 +450,9 @@ void start_simulation(void)
         led_strip_update(LED_STATE_OFF, rgb_t{});
     }
     persistence_manager_deinit(&persistence);
+}
+
+void start_simulation(void)
+{
+    start_simulation_with_reload(true);
 }

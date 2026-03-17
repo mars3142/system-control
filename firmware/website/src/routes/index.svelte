@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { location, replace } from 'svelte-spa-router';
 	import { t } from "../i18n/store";
 	import ControlTab from "../components/control/controlTab.svelte";
 	import ConfigTab from "../components/config/configTab.svelte";
@@ -7,30 +8,30 @@
 	import TabBar from "../components/common/tabBar.svelte";
 	import { controlStore } from "../stores/controlStore";
 
-	let activeTab = "control";
+	type Tab = "control" | "config";
+
+	const tabToPath: Record<Tab, string> = {
+		control: "/control",
+		config: "/config"
+	};
+
+	function pathToTab(path: string): Tab {
+		return path === "/config" ? "config" : "control";
+	}
+
+	let activeTab = $derived(pathToTab($location));
 
 	onMount(() => {
 		controlStore.fetchState();
-		const handleHashChange = () => {
-			const hash = window.location.hash.slice(1);
-			if (hash === "config") {
-				activeTab = "config";
-			} else {
-				activeTab = "control";
-			}
-		};
 
-		handleHashChange();
-		window.addEventListener("hashchange", handleHashChange);
-
-		return () => {
-			window.removeEventListener("hashchange", handleHashChange);
-		};
+		// Optional: Default-Route
+		if ($location === "/") {
+			replace("/control");
+		}
 	});
 
-	function setTab(tab: string) {
-		activeTab = tab;
-		window.location.hash = tab;
+	function setTab(tab: Tab) {
+		replace(tabToPath[tab]);
 	}
 </script>
 
@@ -50,7 +51,7 @@
 <div class="tab-content">
 	{#if activeTab === "control"}
 		<ControlTab />
-	{:else if activeTab === "config"}
+	{:else}
 		<ConfigTab />
 	{/if}
 </div>

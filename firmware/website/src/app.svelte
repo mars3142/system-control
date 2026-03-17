@@ -8,6 +8,8 @@
 
 	const routes = {
 		'/': Index,
+		'/control': Index,
+		'/config': Index,
 		'/captive': Captive,
 		// Fallback route
 		'*': Index
@@ -18,12 +20,14 @@
 	});
 </script>
 
-<Header />
+<div class="container mx-auto lg:max-w-2xl">
+	<Header />
 
-<main class="container mx-auto px-4 py-8">
-	<Router {routes} />
-</main>
+	<main class="py-8">
+		<Router {routes} />
+	</main>
 
-{#if $location !== "/captive"}
-	<Footer />
-{/if}
+	{#if $location !== "/captive"}
+		<Footer />
+	{/if}
+</div>

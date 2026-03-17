@@ -1,12 +1,13 @@
 <script lang="ts">
-	import { t } from "../../i18n/store";
+	import { t } from '../../i18n/store';
+	import Card from '../common/card.svelte';
 
-	export let mode = "simulation";
-	export let color = "#000000";
-	export let clock: string | null = "12:34 Uhr";
+	export let mode = 'simulation';
+	export let color = '#000000';
+	export let clock: string | null = '12:34 Uhr';
 </script>
 
-<div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+<Card>
 	<h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
 		📊 {$t("control.status.title")}
 	</h2>
@@ -47,4 +48,4 @@
 			</div>
 		{/if}
 	</div>
-</div>
+</Card>

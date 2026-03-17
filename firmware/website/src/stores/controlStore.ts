@@ -1,4 +1,6 @@
 import { writable } from 'svelte/store';
+import { createLogger } from './logger';
+import { createLatestOnlySender } from './common';
 
 // Types for state and REST/WebSocket messages
 export interface ControlState {
@@ -7,85 +9,238 @@ export interface ControlState {
 	schema?: string;
 	color?: { r: number; g: number; b: number };
 	clock?: string;
-
-	[key: string]: any;
 }
 
-const createControlStore = () => {
-	const store = writable<ControlState>({
-		on: false,
-		mode: 'day',
-		schema: 'schema_01.csv',
-		color: { r: 0, g: 0, b: 0 },
-		clock: '00:00'
-	});
-	const { subscribe, set } = store;
+interface StatusMessage extends Partial<ControlState> {
+	type: 'status';
+}
 
-	// Centralized host and URL configuration
-	const host = import.meta.env.DEV
-		? 'system-control.local'
-		: typeof window !== 'undefined'
-			? window.location.host
-			: '';
-	const baseUrl = import.meta.env.DEV ? `http://${host}` : '';
+export const DEFAULT_CONTROL_STATE: ControlState = {
+	on: false,
+	mode: 'day',
+	schema: 'schema_01.csv',
+	color: { r: 0, g: 0, b: 0 },
+	clock: '00:00'
+};
+
+export const createDefaultControlState = (): ControlState => ({
+	...DEFAULT_CONTROL_STATE,
+	color: DEFAULT_CONTROL_STATE.color ? { ...DEFAULT_CONTROL_STATE.color } : undefined
+});
+
+const STATUS_ENDPOINT = '/api/light/status';
+const LIGHT_ENDPOINT = '/api/light/power';
+const MODE_ENDPOINT = '/api/light/mode';
+const SCHEMA_ENDPOINT = '/api/light/schema';
+const WS_ENDPOINT = '/ws';
+const WS_RECONNECT_DELAY_MS = 3000;
+
+const isBrowser = typeof window !== 'undefined';
+
+const resolveHost = () => {
+	if (import.meta.env.DEV) return 'system-control.local';
+	return isBrowser ? window.location.host : '';
+};
+
+const buildBaseUrl = (host: string) => {
+	if (!host) return '';
+	const protocol = isBrowser ? window.location.protocol : import.meta.env.DEV ? 'http:' : 'https:';
+	return `${protocol}//${host}`;
+};
+
+const buildWebSocketUrl = (host: string) => {
+	if (!isBrowser) return '';
+	const wsProtocol =
+		window.location.protocol === 'https:' && !import.meta.env.DEV ? 'wss:' : 'ws:';
+	return `${wsProtocol}//${host}${WS_ENDPOINT}`;
+};
+
+const isStatusMessage = (value: unknown): value is StatusMessage => {
+	if (!value || typeof value !== 'object') return false;
+	return (value as { type?: unknown }).type === 'status';
+};
+
+const parseJson = (raw: string): unknown => {
+	try {
+		return JSON.parse(raw);
+	} catch {
+		return null;
+	}
+};
+
+const createControlStore = () => {
+	const log = createLogger('controlStore');
+	const store = writable<ControlState>(createDefaultControlState());
+	const { subscribe: internalSubscribe, set } = store;
+	type StoreSubscribe = typeof internalSubscribe;
+	type StoreRun = Parameters<StoreSubscribe>[0];
+	type StoreInvalidate = Parameters<StoreSubscribe>[1];
+
+	const host = resolveHost();
+	const baseUrl = buildBaseUrl(host);
+	const wsUrl = buildWebSocketUrl(host);
 
 	let ws: WebSocket | null = null;
 	let wsReconnectTimer: ReturnType<typeof setTimeout> | null = null;
+	let shouldReconnect = true;
+	let subscriberCount = 0;
 
-	async function fetchState() {
-		const res = await fetch(`${baseUrl}/api/light/status`);
-		if (!res.ok) throw new Error('Failed to fetch state');
-		const data = await res.json();
-		set(data);
+	const applyState = (nextState: Partial<ControlState>) => {
+		set({ ...createDefaultControlState(), ...nextState });
+	};
+
+	const clearReconnectTimer = () => {
+		if (!wsReconnectTimer) return;
+		clearTimeout(wsReconnectTimer);
+		wsReconnectTimer = null;
+	};
+
+	const scheduleReconnect = () => {
+		if (!shouldReconnect || wsReconnectTimer) return;
+		log.info('Scheduling WebSocket reconnect', { delayMs: WS_RECONNECT_DELAY_MS });
+		wsReconnectTimer = setTimeout(() => {
+			wsReconnectTimer = null;
+			connectWebSocket();
+		}, WS_RECONNECT_DELAY_MS);
+	};
+
+	async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
+		log.debug('HTTP request', { path, method: init?.method ?? 'GET' });
+		const res = await fetch(`${baseUrl}${path}`, init);
+		if (!res.ok) {
+			log.warn('HTTP request failed', {
+				path,
+				status: res.status,
+				statusText: res.statusText
+			});
+			throw new Error(`Request failed: ${res.status} ${res.statusText}`);
+		}
+		log.debug('HTTP request succeeded', { path, status: res.status });
+		return (await res.json()) as T;
 	}
 
-	async function setState(partial: Partial<ControlState>) {
-		const res = await fetch(`${baseUrl}/api/status`, {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(partial)
-		});
-		if (!res.ok) throw new Error('Failed to update state');
-		const data = await res.json();
-		set(data);
+	async function fetchState() {
+		const data = await requestJson<Partial<ControlState>>(STATUS_ENDPOINT);
+		applyState(data);
+	}
+
+	const sendLightLatestOnly = createLatestOnlySender<Partial<ControlState>>(
+		async (payload) => {
+			await requestJson<Partial<ControlState>>(LIGHT_ENDPOINT, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			});
+			applyState(payload);
+		},
+		(current, incoming) => ({ ...(current ?? {}), ...incoming })
+	);
+
+	const sendModeLatestOnly = createLatestOnlySender<Partial<ControlState>>(
+		async (payload) => {
+			await requestJson<Partial<ControlState>>(MODE_ENDPOINT, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			});
+			applyState(payload);
+		},
+		(current, incoming) => ({ ...(current ?? {}), ...incoming })
+	);
+
+	const sendSchemaLatestOnly = createLatestOnlySender<Partial<ControlState>>(
+		async (payload) => {
+			await requestJson<Partial<ControlState>>(SCHEMA_ENDPOINT, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			});
+			applyState(payload);
+		},
+		(current, incoming) => ({ ...(current ?? {}), ...incoming })
+	);
+
+	async function setLight(partial: Partial<ControlState>) {
+		await sendLightLatestOnly(partial);
+	}
+
+	async function setMode(partial: Partial<ControlState>) {
+		await sendModeLatestOnly(partial);
+	}
+
+	async function setSchema(partial: Partial<ControlState>) {
+		await sendSchemaLatestOnly(partial);
 	}
 
 	function connectWebSocket() {
-		if (typeof window === 'undefined') return;
+		if (!isBrowser || ws || !wsUrl) return;
+		log.info('Connecting WebSocket', { url: wsUrl });
 
-		const wsProtocol =
-			window.location.protocol === 'https:' && !import.meta.env.DEV ? 'wss:' : 'ws:';
-		const wsUrl = `${wsProtocol}//${host}/ws`;
+		const socket = new WebSocket(wsUrl);
+		ws = socket;
 
-		ws = new WebSocket(wsUrl);
-
-		ws.onopen = () => {
-			if (wsReconnectTimer) clearTimeout(wsReconnectTimer);
-			ws?.send(JSON.stringify({ type: 'getStatus' }));
+		socket.onopen = () => {
+			clearReconnectTimer();
+			log.info('WebSocket connected');
+			socket.send(JSON.stringify({ type: 'getStatus' }));
 		};
-		ws.onmessage = (event) => {
-			try {
-				const data = JSON.parse(event.data);
-				if (data.type === 'status') set(data);
-			} catch (e) {
-				// ignore
+		socket.onmessage = (event) => {
+			const message = parseJson(event.data);
+			if (!isStatusMessage(message)) {
+				log.debug('Ignoring non-status WebSocket message');
+				return;
 			}
+			const { type: _type, ...state } = message;
+			log.debug('Applying status update from WebSocket');
+			applyState(state);
 		};
-		ws.onclose = () => {
-			ws = null;
-			wsReconnectTimer = setTimeout(connectWebSocket, 3000);
+		socket.onclose = () => {
+			if (ws === socket) ws = null;
+			log.warn('WebSocket closed');
+			scheduleReconnect();
 		};
-		ws.onerror = () => {
-			ws?.close();
+		socket.onerror = () => {
+			log.error('WebSocket error');
+			socket.close();
 		};
 	}
 
-	if (typeof window !== 'undefined') connectWebSocket();
+	function disconnectWebSocket() {
+		shouldReconnect = false;
+		clearReconnectTimer();
+		ws?.close();
+		ws = null;
+	}
+
+	const subscribe: typeof store.subscribe = (
+		run: StoreRun,
+		invalidate?: StoreInvalidate
+	) => {
+		subscriberCount += 1;
+		if (subscriberCount === 1) {
+			log.debug('First subscriber attached - starting WebSocket');
+			shouldReconnect = true;
+			connectWebSocket();
+		}
+
+		const unsubscribe = internalSubscribe(run, invalidate);
+
+		return () => {
+			unsubscribe();
+			subscriberCount -= 1;
+			if (subscriberCount === 0) {
+				log.debug('Last subscriber removed - stopping WebSocket');
+				disconnectWebSocket();
+			}
+		};
+	};
 
 	return {
-		...store,
+		subscribe,
 		fetchState,
-		setState
+		setLight,
+		setMode,
+		setSchema
 	};
 };
 

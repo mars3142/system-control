@@ -3,6 +3,54 @@
 #include <string.h>
 
 #define TAG "persistence_manager"
+#define PM_MAX_CACHED_HANDLES 8
+
+// NVS handle cache to avoid repeated nvs_open/close operations (performance optimization)
+typedef struct
+{
+    char namespace[16];
+    nvs_handle_t handle;
+    bool in_use;
+} nvs_handle_cache_entry_t;
+
+static nvs_handle_cache_entry_t nvs_cache[PM_MAX_CACHED_HANDLES] = {0};
+
+// Get or create a cached NVS handle for the given namespace
+static esp_err_t _get_cached_nvs_handle(const char *nvs_namespace, nvs_handle_t *out_handle)
+{
+    // Search for existing handle in cache
+    for (int i = 0; i < PM_MAX_CACHED_HANDLES; i++)
+    {
+        if (nvs_cache[i].in_use && strcmp(nvs_cache[i].namespace, nvs_namespace) == 0)
+        {
+            *out_handle = nvs_cache[i].handle;
+            ESP_LOGD(TAG, "Using cached NVS handle for namespace: %s", nvs_namespace);
+            return ESP_OK;
+        }
+    }
+
+    // Not found, try to create a new one
+    for (int i = 0; i < PM_MAX_CACHED_HANDLES; i++)
+    {
+        if (!nvs_cache[i].in_use)
+        {
+            esp_err_t err = nvs_open(nvs_namespace, NVS_READWRITE, &nvs_cache[i].handle);
+            if (err == ESP_OK)
+            {
+                nvs_cache[i].in_use = true;
+                strncpy(nvs_cache[i].namespace, nvs_namespace, sizeof(nvs_cache[i].namespace) - 1);
+                nvs_cache[i].namespace[sizeof(nvs_cache[i].namespace) - 1] = '\0';
+                *out_handle = nvs_cache[i].handle;
+                ESP_LOGD(TAG, "Opened and cached NVS handle for namespace: %s", nvs_namespace);
+                return ESP_OK;
+            }
+            return err;
+        }
+    }
+
+    ESP_LOGE(TAG, "NVS handle cache full (max %d handles)", PM_MAX_CACHED_HANDLES);
+    return ESP_ERR_NO_MEM;
+}
 
 esp_err_t persistence_manager_factory_reset(void)
 {
@@ -19,26 +67,32 @@ esp_err_t persistence_manager_init(persistence_manager_t *pm, const char *nvs_na
 {
     if (!pm)
         return ESP_ERR_INVALID_ARG;
+
     strncpy(pm->nvs_namespace, nvs_namespace ? nvs_namespace : "config", sizeof(pm->nvs_namespace) - 1);
     pm->nvs_namespace[sizeof(pm->nvs_namespace) - 1] = '\0';
     pm->initialized = false;
-    esp_err_t err = nvs_open(pm->nvs_namespace, NVS_READWRITE, &pm->nvs_handle);
+
+    // Get cached NVS handle instead of opening a new one each time
+    esp_err_t err = _get_cached_nvs_handle(pm->nvs_namespace, &pm->nvs_handle);
     if (err == ESP_OK)
     {
         pm->initialized = true;
-        ESP_LOGD(TAG, "Initialized with namespace: %s", pm->nvs_namespace);
+        ESP_LOGD(TAG, "Initialized with namespace: %s (cached)", pm->nvs_namespace);
         return ESP_OK;
     }
-    ESP_LOGE(TAG, "Failed to open NVS handle: %s", esp_err_to_name(err));
+
+    ESP_LOGE(TAG, "Failed to get NVS handle: %s", esp_err_to_name(err));
     return err;
 }
 
 esp_err_t persistence_manager_deinit(persistence_manager_t *pm)
 {
-    if (pm && pm->initialized)
+    // Handles are now cached and kept open for performance
+    // Only mark as uninitialized, don't close the handle
+    if (pm)
     {
-        nvs_close(pm->nvs_handle);
         pm->initialized = false;
+        ESP_LOGD(TAG, "Deinitialized (handle remains cached for reuse)");
     }
     return ESP_OK;
 }

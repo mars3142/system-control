@@ -11,7 +11,7 @@
 #include <sdkconfig.h>
 #include <string.h>
 
-#define MESSAGE_QUEUE_LENGTH 16
+#define MESSAGE_QUEUE_LENGTH 32
 #define MESSAGE_QUEUE_ITEM_SIZE sizeof(message_t)
 
 static const char *TAG = "message_manager";

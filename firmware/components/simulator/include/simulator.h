@@ -22,6 +22,7 @@ extern "C"
     void start_simulate_night(void);
     void start_simulation_task(void);
     void stop_simulation_task(void);
+    void start_simulation_with_reload(bool force_reload);
     void start_simulation(void);
 #ifdef __cplusplus
 }

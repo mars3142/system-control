@@ -86,38 +86,47 @@ esp_err_t api_wifi_scan_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "GET /api/wifi/scan");
 
+    // Start WiFi scan non-blocking (async) to avoid blocking HTTP server
+    // The scan will complete in background, results available on next request
     wifi_scan_config_t scan_config = {.ssid = NULL, .bssid = NULL, .channel = 0, .show_hidden = true};
-    esp_err_t err = esp_wifi_scan_start(&scan_config, true);
+    esp_err_t err = esp_wifi_scan_start(&scan_config, false);
     if (err != ESP_OK)
     {
-        return send_error_response(req, 500, "WiFi scan failed");
+        ESP_LOGD(TAG, "WiFi scan start: %s (may already be scanning)", esp_err_to_name(err));
+        // Continue and return cached results - don't block on error
     }
 
+    // Get cached scan results (from previous scan if available)
     uint16_t ap_num = 0;
     esp_wifi_scan_get_ap_num(&ap_num);
-    wifi_ap_record_t *ap_list = heap_caps_calloc(ap_num, sizeof(wifi_ap_record_t), MALLOC_CAP_DEFAULT);
-    if (!ap_list)
-    {
-        return send_error_response(req, 500, "Memory allocation failed");
-    }
-    esp_wifi_scan_get_ap_records(&ap_num, ap_list);
 
     cJSON *json = cJSON_CreateArray();
-    for (int i = 0; i < ap_num; i++)
+
+    if (ap_num > 0)
     {
-        if (ap_list[i].ssid[0] != '\0')
+        wifi_ap_record_t *ap_list = heap_caps_calloc(ap_num, sizeof(wifi_ap_record_t), MALLOC_CAP_DEFAULT);
+        if (ap_list)
         {
-            cJSON *entry = cJSON_CreateObject();
-            cJSON_AddStringToObject(entry, "ssid", (const char *)ap_list[i].ssid);
-            cJSON_AddNumberToObject(entry, "rssi", ap_list[i].rssi);
-            bool secure = ap_list[i].authmode != WIFI_AUTH_OPEN;
-            cJSON_AddBoolToObject(entry, "secure", secure);
-            cJSON_AddItemToArray(json, entry);
+            esp_wifi_scan_get_ap_records(&ap_num, ap_list);
+
+            for (int i = 0; i < ap_num; i++)
+            {
+                if (ap_list[i].ssid[0] != '\0')
+                {
+                    cJSON *entry = cJSON_CreateObject();
+                    cJSON_AddStringToObject(entry, "ssid", (const char *)ap_list[i].ssid);
+                    cJSON_AddNumberToObject(entry, "rssi", ap_list[i].rssi);
+                    bool secure = ap_list[i].authmode != WIFI_AUTH_OPEN;
+                    cJSON_AddBoolToObject(entry, "secure", secure);
+                    cJSON_AddItemToArray(json, entry);
+                }
+            }
+            free(ap_list);
         }
     }
+
     char *response = cJSON_PrintUnformatted(json);
     cJSON_Delete(json);
-    free(ap_list);
     esp_err_t res = send_json_response(req, response);
     free(response);
     return res;
@@ -898,6 +907,7 @@ static const char *get_mime_type(const char *path)
 esp_err_t api_static_file_handler(httpd_req_t *req)
 {
     char filepath[CONFIG_HTTPD_MAX_URI_LEN + 16];
+    char gz_filepath[CONFIG_HTTPD_MAX_URI_LEN + 20];
 
     const char *uri = req->uri;
     wifi_mode_t mode = 0;
@@ -927,26 +937,44 @@ esp_err_t api_static_file_handler(httpd_req_t *req)
         return send_error_response(req, 400, "URI too long");
     }
 
-    ESP_LOGI(TAG, "Serving static file: %s", filepath);
+    bool use_gzip = false;
+    const char *served_path = filepath;
+
+    written = snprintf(gz_filepath, sizeof(gz_filepath), "%s.gz", filepath);
+    if (written >= 0 && (size_t)written < sizeof(gz_filepath))
+    {
+        struct stat gz_st;
+        if (stat(gz_filepath, &gz_st) == 0)
+        {
+            use_gzip = true;
+            served_path = gz_filepath;
+        }
+    }
+
+    ESP_LOGI(TAG, "Serving static file: %s%s", served_path, use_gzip ? " (gzip)" : "");
 
     // Check if file exists
     struct stat st;
-    if (stat(filepath, &st) != 0)
+    if (stat(served_path, &st) != 0)
     {
-        ESP_LOGW(TAG, "File not found: %s", filepath);
+        ESP_LOGW(TAG, "File not found: %s", served_path);
         return send_error_response(req, 404, "File not found");
     }
 
     // Open and serve file
-    FILE *f = fopen(filepath, "r");
+    FILE *f = fopen(served_path, "rb");
     if (f == NULL)
     {
-        ESP_LOGE(TAG, "Failed to open file: %s", filepath);
+        ESP_LOGE(TAG, "Failed to open file: %s", served_path);
         return send_error_response(req, 500, "Failed to open file");
     }
 
     set_cors_headers(req);
     httpd_resp_set_type(req, get_mime_type(filepath));
+    if (use_gzip)
+    {
+        httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+    }
 
     char buf[512];
     size_t read_bytes;

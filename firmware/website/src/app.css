@@ -49,17 +49,6 @@ body {
     padding: 12px;
 }
 
-#app {
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-@media (max-width: 600px) {
-    body {
-        padding: 6px;
-    }
-}
-
 @supports (padding: max(0px)) {
     body {
         padding-left: max(12px, env(safe-area-inset-left));

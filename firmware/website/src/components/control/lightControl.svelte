@@ -1,13 +1,20 @@
 <script lang="ts">
-	import { t } from "../../i18n/store";
-	import Toggle from "../common/toggle.svelte";
+	import { t } from '../../i18n/store';
+	import Card from '../common/card.svelte';
+	import Toggle from '../common/toggle.svelte';
 
-	export let lightOn = false;
-	export let thunderOn = false;
+	let {
+		lightOn = $bindable(false),
+		thunderOn = $bindable(false),
+		onchange,
+	}: {
+		lightOn?: boolean;
+		thunderOn?: boolean;
+		onchange: (e: CustomEvent<boolean>) => void;
+	} = $props();
 
 	function toggleLight(checked: boolean) {
-		lightOn = checked;
-		// TODO: Send command to backend
+		onchange(new CustomEvent('changeLight', { detail: checked }));
 	}
 
 	function toggleThunder(checked: boolean) {
@@ -16,7 +23,7 @@
 	}
 </script>
 
-<div class="bg-card p-6 rounded-lg border border-border shadow-sm">
+<Card>
 	<h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
 		💡 {$t("control.light.title")}
 	</h2>
@@ -35,4 +42,4 @@
 			/>
 		</div>
 	</div>
-</div>
+</Card>

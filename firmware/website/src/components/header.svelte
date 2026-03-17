@@ -21,7 +21,7 @@
 	}
 </script>
 
-<div class="flex flex-wrap justify-between items-center mb-5 gap-2">
+<div class="flex flex-wrap justify-between items-center mb-5">
 	<div>
 		<Button
 			ariaLabel="Sprache wechseln"

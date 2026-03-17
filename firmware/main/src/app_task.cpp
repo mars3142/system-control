@@ -44,6 +44,19 @@ persistence_manager_t g_persistence_manager;
 
 extern QueueHandle_t buttonQueue;
 
+static TaskHandle_t display_update_task_handle = nullptr;
+
+// Display update task - handles I2C transfer asynchronously (non-blocking main loop)
+static void display_update_task(void *args)
+{
+    while (true)
+    {
+        // Wait for render completion signal from app_task and send immediately.
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        u8g2_SendBuffer(&u8g2);
+    }
+}
+
 static void setup_screen(void)
 {
     u8g2_esp32_hal_t u8g2_esp32_hal = U8G2_ESP32_HAL_DEFAULT;
@@ -133,12 +146,30 @@ static void init_ui(void)
 
 static void on_message_received(const message_t *msg)
 {
-    if (msg && msg->type == MESSAGE_TYPE_SETTINGS &&
-        (std::strcmp(msg->data.settings.key, "light_active") == 0 ||
-         std::strcmp(msg->data.settings.key, "light_variant") == 0 ||
-         std::strcmp(msg->data.settings.key, "light_mode") == 0))
+    if (!msg || msg->type != MESSAGE_TYPE_SETTINGS)
     {
-        start_simulation();
+        return;
+    }
+
+    if (std::strcmp(msg->data.settings.key, "light_variant") == 0)
+    {
+        // Schema changed -> force file reload.
+        start_simulation_with_reload(true);
+        return;
+    }
+
+    if (std::strcmp(msg->data.settings.key, "light_mode") == 0)
+    {
+        // Switching to simulation mode must always reload schema file.
+        bool force_reload = (msg->data.settings.type == SETTINGS_TYPE_INT && msg->data.settings.value.int_value == 0);
+        start_simulation_with_reload(force_reload);
+        return;
+    }
+
+    if (std::strcmp(msg->data.settings.key, "light_active") == 0)
+    {
+        // Power on/off does not force reload; simulator reloads only if not loaded yet.
+        start_simulation_with_reload(false);
     }
 }
 
@@ -265,6 +296,10 @@ void app_task(void *args)
 
     xTaskCreatePinnedToCore(u8g2_mqtt_task, "mqtt_disp", 4096, nullptr, 5, nullptr, tskNO_AFFINITY);
 
+    // Create display update task with lower priority (non-blocking main loop)
+    xTaskCreatePinnedToCore(display_update_task, "display_update", 2048, nullptr, tskIDLE_PRIORITY + 1,
+                            &display_update_task_handle, CONFIG_FREERTOS_NUMBER_OF_CORES - 1);
+
     auto oldTime = esp_timer_get_time();
 
     while (true)
@@ -294,7 +329,11 @@ void app_task(void *args)
             last_mqtt_sync = now;
         }
 
-        u8g2_SendBuffer(&u8g2);
+        // Signal display task immediately after render to minimize visible latency.
+        if (display_update_task_handle != nullptr)
+        {
+            xTaskNotifyGive(display_update_task_handle);
+        }
 
         if (xQueueReceive(buttonQueue, &received_signal, pdMS_TO_TICKS(10)) == pdTRUE)
         {
