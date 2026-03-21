@@ -3,9 +3,9 @@
 	import Card from '../common/card.svelte';
 	import { controlStore } from '../../stores/controlStore';
 
-	let mode = 'simulation';
-	let color = '#000000';
-	let clock: string | null = '12:34 Uhr';
+	let mode = $state('simulation');
+	let color = $state('#000000');
+	let clock: string | null = $state('12:34 Uhr');
 	controlStore.subscribe((state) => {
 		if (state) {
 			mode = state.mode;

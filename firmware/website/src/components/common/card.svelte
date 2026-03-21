@@ -1,6 +1,11 @@
 <script lang="ts">
-	export let title: string | undefined;
 	import { t } from '../../i18n/store';
+    interface Props {
+        title: string | undefined;
+        children?: import('svelte').Snippet;
+    }
+
+    let { title, children }: Props = $props();
 </script>
 
 <div class="bg-card p-6 rounded-lg border border-border shadow-sm">
@@ -10,5 +15,5 @@
             {$t(title)}
         </h2>
     {/if}
-    <slot />
+    {@render children?.()}
 </div>

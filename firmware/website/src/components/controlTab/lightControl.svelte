@@ -4,7 +4,7 @@
 	import Toggle from '../common/toggle.svelte';
 	import { controlStore } from '../../stores/controlStore';
 
-	let lightOn = false;
+	let lightOn = $state(false);
 	controlStore.subscribe((state) => {
 		if (state) lightOn = state.on;
 	});
@@ -13,7 +13,7 @@
 		controlStore.setLight({ on: checked });
 	}
 
-	let thunderOn = false;
+	let thunderOn = $state(false);
 
 	function toggleThunder(checked: boolean) {
 		thunderOn = checked;

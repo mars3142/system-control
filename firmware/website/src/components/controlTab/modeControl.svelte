@@ -5,8 +5,8 @@
 	import Card from '../common/card.svelte';
 	import { controlStore } from '../../stores/controlStore';
 
-	let mode = 'simulation';
-	let activeSchema = 'schema_01.csv';
+	let mode = $state('simulation');
+	let activeSchema = $state('schema_01.csv');
 	let schemas = [
 		{ value: 'schema_01.csv', label: $t('schema.name.1') },
 		{ value: 'schema_02.csv', label: $t('schema.name.2') },
