@@ -28,5 +28,3 @@ export const createLogger = (scope: string): Record<'debug' | 'info' | 'warn' | 
 	warn: (message, meta) => emit(console.warn, scope, message, meta),
 	error: (message, meta) => emit(console.error, scope, message, meta)
 });
-
-

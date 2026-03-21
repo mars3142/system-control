@@ -2,20 +2,18 @@
 	import { t } from '../../i18n/store';
 	import Card from '../common/card.svelte';
 	import Toggle from '../common/toggle.svelte';
+	import { controlStore } from '../../stores/controlStore';
 
-	let {
-		lightOn = $bindable(false),
-		thunderOn = $bindable(false),
-		onchange,
-	}: {
-		lightOn?: boolean;
-		thunderOn?: boolean;
-		onchange: (e: CustomEvent<boolean>) => void;
-	} = $props();
+	let lightOn = false;
+	controlStore.subscribe((state) => {
+		if (state) lightOn = state.on;
+	});
 
 	function toggleLight(checked: boolean) {
-		onchange(new CustomEvent('changeLight', { detail: checked }));
+		controlStore.setLight({ on: checked });
 	}
+
+	let thunderOn = false;
 
 	function toggleThunder(checked: boolean) {
 		thunderOn = checked;
@@ -23,11 +21,7 @@
 	}
 </script>
 
-<Card>
-	<h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-		💡 {$t("control.light.title")}
-	</h2>
-
+<Card title="control.light.title">
 	<div class="flex flex-col gap-4">
 		<Toggle
 			bind:checked={lightOn}

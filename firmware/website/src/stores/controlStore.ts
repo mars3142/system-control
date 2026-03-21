@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import { createLogger } from '../utils/logger';
 import { createLatestOnlySender } from './utils';
+import { requestJson, resolveHost } from '../utils/apiClient';
 
 // Types for state and REST/WebSocket messages
 export interface ControlState {
@@ -37,17 +38,6 @@ const WS_RECONNECT_DELAY_MS = 3000;
 
 const isBrowser = typeof window !== 'undefined';
 
-const resolveHost = () => {
-	if (import.meta.env.DEV) return 'system-control.local';
-	return isBrowser ? window.location.host : '';
-};
-
-const buildBaseUrl = (host: string) => {
-	if (!host) return '';
-	const protocol = isBrowser ? window.location.protocol : import.meta.env.DEV ? 'http:' : 'https:';
-	return `${protocol}//${host}`;
-};
-
 const buildWebSocketUrl = (host: string) => {
 	if (!isBrowser) return '';
 	const wsProtocol =
@@ -77,7 +67,6 @@ const createControlStore = () => {
 	type StoreInvalidate = Parameters<StoreSubscribe>[1];
 
 	const host = resolveHost();
-	const baseUrl = buildBaseUrl(host);
 	const wsUrl = buildWebSocketUrl(host);
 
 	let ws: WebSocket | null = null;
@@ -103,21 +92,6 @@ const createControlStore = () => {
 			connectWebSocket();
 		}, WS_RECONNECT_DELAY_MS);
 	};
-
-	async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-		log.debug('HTTP request', { path, method: init?.method ?? 'GET' });
-		const res = await fetch(`${baseUrl}${path}`, init);
-		if (!res.ok) {
-			log.warn('HTTP request failed', {
-				path,
-				status: res.status,
-				statusText: res.statusText
-			});
-			throw new Error(`Request failed: ${res.status} ${res.statusText}`);
-		}
-		log.debug('HTTP request succeeded', { path, status: res.status });
-		return (await res.json()) as T;
-	}
 
 	async function fetchState() {
 		const data = await requestJson<Partial<ControlState>>(STATUS_ENDPOINT);

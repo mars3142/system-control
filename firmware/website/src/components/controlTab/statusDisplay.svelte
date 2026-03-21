@@ -1,17 +1,25 @@
 <script lang="ts">
 	import { t } from '../../i18n/store';
 	import Card from '../common/card.svelte';
+	import { controlStore } from '../../stores/controlStore';
 
-	export let mode = 'simulation';
-	export let color = '#000000';
-	export let clock: string | null = '12:34 Uhr';
+	let mode = 'simulation';
+	let color = '#000000';
+	let clock: string | null = '12:34 Uhr';
+	controlStore.subscribe((state) => {
+		if (state) {
+			mode = state.mode;
+			clock = state.clock ?? null;
+			if (typeof state.color === 'string') {
+				color = state.color;
+			} else if (typeof state.color === 'object' && state.color) {
+				color = `rgb(${state.color.r},${state.color.g},${state.color.b})`;
+			}
+		}
+	});
 </script>
 
-<Card>
-	<h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
-		📊 {$t("control.status.title")}
-	</h2>
-
+<Card title="control.status.title">
 	<div class="flex flex-col sm:flex-row gap-4">
 		<div class="flex-1 p-3 bg-background rounded-md border border-border">
 			<div class="text-xs text-muted-foreground mb-1">
