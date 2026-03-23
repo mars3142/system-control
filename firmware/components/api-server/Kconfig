@@ -30,7 +30,7 @@ menu "API Server Configuration"
 
     config API_SERVER_STATIC_FILES_PATH
         string "Static Files Path"
-        default "/spiffs/www"
+        default "/spiffs/website"
         help
             Base path for serving static web files.
 

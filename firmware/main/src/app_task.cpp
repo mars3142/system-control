@@ -297,7 +297,7 @@ void app_task(void *args)
     xTaskCreatePinnedToCore(u8g2_mqtt_task, "mqtt_disp", 4096, nullptr, 5, nullptr, tskNO_AFFINITY);
 
     // Create display update task with lower priority (non-blocking main loop)
-    xTaskCreatePinnedToCore(display_update_task, "display_update", 2048, nullptr, tskIDLE_PRIORITY + 1,
+    xTaskCreatePinnedToCore(display_update_task, "display_update", 4096, nullptr, tskIDLE_PRIORITY + 1,
                             &display_update_task_handle, CONFIG_FREERTOS_NUMBER_OF_CORES - 1);
 
     auto oldTime = esp_timer_get_time();
