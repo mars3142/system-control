@@ -28,3 +28,4 @@
 firmware/**/node_modules
 hardware/pcbway_production/
 hardware/*.zip
+*.log

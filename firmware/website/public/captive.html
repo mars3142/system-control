@@ -2,52 +2,545 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WLAN Setup - Modellbahn</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf8f5">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <title data-i18n="captive.title">System Control - WLAN Setup</title>
     <style>
-        *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
-        body { margin: 0; line-height: inherit; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background-color: #121212; color: #ffffff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-top: 2rem; }
-        .card { background-color: #1e1e1e; padding: 2rem; border-radius: 1rem; width: calc(100% - 2rem); max-width: 24rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border: 1px solid #2c2c2e; }
-        h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; text-align: left; display: flex; align-items: center; }
-        p { color: #8e8e93; font-size: 0.875rem; margin-bottom: 1.5rem; text-align: left; }
-        .space-y-4 > * + * { margin-top: 1rem; }
-        label { display: block; font-size: 0.75rem; font-weight: 500; margin-bottom: 0.25rem; color: #aeaeb2; text-align: left; }
-        input { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #3a3a3c; background-color: #2c2c2e; color: #ffffff; font-size: 1rem; outline: none; transition: border-color 0.2s; }
-        input:focus { border-color: #5856d6; }
-        button { width: 100%; padding: 0.75rem; border-radius: 0.5rem; background-color: #5856d6; color: #ffffff; font-weight: 600; font-size: 1rem; cursor: pointer; transition: opacity 0.2s; margin-top: 1rem; }
-        button:hover { opacity: 0.9; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .success-bar { display: inline-block; width: 0.25rem; height: 1.25rem; background-color: #34c759; border-radius: 9999px; margin-right: 0.5rem; }
+        :root {
+            --bg-color: #faf8f5;
+            --card-bg: #ffffff;
+            --accent: #fef2f2;
+            --text: #1a1a2e;
+            --text-muted: #6b7280;
+            --success: #c41e3a;
+            --error: #dc2626;
+            --border: #e5d9d0;
+            --input-bg: #ffffff;
+            --shadow: rgba(196, 30, 58, 0.1);
+            --primary: #c41e3a;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #1a1a2e;
+                --card-bg: #16213e;
+                --accent: #0f3460;
+                --text: #eaeaea;
+                --text-muted: #a0a0a0;
+                --success: #00d26a;
+                --error: #ff6b6b;
+                --border: #2a2a4a;
+                --input-bg: #1a1a2e;
+                --shadow: rgba(0, 0, 0, 0.3);
+                --primary: #c41e3a;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-color);
+            color: var(--text);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+            padding: 12px;
+        }
+
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(12px, env(safe-area-inset-left));
+                padding-right: max(12px, env(safe-area-inset-right));
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
+            }
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        @media (prefers-color-scheme: light) {
+            .header h1 {
+                color: var(--primary);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                flex-direction: row;
+                align-items: flex-start;
+                text-align: left;
+            }
+            .header h1 {
+                flex: 1 1 100%;
+                text-align: center;
+                order: 2;
+                margin-top: 8px;
+            }
+            .header-controls {
+                order: 1;
+                flex: 1 1 auto;
+                justify-content: flex-start;
+                display: flex;
+                gap: 8px;
+            }
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lang-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--card-bg);
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .lang-toggle:hover {
+            border-color: var(--success);
+        }
+
+        .lang-flag {
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--success);
+        }
+
+        .password-toggle {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+
+        .password-toggle input {
+            padding-right: 50px;
+            flex: 1;
+        }
+
+        .password-toggle button {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .password-toggle button:active {
+            color: var(--accent);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 50px;
+            touch-action: manipulation;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            box-shadow: none;
+            background-color: #888 !important;
+        }
+
+        .btn-primary {
+            background: var(--success);
+            color: #fff;
+        }
+
+        @media (prefers-color-scheme: light) {
+            .btn-primary {
+                background: var(--primary);
+                color: #fff;
+            }
+            .btn-primary:hover {
+                background: #a31830;
+            }
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .status {
+            text-align: center;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-top: 12px;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .status.success {
+            display: block;
+            background: rgba(0, 210, 106, 0.15);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        @media (prefers-color-scheme: light) {
+            .status.success {
+                background: rgba(196, 30, 58, 0.15);
+            }
+        }
+
+        .status.error {
+            display: block;
+            background: rgba(255, 107, 107, 0.15);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        .status.info {
+            display: block;
+            background: rgba(15, 52, 96, 0.5);
+            border: 1px solid var(--accent);
+            color: var(--text);
+        }
+
+        @media (prefers-color-scheme: light) {
+            .status.info {
+                background: rgba(245, 245, 245, 0.8);
+            }
+        }
+
+        .info-box {
+            background: var(--accent);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .info-box strong {
+            color: var(--text);
+        }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>
-            <span class="success-bar"></span>WLAN Setup
-        </h1>
-        <p>Gib die Daten deines Heimnetzwerks ein.</p>
-        
-        <form action="/api/wifi/config" method="POST" id="wifiForm" class="space-y-4">
-            <div>
-                <label for="ssid">Netzwerkname (SSID)</label>
-                <input type="text" id="ssid" name="ssid" placeholder="z.B. FritzBox" required autofocus>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-controls">
+                <button class="lang-toggle" onclick="toggleLanguage()" aria-label="Sprache wechseln">
+                    <span class="lang-flag" id="lang-flag">🇩🇪</span>
+                    <span class="lang-label" id="lang-label">DE</span>
+                </button>
+            </div>
+            <h1>🚂 System Control</h1>
+        </div>
+
+        <div class="card">
+            <div class="form-group">
+                <label for="ssid" data-i18n="wifi.ssid">WLAN-Name (SSID)</label>
+                <input type="text" id="ssid" data-i18n-placeholder="wifi.ssid.placeholder"
+                    placeholder="Netzwerkname eingeben">
             </div>
 
-            <div>
-                <label for="password">Passwort</label>
-                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            <div class="form-group">
+                <label for="password" data-i18n="wifi.password.short">Passwort</label>
+                <div class="password-toggle">
+                    <input type="password" id="password" data-i18n-placeholder="captive.password.placeholder"
+                        placeholder="WLAN-Passwort">
+                    <button type="button" onclick="togglePassword()" id="password-btn">👁️</button>
+                </div>
             </div>
 
-            <button type="submit" id="submitBtn">Speichern & Verbinden</button>
-        </form>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="connect-btn" onclick="saveWifi()" data-i18n="captive.connect">
+                    💾 Verbinden
+                </button>
+            </div>
+
+            <div id="wifi-status" class="status"></div>
+
+            <div class="info-box">
+                <strong>ℹ️ <span data-i18n="captive.note.title">Hinweis:</span></strong>
+                <span data-i18n="captive.note.text">Nach dem Speichern verbindet sich das Gerät mit dem gewählten Netzwerk. Diese Seite wird dann nicht mehr erreichbar sein. Verbinden Sie sich mit Ihrem normalen WLAN, um auf das Gerät zuzugreifen.</span>
+            </div>
+        </div>
     </div>
 
     <script>
-        document.getElementById('wifiForm').onsubmit = function() {
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.textContent = 'Verbindung wird geprüft...';
+        const translations = {
+            de: {
+                'captive.title': 'System Control - WLAN Setup',
+                'wifi.ssid': 'WLAN-Name (SSID)',
+                'wifi.ssid.placeholder': 'Netzwerkname eingeben',
+                'wifi.password.short': 'Passwort',
+                'captive.password.placeholder': 'WLAN-Passwort',
+                'captive.connect': '💾 Verbinden',
+                'captive.note.title': 'Hinweis:',
+                'captive.note.text': 'Nach dem Speichern verbindet sich das Gerät mit dem gewählten Netzwerk. Diese Seite wird dann nicht mehr erreichbar sein. Verbinden Sie sich mit Ihrem normalen WLAN, um auf das Gerät zuzugreifen.',
+                'captive.connecting': 'Verbindung wird hergestellt... {seconds}s',
+                'captive.done': 'Gerät sollte jetzt verbunden sein. Sie können diese Seite schließen.',
+                'wifi.error.ssid': 'Bitte WLAN-Name eingeben',
+                'wifi.error.save': 'Fehler beim Speichern',
+                'wifi.saved': 'WLAN-Konfiguration gespeichert! Gerät verbindet sich...',
+                'common.loading': 'Wird geladen...',
+                'error': 'Fehler'
+            },
+            en: {
+                'captive.title': 'System Control - WiFi Setup',
+                'wifi.ssid': 'WiFi Name (SSID)',
+                'wifi.ssid.placeholder': 'Enter network name',
+                'wifi.password.short': 'Password',
+                'captive.password.placeholder': 'WiFi password',
+                'captive.connect': '💾 Connect',
+                'captive.note.title': 'Note:',
+                'captive.note.text': 'After saving, the device will connect to the selected network. This page will no longer be accessible. Connect to your regular WiFi to access the device.',
+                'captive.connecting': 'Connecting... {seconds}s',
+                'captive.done': 'Device should now be connected. You can close this page.',
+                'wifi.error.ssid': 'Please enter WiFi name',
+                'wifi.error.save': 'Error saving',
+                'wifi.saved': 'WiFi configuration saved! Device connecting...',
+                'common.loading': 'Loading...',
+                'error': 'Error'
+            }
         };
+
+        let currentLang = localStorage.getItem('lang') || 'de';
+
+        function t(key, params = {}) {
+            const lang = translations[currentLang] || translations.de;
+            let text = lang[key] || translations.de[key] || key;
+            Object.keys(params).forEach(param => {
+                text = text.replace(new RegExp(`\\{${param}\\}`, 'g'), params[param]);
+            });
+            return text;
+        }
+
+        function setLanguage(lang) {
+            if (translations[lang]) {
+                currentLang = lang;
+                localStorage.setItem('lang', lang);
+                document.documentElement.lang = lang;
+                updatePageLanguage();
+                updateLanguageToggle();
+            }
+        }
+
+        function toggleLanguage() {
+            setLanguage(currentLang === 'de' ? 'en' : 'de');
+        }
+
+        function updatePageLanguage() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const translated = t(key);
+                if (translated !== key) {
+                    el.textContent = translated;
+                }
+            });
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+            });
+            const titleEl = document.querySelector('title[data-i18n]');
+            if (titleEl) document.title = t(titleEl.getAttribute('data-i18n'));
+        }
+
+        function updateLanguageToggle() {
+            const langFlag = document.getElementById('lang-flag');
+            const langLabel = document.getElementById('lang-label');
+            if (langFlag) langFlag.textContent = currentLang === 'de' ? '🇩🇪' : '🇬🇧';
+            if (langLabel) langLabel.textContent = currentLang.toUpperCase();
+        }
+
+        function initI18n() {
+            if (!localStorage.getItem('lang')) {
+                const browserLang = navigator.language.split('-')[0];
+                if (translations[browserLang]) currentLang = browserLang;
+            }
+            document.documentElement.lang = currentLang;
+            updatePageLanguage();
+            updateLanguageToggle();
+        }
+
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const btn = document.getElementById('password-btn');
+            if (!input || !btn) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
+        function showStatus(elementId, message, type) {
+            const status = document.getElementById(elementId);
+            if (!status) return;
+            status.textContent = message;
+            status.className = `status ${type}`;
+            if (type !== 'info') {
+                setTimeout(() => { status.className = 'status'; }, 5000);
+            }
+        }
+
+        async function saveWifi() {
+            const ssid = document.getElementById('ssid').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!ssid) {
+                showStatus('wifi-status', t('wifi.error.ssid'), 'error');
+                return;
+            }
+
+            showStatus('wifi-status', t('common.loading'), 'info');
+
+            try {
+                const response = await fetch('/api/wifi/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ssid, password })
+                });
+
+                if (response.ok) {
+                    showStatus('wifi-status', t('wifi.saved'), 'success');
+
+                    if (document.querySelector('.info-box')) {
+                        let countdown = 10;
+                        const countdownInterval = setInterval(() => {
+                            showStatus('wifi-status', t('captive.connecting', { seconds: countdown }), 'success');
+                            countdown--;
+                            if (countdown < 0) {
+                                clearInterval(countdownInterval);
+                                showStatus('wifi-status', t('captive.done'), 'success');
+                            }
+                        }, 1000);
+                    }
+                } else {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.error || t('wifi.error.save'));
+                }
+            } catch (error) {
+                if (error.message.includes('fetch')) {
+                    showStatus('wifi-status', 'Demo: ' + t('wifi.saved'), 'success');
+                } else {
+                    showStatus('wifi-status', t('error') + ': ' + error.message, 'error');
+                }
+            }
+        }
+
+        function updateConnectBtn() {
+            const ssid = document.getElementById('ssid').value;
+            const pw = document.getElementById('password').value;
+            const btn = document.getElementById('connect-btn');
+            btn.disabled = !(ssid.length > 0 && pw.length > 0);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initI18n();
+            document.getElementById('ssid').addEventListener('input', updateConnectBtn);
+            document.getElementById('password').addEventListener('input', updateConnectBtn);
+            updateConnectBtn();
+        });
     </script>
 </body>
 </html>
