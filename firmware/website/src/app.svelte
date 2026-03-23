@@ -10,7 +10,6 @@
 		'/': Index,
 		'/control': Index,
 		'/config': Index,
-		'/captive': Captive,
 		// Fallback route
 		'*': Index
 	};
@@ -27,7 +26,5 @@
 		<Router {routes} />
 	</main>
 
-	{#if $location !== "/captive"}
-		<Footer />
-	{/if}
+	<Footer />
 </div>

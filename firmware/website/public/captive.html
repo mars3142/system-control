@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WLAN Setup - Modellbahn</title>
+    <style>
+        *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; border-color: #e5e7eb; }
+        body { margin: 0; line-height: inherit; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background-color: #121212; color: #ffffff; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-top: 2rem; }
+        .card { background-color: #1e1e1e; padding: 2rem; border-radius: 1rem; width: calc(100% - 2rem); max-width: 24rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border: 1px solid #2c2c2e; }
+        h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; text-align: left; display: flex; align-items: center; }
+        p { color: #8e8e93; font-size: 0.875rem; margin-bottom: 1.5rem; text-align: left; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        label { display: block; font-size: 0.75rem; font-weight: 500; margin-bottom: 0.25rem; color: #aeaeb2; text-align: left; }
+        input { width: 100%; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #3a3a3c; background-color: #2c2c2e; color: #ffffff; font-size: 1rem; outline: none; transition: border-color 0.2s; }
+        input:focus { border-color: #5856d6; }
+        button { width: 100%; padding: 0.75rem; border-radius: 0.5rem; background-color: #5856d6; color: #ffffff; font-weight: 600; font-size: 1rem; cursor: pointer; transition: opacity 0.2s; margin-top: 1rem; }
+        button:hover { opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .success-bar { display: inline-block; width: 0.25rem; height: 1.25rem; background-color: #34c759; border-radius: 9999px; margin-right: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>
+            <span class="success-bar"></span>WLAN Setup
+        </h1>
+        <p>Gib die Daten deines Heimnetzwerks ein.</p>
+        
+        <form action="/api/wifi/config" method="POST" id="wifiForm" class="space-y-4">
+            <div>
+                <label for="ssid">Netzwerkname (SSID)</label>
+                <input type="text" id="ssid" name="ssid" placeholder="z.B. FritzBox" required autofocus>
+            </div>
+
+            <div>
+                <label for="password">Passwort</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" id="submitBtn">Speichern & Verbinden</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('wifiForm').onsubmit = function() {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Verbindung wird geprüft...';
+        };
+    </script>
+</body>
+</html>
