@@ -239,7 +239,7 @@
       "internal_id": "",
       "mfg": "",
       "mpn": "",
-      "sch_revision": ""
+      "sch_revision": "MK3"
     },
     "layer_pairs": [],
     "layer_presets": [],
@@ -710,7 +710,7 @@
       {
         "filename": "Maerklin System Control.kicad_sch",
         "name": "Maerklin System Control",
-        "uuid": "00000000-0000-0000-0000-000000000000"
+        "uuid": "3f36a0ad-b1c0-412e-a225-00e05b89b09f"
       }
     ],
     "used_designators": "",
@@ -719,7 +719,7 @@
   "sheets": [
     [
       "3f36a0ad-b1c0-412e-a225-00e05b89b09f",
-      "Root"
+      "Maerklin System Control"
     ]
   ],
   "text_variables": {},
