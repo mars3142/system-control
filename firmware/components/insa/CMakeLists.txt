@@ -14,9 +14,9 @@ idf_component_register(SRCS
         INCLUDE_DIRS "include"
         PRIV_REQUIRES
             u8g2
+            message-manager
+            persistence-manager
             connectivity-manager
             led-manager
-            persistence-manager
             simulator
-            message-manager
 )

@@ -1,0 +1,91 @@
+{
+    "screens": [
+        {
+            "id": "main_menu",
+            "title": "Hauptmenü",
+            "items": [
+                {
+                    "id": "lights_control",
+                    "type": "action",
+                    "label": "Lichtsteuerung",
+                    "actionTopic": "home/lights/toggle"
+                },
+                {
+                    "id": "climate_control",
+                    "type": "action",
+                    "label": "Klima Steuerung",
+                    "actionTopic": "home/climate/toggle"
+                },
+                {
+                    "id": "settings",
+                    "type": "submenu",
+                    "label": "Einstellungen",
+                    "targetScreenId": "settings_menu"
+                }
+            ]
+        },
+        {
+            "id": "lights_menu",
+            "title": "Lichtsteuerung",
+            "items": [
+                {
+                    "id": "living_room_light",
+                    "type": "action",
+                    "label": "Wohnzimmer Licht",
+                    "persistent": true,
+                    "actionTopic": "home/lights/living_room/toggle"
+                },
+                {
+                    "id": "light_mode",
+                    "type": "selection",
+                    "label": "Küchen Licht",
+                    "persistent": true,
+                    "items": [
+                        {
+                            "value": "day",
+                            "label": "Tag"
+                        },
+                        {
+                            "value": "night",
+                            "label": "Nacht"
+                        },
+                        {
+                            "value": "auto",
+                            "label": "Simulation"
+                        }
+                    ]
+                },
+                {
+                    "id": "back_to_main",
+                    "type": "submenu",
+                    "label": "< Zurück zum Hauptmenü",
+                    "targetScreenId": "main_menu"
+                }
+            ]
+        },
+        {
+            "id": "settings_menu",
+            "title": "Einstellungen",
+            "items": [
+                {
+                    "id": "wifi_settings",
+                    "type": "action",
+                    "label": "WLAN Einstellungen",
+                    "actionTopic": "home/settings/wifi"
+                },
+                {
+                    "id": "system_info",
+                    "type": "action",
+                    "label": "Systeminformationen",
+                    "actionTopic": "home/settings/system_info"
+                },
+                {
+                    "id": "back_to_main",
+                    "type": "submenu",
+                    "label": "< Zurück zum Hauptmenü",
+                    "targetScreenId": "main_menu"
+                }
+            ]
+        }
+    ]
+}
