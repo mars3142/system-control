@@ -1,8 +1,10 @@
 idf_component_register(SRCS
-            src/DynamicMenuBuilder.cpp
+            src/mercedes.cpp
         INCLUDE_DIRS "include"
-        PRIV_REQUIRES
+        REQUIRES
             heimdall
+    PRIV_REQUIRES
             json
-            insa
+            message-manager
+            persistence-manager
 )

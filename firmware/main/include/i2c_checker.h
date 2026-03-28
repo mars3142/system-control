@@ -1,7 +1,7 @@
 #pragma once
 
-#include "driver/gpio.h"
-#include "esp_err.h"
+#include <driver/gpio.h>
+#include <esp_err.h>
 
 #define DISPLAY_I2C_ADDRESS 0x3C
 

@@ -1,23 +1,25 @@
 #pragma once
 
+#include "heimdall/button_type.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
     /**
-     * @brief Signatur für Callback-Funktionen (reines C)
-     * @param value Der übergebene Wert als C-String (z.B. "true", "false", "2")
+     * @brief Callback signature for action handlers
+     * @param value The value passed as a C string (e.g. "true", "false", "2")
      */
     typedef void (*action_callback_t)(const char *value);
 
     /**
-     * @brief Registriert eine Aktion, die über die dynamische UI aufgerufen werden kann
+     * @brief Registers an action that can be triggered via the dynamic UI or API
      */
     void action_manager_register(const char *action_name, action_callback_t callback);
 
     /**
-     * @brief Führt eine registrierte Aktion aus
+     * @brief Executes a registered action by name
      */
     void action_manager_execute(const char *action_name, const char *value);
 

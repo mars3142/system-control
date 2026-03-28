@@ -2,6 +2,11 @@ idf_component_register(SRCS
             src/api_server.c
             src/common.c
             src/api_handlers.c
+            src/api_handlers_util.c
+            src/api_handlers_wifi.c
+            src/api_handlers_light.c
+            src/api_handlers_devices.c
+            src/api_handlers_static.c
             src/websocket_handler.c
         INCLUDE_DIRS "include"
         REQUIRES
@@ -16,4 +21,5 @@ idf_component_register(SRCS
             persistence-manager
             message-manager
             my_mqtt_client
+            heimdall
 )

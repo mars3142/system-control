@@ -1,7 +1,7 @@
 #include "ble/ble_scanner.h"
-
 #include "ble/ble_device.h"
 #include "led_status.h"
+
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>

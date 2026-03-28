@@ -1,8 +1,10 @@
 #include "wifi_manager.h"
-#include "dns_hijack.h"
-
 #include "analytics.h"
-#include "api_server.h"
+#include "bifrost/api_server.h"
+#include "dns_hijack.h"
+#include "led_status.h"
+#include "persistence_manager.h"
+
 #include <esp_event.h>
 #include <esp_insights.h>
 #include <esp_log.h>
@@ -11,12 +13,10 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/event_groups.h>
 #include <freertos/task.h>
-#include <led_status.h>
 #include <lwip/err.h>
 #include <lwip/sys.h>
 #include <mdns.h>
 #include <nvs_flash.h>
-#include <persistence_manager.h>
 #include <sdkconfig.h>
 #include <string.h>
 

@@ -1,5 +1,7 @@
 #include "message_manager.h"
 #include "my_mqtt_client.h"
+#include "persistence_manager.h"
+
 #include <esp_app_desc.h>
 #include <esp_log.h>
 #include <esp_mac.h>
@@ -7,7 +9,6 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
 #include <freertos/task.h>
-#include <persistence_manager.h>
 #include <sdkconfig.h>
 #include <string.h>
 

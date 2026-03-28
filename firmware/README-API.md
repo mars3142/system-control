@@ -12,6 +12,7 @@ This document describes all REST API endpoints and WebSocket messages required f
   - [Schema](#schema)
   - [Devices](#devices)
   - [Scenes](#scenes)
+  - [Input](#input)
 - [WebSocket](#websocket)
   - [Connection](#connection)
   - [Client to Server Messages](#client-to-server-messages)
@@ -680,6 +681,49 @@ Executes all actions of a scene.
 | id    | string | Yes      | Scene ID      |
 
 - **Response:** `200 OK` on success
+
+---
+
+### Input
+
+#### Simulate Button Input
+
+Remotely triggers a button action as if pressed on the physical device. Useful for controlling the menu UI via the web interface.
+
+- **URL:** `/api/input`
+- **Method:** `POST`
+- **Content-Type:** `application/json`
+- **Request Body:**
+
+```json
+{
+  "action": "button_up",
+  "value": ""
+}
+```
+
+| Field  | Type   | Required | Description                                                      |
+|--------|--------|----------|------------------------------------------------------------------|
+| action | string | Yes      | Action name to execute (see list below)                          |
+| value  | string | No       | Optional value passed to the action handler (default: empty)     |
+
+**Available actions:**
+
+| Action         | Description                              |
+|----------------|------------------------------------------|
+| `button_up`    | Navigate up in the menu                  |
+| `button_down`  | Navigate down in the menu                |
+| `button_left`  | Adjust value left (e.g. cycle selection) |
+| `button_right` | Adjust value right                       |
+| `button_select`| Activate the selected menu item          |
+| `button_back`  | Go back to the previous screen           |
+
+- **Response:** `200 OK` on success, `400 Bad Request` if `action` field is missing
+
+**Notes:**
+- Actions are dispatched via the heimdall action manager
+- Any registered action can be triggered, not just button actions
+- The value field is passed through to the action handler but is currently unused for button actions
 
 ---
 

@@ -1,9 +1,9 @@
-#include "api_server.h"
-#include "api_handlers.h"
-#include "websocket_handler.h"
-
-#include "common.h"
+#include "bifrost/api_server.h"
+#include "bifrost/api_handlers.h"
+#include "bifrost/common.h"
+#include "bifrost/websocket_handler.h"
 #include "storage.h"
+
 #include <esp_http_server.h>
 #include <esp_log.h>
 #include <mdns.h>

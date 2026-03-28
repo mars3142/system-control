@@ -1,13 +1,11 @@
+#include "hal/u8g2_esp32_hal.h"
+
+#include <esp_log.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <sdkconfig.h>
 #include <stdio.h>
 #include <string.h>
-
-#include "esp_log.h"
-#include "sdkconfig.h"
-
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
-#include "hal/u8g2_esp32_hal.h"
 
 static const char *TAG = "u8g2_hal";
 static const unsigned int I2C_TIMEOUT_MS = 1000;

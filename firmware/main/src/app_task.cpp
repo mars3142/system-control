@@ -1,26 +1,26 @@
 #include "app_task.h"
-
 #include "analytics.h"
 #include "button_handling.h"
 #include "common.h"
-#include "common/InactivityTracker.h"
 #include "hal/u8g2_esp32_hal.h"
+#include "heimdall/action_manager.h"
+#include "hermes/hermes.h"
 #include "i2c_checker.h"
 #include "led_status.h"
+#include "mercedes/mercedes.h"
 #include "message_manager.h"
 #include "my_mqtt_client.h"
 #include "persistence_manager.h"
 #include "simulator.h"
 #include "u8g2_mqtt.h"
-#include "ui/ClockScreenSaver.h"
-#include "ui/ScreenSaver.h"
-#include "ui/SplashScreen.h"
 #include "wifi_manager.h"
+
 #include <cstring>
 #include <driver/i2c.h>
 #include <esp_diagnostics.h>
 #include <esp_insights.h>
 #include <esp_log.h>
+#include <esp_mac.h>
 #include <esp_task_wdt.h>
 #include <esp_timer.h>
 #include <sdkconfig.h>
@@ -31,27 +31,20 @@
 static const char *TAG = "app_task";
 
 u8g2_t u8g2;
-uint8_t last_value = 0;
-menu_options_t options;
 uint8_t received_signal;
 uint64_t last_mqtt_sync = 0;
 
-std::shared_ptr<Widget> m_widget;
-std::vector<std::shared_ptr<Widget>> m_history;
-std::unique_ptr<InactivityTracker> m_inactivityTracker;
-// Persistence Manager for C-API
 persistence_manager_t g_persistence_manager;
 
 extern QueueHandle_t buttonQueue;
 
 static TaskHandle_t display_update_task_handle = nullptr;
 
-// Display update task - handles I2C transfer asynchronously (non-blocking main loop)
+// Display update task - handles I2C transfer asynchronously
 static void display_update_task(void *args)
 {
     while (true)
     {
-        // Wait for render completion signal from app_task and send immediately.
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
         u8g2_SendBuffer(&u8g2);
     }
@@ -79,70 +72,77 @@ static void setup_screen(void)
     u8g2_ClearDisplay(&u8g2);
 }
 
-void setScreen(const std::shared_ptr<Widget> &screen)
+// --- Heimdall button action callbacks ---
+
+static void on_button_up(const char *)
 {
-    if (screen != nullptr)
+    Mercedes::getInstance().handleInput(BTN_UP);
+}
+static void on_button_down(const char *)
+{
+    Mercedes::getInstance().handleInput(BTN_DOWN);
+}
+static void on_button_left(const char *)
+{
+    Mercedes::getInstance().handleInput(BTN_LEFT);
+}
+static void on_button_right(const char *)
+{
+    Mercedes::getInstance().handleInput(BTN_RIGHT);
+}
+static void on_button_select(const char *)
+{
+    Mercedes::getInstance().handleInput(BTN_SELECT);
+}
+static void on_button_back(const char *)
+{
+    Mercedes::getInstance().handleInput(BTN_BACK);
+}
+
+static void register_button_actions(void)
+{
+    action_manager_register("button_up", on_button_up);
+    action_manager_register("button_down", on_button_down);
+    action_manager_register("button_left", on_button_left);
+    action_manager_register("button_right", on_button_right);
+    action_manager_register("button_select", on_button_select);
+    action_manager_register("button_back", on_button_back);
+    ESP_LOGI(TAG, "Button actions registered with Heimdall");
+}
+
+// --- Physical button handler → Heimdall ---
+
+static void handle_button(uint8_t button)
+{
+    hermes_reset_inactivity();
+
+    switch (button)
     {
-        ESP_DIAG_EVENT(TAG, "Screen set: %s", screen->getName());
-        m_widget = screen;
-        m_history.clear();
-        m_history.emplace_back(m_widget);
-        m_widget->onEnter();
+    case CONFIG_BUTTON_UP:
+        action_manager_execute("button_up", NULL);
+        break;
+    case CONFIG_BUTTON_DOWN:
+        action_manager_execute("button_down", NULL);
+        break;
+    case CONFIG_BUTTON_LEFT:
+        action_manager_execute("button_left", NULL);
+        break;
+    case CONFIG_BUTTON_RIGHT:
+        action_manager_execute("button_right", NULL);
+        break;
+    case CONFIG_BUTTON_BACK:
+        action_manager_execute("button_back", NULL);
+        break;
+    case CONFIG_BUTTON_SELECT:
+        action_manager_execute("button_select", NULL);
+        break;
+    default:
+        ESP_LOGE(TAG, "Unhandled button: %u", button);
+        break;
     }
 }
 
-void pushScreen(const std::shared_ptr<Widget> &screen)
-{
-    if (screen != nullptr)
-    {
-        if (m_widget)
-        {
-            m_widget->onPause();
-        }
-        ESP_DIAG_EVENT(TAG, "Screen pushed: %s", screen->getName());
-        m_widget = screen;
-        m_widget->onEnter();
-        m_history.emplace_back(m_widget);
-    }
-}
-
-void popScreen()
-{
-    if (m_history.size() >= 2)
-    {
-        m_history.pop_back();
-        if (m_widget)
-        {
-            persistence_manager_save(&g_persistence_manager);
-            m_widget->onExit();
-        }
-        m_widget = m_history.back();
-        ESP_DIAG_EVENT(TAG, "Screen popped, now: %s", m_widget->getName());
-        m_widget->onResume();
-    }
-}
-
-static void init_ui(void)
-{
-    persistence_manager_init(&g_persistence_manager, "config");
-    options = {
-        .u8g2 = &u8g2,
-        .setScreen = [](const std::shared_ptr<Widget> &screen) { setScreen(screen); },
-        .pushScreen = [](const std::shared_ptr<Widget> &screen) { pushScreen(screen); },
-        .popScreen = []() { popScreen(); },
-        .onButtonClicked = nullptr,
-        .persistenceManager = &g_persistence_manager,
-    };
-    m_widget = std::make_shared<SplashScreen>(&options);
-    m_inactivityTracker = std::make_unique<InactivityTracker>(60000, []() {
-        auto screensaver = std::make_shared<ClockScreenSaver>(&options);
-        options.pushScreen(screensaver);
-    });
-
-    u8g2_ClearBuffer(&u8g2);
-    m_widget->Render();
-    u8g2_SendBuffer(&u8g2);
-}
+// --- Message manager listener ---
 
 static void on_message_received(const message_t *msg)
 {
@@ -153,14 +153,18 @@ static void on_message_received(const message_t *msg)
 
     if (std::strcmp(msg->data.settings.key, "light_variant") == 0)
     {
-        // Schema changed -> force file reload.
+        char val[8];
+        snprintf(val, sizeof(val), "%d", (int)msg->data.settings.value.int_value);
+        Mercedes::getInstance().updateItemValue("light_variant", val);
         start_simulation_with_reload(true);
         return;
     }
 
     if (std::strcmp(msg->data.settings.key, "light_mode") == 0)
     {
-        // Switching to simulation mode must always reload schema file.
+        char val[8];
+        snprintf(val, sizeof(val), "%d", (int)msg->data.settings.value.int_value);
+        Mercedes::getInstance().updateItemValue("light_mode", val);
         bool force_reload = (msg->data.settings.type == SETTINGS_TYPE_INT && msg->data.settings.value.int_value == 0);
         start_simulation_with_reload(force_reload);
         return;
@@ -168,49 +172,12 @@ static void on_message_received(const message_t *msg)
 
     if (std::strcmp(msg->data.settings.key, "light_active") == 0)
     {
-        // Power on/off does not force reload; simulator reloads only if not loaded yet.
+        Mercedes::getInstance().updateItemValue("light_active", msg->data.settings.value.bool_value ? "true" : "false");
         start_simulation_with_reload(false);
     }
 }
 
-static void handle_button(uint8_t button)
-{
-    m_inactivityTracker->reset();
-
-    if (m_widget)
-    {
-        switch (button)
-        {
-        case CONFIG_BUTTON_UP:
-            m_widget->OnButtonClicked(ButtonType::UP);
-            break;
-
-        case CONFIG_BUTTON_LEFT:
-            m_widget->OnButtonClicked(ButtonType::LEFT);
-            break;
-
-        case CONFIG_BUTTON_RIGHT:
-            m_widget->OnButtonClicked(ButtonType::RIGHT);
-            break;
-
-        case CONFIG_BUTTON_DOWN:
-            m_widget->OnButtonClicked(ButtonType::DOWN);
-            break;
-
-        case CONFIG_BUTTON_BACK:
-            m_widget->OnButtonClicked(ButtonType::BACK);
-            break;
-
-        case CONFIG_BUTTON_SELECT:
-            m_widget->OnButtonClicked(ButtonType::SELECT);
-            break;
-
-        default:
-            ESP_LOGE(TAG, "Unhandled button: %u", button);
-            break;
-        }
-    }
-}
+// --- Main task ---
 
 void app_task(void *args)
 {
@@ -230,10 +197,9 @@ void app_task(void *args)
         return;
     }
 
-    // Initialize display so that info can be shown
     setup_screen();
 
-    // Check BACK button and delete settings if necessary (with countdown)
+    // Factory reset check (hold BACK button for 5 seconds)
     gpio_config_t io_conf = {};
     io_conf.intr_type = GPIO_INTR_DISABLE;
     io_conf.mode = GPIO_MODE_INPUT;
@@ -257,13 +223,9 @@ void app_task(void *args)
             u8g2_SendBuffer(&u8g2);
             vTaskDelay(pdMS_TO_TICKS(1000));
             if (gpio_get_level(BUTTON_BACK) != 0)
-            {
-                // Button released, abort
                 break;
-            }
             if (i == 1)
             {
-                // After 5 seconds still pressed: perform factory reset
                 u8g2_ClearBuffer(&u8g2);
                 u8g2_DrawStr(&u8g2, 5, 30, "Alle Einstellungen ");
                 u8g2_DrawStr(&u8g2, 5, 45, "werden geloescht...");
@@ -279,48 +241,91 @@ void app_task(void *args)
         }
     }
 
+    // Initialize subsystems
+    persistence_manager_init(&g_persistence_manager, "config");
     message_manager_init();
-
     setup_buttons();
-    init_ui();
 
+    // Initialize Heimdall button actions
+    register_button_actions();
+
+    // Initialize Hermes renderer (60s screensaver timeout)
+    hermes_init(&u8g2, 60000);
+
+    // Show splash screen immediately
+    u8g2_ClearBuffer(&u8g2);
+    hermes_draw(0);
+    u8g2_SendBuffer(&u8g2);
+
+    // Start network and services
     wifi_manager_init();
-
     mqtt_client_start();
-
     message_manager_register_listener(on_message_received);
-
     start_simulation();
 
-    display_mqtt_queue = xQueueCreate(1, 1024);
+    // Set up dynamic value provider for label items
+    {
+        // Cache MAC suffix once
+        uint8_t mac[6];
+        esp_read_mac(mac, ESP_MAC_WIFI_STA);
+        static char mac_suffix[6];
+        snprintf(mac_suffix, sizeof(mac_suffix), "%02X%02X", mac[4], mac[5]);
+        ESP_LOGI(TAG, "Device MAC suffix: %s", mac_suffix);
 
+        Mercedes::getInstance().setItemValueProvider([](const std::string &id, char *buf, size_t bufSize) {
+            if (id == "mac_suffix")
+            {
+                strncpy(buf, mac_suffix, bufSize - 1);
+                buf[bufSize - 1] = '\0';
+            }
+        });
+    }
+
+    // Load dynamic menu from SPIFFS
+    {
+        FILE *f = fopen("/spiffs/menu.json", "r");
+        if (f)
+        {
+            fseek(f, 0, SEEK_END);
+            long size = ftell(f);
+            fseek(f, 0, SEEK_SET);
+            std::string json(size, '\0');
+            fread(&json[0], 1, size, f);
+            fclose(f);
+            if (Mercedes::getInstance().buildFromJson(json))
+            {
+                ESP_LOGI(TAG, "Menu loaded from /spiffs/menu.json");
+            }
+            else
+            {
+                ESP_LOGE(TAG, "Failed to parse menu.json");
+            }
+        }
+        else
+        {
+            ESP_LOGE(TAG, "Failed to open /spiffs/menu.json");
+        }
+    }
+
+    display_mqtt_queue = xQueueCreate(1, 1024);
     xTaskCreatePinnedToCore(u8g2_mqtt_task, "mqtt_disp", 4096, nullptr, 5, nullptr, tskNO_AFFINITY);
 
-    // Create display update task with lower priority (non-blocking main loop)
     xTaskCreatePinnedToCore(display_update_task, "display_update", 4096, nullptr, tskIDLE_PRIORITY + 1,
                             &display_update_task_handle, CONFIG_FREERTOS_NUMBER_OF_CORES - 1);
 
+    // Main loop
     auto oldTime = esp_timer_get_time();
 
     while (true)
     {
+        auto currentTime = esp_timer_get_time();
+        uint64_t deltaMs = (currentTime - oldTime) / 1000;
+        oldTime = currentTime;
+
         u8g2_ClearBuffer(&u8g2);
+        hermes_draw(deltaMs);
 
-        if (m_widget != nullptr)
-        {
-            auto currentTime = esp_timer_get_time();
-            auto delta = currentTime - oldTime;
-            oldTime = currentTime;
-
-            uint64_t deltaMs = delta / 1000;
-
-            m_widget->Update(deltaMs);
-            m_widget->Render();
-
-            m_inactivityTracker->update(deltaMs);
-        }
-
-        // MQTT
+        // MQTT display sync
         auto now = esp_timer_get_time();
         if (now - last_mqtt_sync > 1000000)
         {
@@ -329,12 +334,13 @@ void app_task(void *args)
             last_mqtt_sync = now;
         }
 
-        // Signal display task immediately after render to minimize visible latency.
+        // Signal display task
         if (display_update_task_handle != nullptr)
         {
             xTaskNotifyGive(display_update_task_handle);
         }
 
+        // Process button input
         if (xQueueReceive(buttonQueue, &received_signal, pdMS_TO_TICKS(10)) == pdTRUE)
         {
             handle_button(received_signal);

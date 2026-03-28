@@ -26,8 +26,8 @@ Create a new API endpoint that follows this project's conventions:
 4. Any required persistence_manager namespaces or message_manager posting
 
 **Reference Style From:**
-- [components/api-server/src/api_handlers.c](components/api-server/src/api_handlers.c#L65)—api_capabilities_get_handler, api_wifi_status_handler
-- [.github/instructions/api-server.instructions.md](.github/instructions/api-server.instructions.md)—handler order, helper function patterns
+- [components/bifrost/src/api_handlers.c](components/bifrost/src/api_handlers.c#L65)—api_capabilities_get_handler, api_wifi_status_handler
+- [.github/instructions/bifrost.instructions.md](.github/instructions/bifrost.instructions.md)—handler order, helper function patterns
 
 **Output Format:**
 ```c

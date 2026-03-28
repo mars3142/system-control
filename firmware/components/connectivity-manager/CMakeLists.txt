@@ -12,5 +12,5 @@ idf_component_register(SRCS
             esp_insights
             analytics
             led-manager
-            api-server
+            bifrost
 )

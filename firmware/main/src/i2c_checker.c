@@ -1,9 +1,9 @@
 #include "i2c_checker.h"
-
-#include "driver/i2c_master.h"
-#include "esp_insights.h"
-#include "esp_log.h"
 #include "hal/u8g2_esp32_hal.h"
+
+#include <driver/i2c_master.h>
+#include <esp_insights.h>
+#include <esp_log.h>
 
 static const char *TAG = "i2c_checker";
 

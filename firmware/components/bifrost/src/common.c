@@ -1,12 +1,12 @@
-#include "common.h"
-#include <cJSON.h>
-#include <stdbool.h>
-
-#include "api_server.h"
+#include "bifrost/common.h"
+#include "bifrost/api_server.h"
 #include "color.h"
 #include "message_manager.h"
 #include "persistence_manager.h"
 #include "simulator.h"
+
+#include <cJSON.h>
+#include <stdbool.h>
 #include <string.h>
 #include <time.h>
 
@@ -29,6 +29,21 @@ static void on_message_received(const message_t *msg)
         api_server_ws_broadcast(response);
         free(response);
     }
+    else if (msg->type == MESSAGE_TYPE_SETTINGS)
+    {
+        const char *key = msg->data.settings.key;
+        if (strcmp(key, "light_active") == 0 ||
+            strcmp(key, "light_mode") == 0 ||
+            strcmp(key, "light_variant") == 0)
+        {
+            cJSON *json = create_light_status_json();
+            cJSON_AddStringToObject(json, "type", "status");
+            char *response = cJSON_PrintUnformatted(json);
+            cJSON_Delete(json);
+            api_server_ws_broadcast(response);
+            free(response);
+        }
+    }
 }
 
 void common_init(void)
@@ -36,7 +51,7 @@ void common_init(void)
     message_manager_register_listener(on_message_received);
 }
 
-// Gibt ein cJSON-Objekt with dem aktuellen Lichtstatus zurück
+// Returns a cJSON object with the current light status
 cJSON *create_light_status_json(void)
 {
     persistence_manager_t pm;
@@ -48,7 +63,7 @@ cJSON *create_light_status_json(void)
 
     cJSON_AddBoolToObject(json, "thunder", false);
 
-    int mode = persistence_manager_get_int(&pm, "light_mode", 0);
+    int mode = persistence_manager_get_int(&pm, "light_mode", 1);
     const char *mode_str = "simulation";
     if (mode == 1)
     {
@@ -60,7 +75,7 @@ cJSON *create_light_status_json(void)
     }
     cJSON_AddStringToObject(json, "mode", mode_str);
 
-    int variant = persistence_manager_get_int(&pm, "light_variant", 3);
+    int variant = persistence_manager_get_int(&pm, "light_variant", 1);
     char schema_filename[20];
     snprintf(schema_filename, sizeof(schema_filename), "schema_%02d.csv", variant);
     cJSON_AddStringToObject(json, "schema", schema_filename);

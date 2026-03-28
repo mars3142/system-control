@@ -1,9 +1,9 @@
 ---
-description: "Use when implementing or changing ESP-IDF HTTP handlers, REST routes, captive portal flows, static file serving, CORS handling, or WebSocket-adjacent API behavior in api-server."
-name: "API Server Instructions"
-applyTo: "components/api-server/**/*.{c,h}"
+description: "Use when implementing or changing ESP-IDF HTTP handlers, REST routes, captive portal flows, static file serving, CORS handling, or WebSocket-adjacent API behavior in bifrost."
+name: "Bifrost (API Server) Instructions"
+applyTo: "components/bifrost/**/*.{c,h}"
 ---
-# API Server Guidelines
+# Bifrost (API Server) Guidelines
 
 - Keep handler registration order stable in api_handlers.c:
   1) specific /api routes
@@ -20,6 +20,6 @@ applyTo: "components/api-server/**/*.{c,h}"
   - content type by original file type
   - CORS headers for browser usage
   - Content-Encoding: gzip when serving .gz assets
-- Prefer localized changes in api-server only; avoid cross-component coupling for state changes.
+- Prefer localized changes in bifrost only; avoid cross-component coupling for state changes.
 - For state updates, use message_manager_post instead of direct control flow into other components.
 - Add clear ESP_LOGI/W/E messages with the local TAG for new request paths and error branches.

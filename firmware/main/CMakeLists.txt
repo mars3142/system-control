@@ -7,9 +7,10 @@ idf_component_register(SRCS
         src/hal/u8g2_esp32_hal.c
     INCLUDE_DIRS "include"
     PRIV_REQUIRES
+        heimdall
+        hermes
         mercedes
         analytics
-        insa
         connectivity-manager
         led-manager
         persistence-manager

@@ -1,11 +1,10 @@
 #include "simulator.h"
-
 #include "color.h"
 #include "led_strip_ws2812.h"
 #include "message_manager.h"
 #include "persistence_manager.h"
-#include "simulator.h"
 #include "storage.h"
+
 #include <esp_heap_caps.h>
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>

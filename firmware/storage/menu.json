@@ -5,19 +5,19 @@
             "title": "Hauptmenü",
             "items": [
                 {
-                    "id": "lights_control",
-                    "type": "action",
+                    "id": "menu_lights",
+                    "type": "submenu",
                     "label": "Lichtsteuerung",
-                    "actionTopic": "home/lights/toggle"
+                    "targetScreenId": "lights_menu"
                 },
                 {
-                    "id": "climate_control",
-                    "type": "action",
-                    "label": "Klima Steuerung",
-                    "actionTopic": "home/climate/toggle"
+                    "id": "menu_external",
+                    "type": "submenu",
+                    "label": "externe Geraete",
+                    "targetScreenId": "external_devices_menu"
                 },
                 {
-                    "id": "settings",
+                    "id": "menu_settings",
                     "type": "submenu",
                     "label": "Einstellungen",
                     "targetScreenId": "settings_menu"
@@ -29,37 +29,69 @@
             "title": "Lichtsteuerung",
             "items": [
                 {
-                    "id": "living_room_light",
-                    "type": "action",
-                    "label": "Wohnzimmer Licht",
+                    "id": "light_active",
+                    "type": "toggle",
+                    "label": "Einschalten",
                     "persistent": true,
-                    "actionTopic": "home/lights/living_room/toggle"
+                    "valueType": "bool",
+                    "actionTopic": "home/lights/activate"
                 },
                 {
                     "id": "light_mode",
                     "type": "selection",
-                    "label": "Küchen Licht",
+                    "label": "Modus",
                     "persistent": true,
+                    "valueType": "int",
                     "items": [
                         {
-                            "value": "day",
+                            "value": "1",
                             "label": "Tag"
                         },
                         {
-                            "value": "night",
+                            "value": "2",
                             "label": "Nacht"
                         },
                         {
-                            "value": "auto",
+                            "value": "0",
                             "label": "Simulation"
                         }
                     ]
                 },
                 {
-                    "id": "back_to_main",
-                    "type": "submenu",
-                    "label": "< Zurück zum Hauptmenü",
-                    "targetScreenId": "main_menu"
+                    "id": "light_variant",
+                    "type": "selection",
+                    "label": "Variante",
+                    "persistent": true,
+                    "valueType": "int",
+                    "visibleWhen": {
+                        "itemId": "light_mode",
+                        "value": "0"
+                    },
+                    "items": [
+                        {
+                            "value": "1",
+                            "label": "Standard"
+                        },
+                        {
+                            "value": "2",
+                            "label": "Warm"
+                        },
+                        {
+                            "value": "3",
+                            "label": "Natur"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "external_devices_menu",
+            "title": "externe Geräte",
+            "items": [
+                {
+                    "id": "empty",
+                    "type": "label",
+                    "label": "keine Einträge"
                 }
             ]
         },
@@ -68,22 +100,15 @@
             "title": "Einstellungen",
             "items": [
                 {
-                    "id": "wifi_settings",
+                    "id": "ota_update",
                     "type": "action",
-                    "label": "WLAN Einstellungen",
-                    "actionTopic": "home/settings/wifi"
+                    "label": "OTA Einspielen",
+                    "actionTopic": "home/settings/ota_update"
                 },
                 {
-                    "id": "system_info",
-                    "type": "action",
-                    "label": "Systeminformationen",
-                    "actionTopic": "home/settings/system_info"
-                },
-                {
-                    "id": "back_to_main",
-                    "type": "submenu",
-                    "label": "< Zurück zum Hauptmenü",
-                    "targetScreenId": "main_menu"
+                    "id": "mac_suffix",
+                    "type": "label",
+                    "label": "Device-ID"
                 }
             ]
         }

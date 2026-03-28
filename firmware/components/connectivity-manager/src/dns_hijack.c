@@ -1,5 +1,6 @@
-// Minimaler DNS-Server für Captive Portal (alle Anfragen auf AP-IP)
-// Quelle: https://github.com/espressif/esp-idf/blob/master/examples/protocols/sntp/main/dns_server.c (angepasst)
+// Minimal DNS server for captive portal (redirects all queries to AP IP)
+#include "dns_hijack.h"
+
 #include <arpa/inet.h>
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>

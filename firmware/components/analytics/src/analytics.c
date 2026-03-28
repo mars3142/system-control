@@ -1,6 +1,7 @@
 #include "analytics.h"
-#include "esp_insights.h"
-#include "esp_rmaker_utils.h"
+
+#include <esp_insights.h>
+#include <esp_rmaker_utils.h>
 
 extern const char insights_auth_key_start[] asm("_binary_insights_auth_key_txt_start");
 extern const char insights_auth_key_end[] asm("_binary_insights_auth_key_txt_end");

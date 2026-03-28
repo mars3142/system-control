@@ -1,6 +1,6 @@
 #pragma once
 
-#include "esp_check.h"
+#include <esp_check.h>
 #include <stdint.h>
 
 // Configuration structure for the simulation

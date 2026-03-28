@@ -1,6 +1,6 @@
 #pragma once
 
-#include "driver/gpio.h"
+#include <driver/gpio.h>
 
 #define BUTTON_UP ((gpio_num_t)CONFIG_BUTTON_UP)
 #define BUTTON_DOWN ((gpio_num_t)CONFIG_BUTTON_DOWN)
