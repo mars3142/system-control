@@ -10,7 +10,6 @@ idf_component_register(SRCS
         heimdall
         hermes
         mercedes
-        analytics
         connectivity-manager
         led-manager
         persistence-manager
@@ -22,7 +21,6 @@ idf_component_register(SRCS
         esp_event
         esp_wifi
         app_update
-        rmaker_common
         driver
         my_mqtt_client
 )

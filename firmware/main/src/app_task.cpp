@@ -1,5 +1,4 @@
 #include "app_task.h"
-#include "analytics.h"
 #include "button_handling.h"
 #include "common.h"
 #include "hal/u8g2_esp32_hal.h"
@@ -17,8 +16,6 @@
 
 #include <cstring>
 #include <driver/i2c.h>
-#include <esp_diagnostics.h>
-#include <esp_insights.h>
 #include <esp_log.h>
 #include <esp_mac.h>
 #include <esp_task_wdt.h>
@@ -61,11 +58,11 @@ static void setup_screen(void)
     u8g2_Setup_sh1106_i2c_128x64_noname_f(&u8g2, U8G2_R0, u8g2_esp32_i2c_byte_cb, u8g2_esp32_gpio_and_delay_cb);
     u8x8_SetI2CAddress(&u8g2.u8x8, DISPLAY_I2C_ADDRESS << 1);
 
-    ESP_DIAG_EVENT(TAG, "u8g2_InitDisplay");
+    ESP_LOGI(TAG, "u8g2_InitDisplay");
     u8g2_InitDisplay(&u8g2);
     vTaskDelay(pdMS_TO_TICKS(10));
 
-    ESP_DIAG_EVENT(TAG, "u8g2_SetPowerSave");
+    ESP_LOGI(TAG, "u8g2_SetPowerSave");
     u8g2_SetPowerSave(&u8g2, 0);
     vTaskDelay(pdMS_TO_TICKS(10));
 

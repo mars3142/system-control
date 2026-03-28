@@ -4,7 +4,6 @@
 
 #include <driver/gpio.h>
 #include <esp_err.h>
-#include <esp_insights.h>
 #include <esp_log.h>
 #include <esp_mac.h>
 #include <freertos/FreeRTOS.h>
@@ -39,7 +38,7 @@ static void button_event_cb(void *arg, void *usr_data)
     uint8_t gpio_num = data->gpio;
     const char *button_name = button_names[data->index];
 
-    ESP_DIAG_EVENT(TAG, "Button %s pressed (GPIO %d)", button_name, gpio_num);
+    ESP_LOGI(TAG, "Button %s pressed (GPIO %d)", button_name, gpio_num);
 
     if (xQueueSend(buttonQueue, &gpio_num, 0) != pdTRUE)
     {
@@ -76,7 +75,7 @@ void setup_buttons(void)
         return;
     }
 
-    ESP_DIAG_EVENT(TAG, "Button queue created successfully");
+    ESP_LOGI(TAG, "Button queue created successfully");
     for (int i = 0; i < sizeof(gpios) / sizeof(gpios[0]); i++)
     {
         init_button(gpios[i], i);

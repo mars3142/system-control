@@ -2,7 +2,6 @@
 #include "hal/u8g2_esp32_hal.h"
 
 #include <driver/i2c_master.h>
-#include <esp_insights.h>
 #include <esp_log.h>
 
 static const char *TAG = "i2c_checker";
@@ -57,7 +56,7 @@ esp_err_t i2c_bus_scan_and_check(void)
     {
         ESP_LOGW(TAG, "Failed to delete I2C master bus: %s", esp_err_to_name(del_err));
     }
-    ESP_DIAG_EVENT(TAG, "I2C master bus deleted.");
+    ESP_LOGI(TAG, "I2C master bus deleted.");
 
     return err;
 }

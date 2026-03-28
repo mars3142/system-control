@@ -9,8 +9,7 @@ idf_component_register(SRCS
             bt
             driver
             nvs_flash
-            esp_insights
-            analytics
+            skuld
             led-manager
             bifrost
 )

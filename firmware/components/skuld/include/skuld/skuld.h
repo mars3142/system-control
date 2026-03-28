@@ -3,5 +3,5 @@
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
-void analytics_init(void);
+void skuld_init(void);
 __END_DECLS
