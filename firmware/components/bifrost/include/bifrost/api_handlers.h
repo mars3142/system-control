@@ -38,13 +38,14 @@ extern "C"
     esp_err_t api_schema_get_handler(httpd_req_t *req);
     esp_err_t api_schema_post_handler(httpd_req_t *req);
 
-    // Devices API (Matter)
+    // Devices API (Iris / Thread)
     esp_err_t api_devices_scan_handler(httpd_req_t *req);
     esp_err_t api_devices_pair_handler(httpd_req_t *req);
     esp_err_t api_devices_paired_handler(httpd_req_t *req);
     esp_err_t api_devices_update_handler(httpd_req_t *req);
     esp_err_t api_devices_unpair_handler(httpd_req_t *req);
     esp_err_t api_devices_toggle_handler(httpd_req_t *req);
+    esp_err_t api_devices_toggle_all_handler(httpd_req_t *req);
 
     // Scenes API
     esp_err_t api_scenes_get_handler(httpd_req_t *req);

@@ -4,14 +4,50 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ESP32 firmware for a model railway system control unit, targeting ESP32-S3 and ESP32-C6 microcontrollers. Built with ESP-IDF 5.4. Includes a Svelte 5 web UI (`website/`) and a REST/WebSocket/MQTT API.
+ESP32 firmware for a model railway system control unit, targeting ESP32-C6 microcontrollers. Built with ESP-IDF 5.5. Includes a Svelte 5 web UI (`website/`) and a REST/WebSocket/MQTT API.
+
+## ESP-IDF Environment Setup
+
+ESP-IDF is **not** on PATH by default. The installation lives at a non-standard path; `export.sh` must be sourced before `idf.py` is available.
+
+```bash
+# One-time per shell session — activates idf.py, xtensa/riscv toolchains, etc.
+. /Users/mars3142/.espressif/v5.5.3/esp-idf/export.sh
+```
+
+If `export.sh` cannot find the Python environment it will print an error like
+`doesn't exist! Please run the install script`. In that case invoke `idf.py`
+directly via the venv Python, which bypasses the PATH check:
+
+```bash
+IDF_PYTHON_ENV_PATH=/Users/mars3142/.espressif/tools/python/v5.5.3/venv \
+IDF_TOOLS_PATH=/Users/mars3142/.espressif/tools \
+/Users/mars3142/.espressif/tools/python/v5.5.3/venv/bin/python \
+  /Users/mars3142/.espressif/v5.5.3/esp-idf/tools/idf.py <command>
+```
+
+Key paths:
+- IDF root: `/Users/mars3142/.espressif/v5.5.3/esp-idf/`
+- Python venv: `/Users/mars3142/.espressif/tools/python/v5.5.3/venv/`
+- IDF tools: `/Users/mars3142/.espressif/tools/`
 
 ## Build Commands
 
 ```bash
-# Firmware
-idf.py build
+# After sourcing export.sh:
+
+# Firmware (ESP32-C6, default target)
+idf.py -DIDF_TARGET=esp32c6 build
+
+# Flash everything (overwrites SPIFFS — paired Thread devices list is lost)
 idf.py -p <PORT> flash
+
+# Flash only the app binary (preserves SPIFFS and NVS — use this during development)
+idf.py -p <PORT> app-flash
+
+# Flash only the SPIFFS partition (updates menu.json / web assets without touching NVS)
+idf.py -p <PORT> storage-flash
+
 idf.py -p <PORT> flash monitor
 
 # Release build (ESP32-C6 only)
@@ -36,6 +72,7 @@ cd website && npm run test
   - **hermes** — u8g2 display rendering (menu, splash, screensaver)
   - **heimdall** — Button/action manager with callback registration
   - **simulator** — Day/night light cycle simulation from CSV schedules
+  - **iris** — Thread network device manager; split into `iris.c` (public API + state), `iris_storage.c`, `iris_coap.c`, `iris_discovery.c`, `iris_master.c`, `iris_inventory.c`; shared internal header at `include/iris/iris_internal.h`
 - `storage/` — Runtime SPIFFS content: `menu.json`, `schema_*.csv`, `www/` (web assets)
 - `website/` — Svelte 5 + Vite + Tailwind web UI
 
@@ -43,7 +80,7 @@ cd website && npm run test
 
 Two targets are supported with distinct pin assignments and `sdkconfig` defaults:
 - `sdkconfig.defaults` — base (shared)
-- `sdkconfig.defaults.esp32s3` — S3 overrides
+- `sdkconfig.defaults.esp32s3` — S3 overrides (obsolete)
 - `sdkconfig.defaults.esp32c6` — C6 overrides (includes WiFi enable/antenna GPIO)
 
 Do not assume one target's pins or settings apply to the other.

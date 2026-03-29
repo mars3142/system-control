@@ -5,6 +5,11 @@
             "title": "Hauptmenü",
             "items": [
                 {
+                    "id": "master_status",
+                    "type": "label",
+                    "label": ""
+                },
+                {
                     "id": "menu_lights",
                     "type": "submenu",
                     "label": "Lichtsteuerung",
@@ -27,6 +32,7 @@
         {
             "id": "lights_menu",
             "title": "Lichtsteuerung",
+            "dynamic": true,
             "items": [
                 {
                     "id": "light_active",
@@ -86,18 +92,20 @@
         },
         {
             "id": "external_devices_menu",
-            "title": "externe Geräte",
+            "title": "externe Geraete",
+            "dynamic": true,
             "items": [
                 {
-                    "id": "empty",
+                    "id": "ext_placeholder",
                     "type": "label",
-                    "label": "keine Einträge"
+                    "label": "Lade..."
                 }
             ]
         },
         {
             "id": "settings_menu",
             "title": "Einstellungen",
+            "dynamic": true,
             "items": [
                 {
                     "id": "ota_update",
@@ -109,6 +117,18 @@
                     "id": "mac_suffix",
                     "type": "label",
                     "label": "Device-ID"
+                }
+            ]
+        },
+        {
+            "id": "iris_new_devices_menu",
+            "title": "Geraet hinzufuegen",
+            "dynamic": true,
+            "items": [
+                {
+                    "id": "scan_placeholder",
+                    "type": "label",
+                    "label": "Suche..."
                 }
             ]
         }

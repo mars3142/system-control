@@ -6,6 +6,7 @@
 #include <esp_heap_caps.h>
 #include <esp_log.h>
 #include <esp_wifi.h>
+#include <sdkconfig.h>
 #include <string.h>
 
 static const char *TAG = "api_wifi";
@@ -18,10 +19,11 @@ esp_err_t api_capabilities_get_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "GET /api/capabilities");
 
-    // Thread only available for esp32c6 or esp32h2
     bool thread = false;
 #if defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
-    thread = false;
+#if defined(CONFIG_IRIS_ENABLED)
+    thread = true;
+#endif
 #endif
     cJSON *json = cJSON_CreateObject();
     cJSON_AddBoolToObject(json, "thread", thread);

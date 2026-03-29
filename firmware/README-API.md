@@ -386,9 +386,11 @@ Saves a schema file.
 
 ### Devices
 
-#### Scan for Devices
+Thread device management via the Iris component. Only available when `CONFIG_IRIS_ENABLED=y`. All device identifiers are 16-character hex EUI-64 strings (e.g., `"aabbccddeeff0011"`).
 
-Scans for available Matter devices to pair.
+#### Scan for New Joiners
+
+Returns Thread devices that have completed the Commissioner/Joiner flow but have not yet been paired (i.e., not in `iris_devices.bin`). These appear in the OLED menu under "neue Geräte" for manual confirmation.
 
 - **URL:** `/api/devices/scan`
 - **Method:** `GET`
@@ -397,29 +399,24 @@ Scans for available Matter devices to pair.
 ```json
 [
   {
-    "id": "matter-001",
-    "type": "light",
-    "name": "Matter Lamp"
-  },
-  {
-    "id": "matter-002",
-    "type": "sensor",
-    "name": "Temperature Sensor"
+    "id": "aabbccddeeff0011",
+    "name": "H2-eeff0011",
+    "capabilities": 3
   }
 ]
 ```
 
-| Field | Type   | Description                                   |
-|-------|--------|-----------------------------------------------|
-| id    | string | Unique device identifier                      |
-| type  | string | Device type: `light`, `sensor`, `unknown`     |
-| name  | string | Device name (can be empty)                    |
+| Field        | Type   | Description                                      |
+|--------------|--------|--------------------------------------------------|
+| id           | string | EUI-64 (16-char hex)                             |
+| name         | string | Auto-generated name (`H2-<last4>`) or from H2    |
+| capabilities | number | `IRIS_CAP_*` bitmask (see `README-thread.md`)    |
 
 ---
 
 #### Pair Device
 
-Pairs a discovered device.
+Provisions a new joiner into the paired device list. Queries the H2 for its capabilities via CoAP, stores the device in `iris_devices.bin`. Only available on the Master unit.
 
 - **URL:** `/api/devices/pair`
 - **Method:** `POST`
@@ -428,23 +425,24 @@ Pairs a discovered device.
 
 ```json
 {
-  "id": "matter-001",
-  "name": "Living Room Lamp"
+  "id": "aabbccddeeff0011",
+  "name": "Wagen 42"
 }
 ```
 
-| Field | Type   | Required | Description                  |
-|-------|--------|----------|------------------------------|
-| id    | string | Yes      | Device ID from scan          |
-| name  | string | Yes      | User-defined device name     |
+| Field | Type   | Required | Description                          |
+|-------|--------|----------|--------------------------------------|
+| id    | string | Yes      | EUI-64 from scan                     |
+| name  | string | No       | User-defined name (defaults to `id`) |
 
-- **Response:** `200 OK` on success
+- **Response:** `200 OK` with `{"status":"ok"}` on success
+- **Error:** `403` if called on Backup unit, `500` if pairing failed
 
 ---
 
 #### Get Paired Devices
 
-Returns list of all paired devices.
+Returns all devices stored in `iris_devices.bin` with their current runtime state.
 
 - **URL:** `/api/devices/paired`
 - **Method:** `GET`
@@ -453,24 +451,28 @@ Returns list of all paired devices.
 ```json
 [
   {
-    "id": "matter-001",
-    "type": "light",
-    "name": "Living Room Lamp"
+    "id": "aabbccddeeff0011",
+    "name": "Wagen 42",
+    "capabilities": 3,
+    "state": 1,
+    "online": true
   }
 ]
 ```
 
-| Field | Type   | Description                               |
-|-------|--------|-------------------------------------------|
-| id    | string | Unique device identifier                  |
-| type  | string | Device type: `light`, `sensor`, `unknown` |
-| name  | string | User-defined device name                  |
+| Field        | Type    | Description                                      |
+|--------------|---------|--------------------------------------------------|
+| id           | string  | EUI-64 (16-char hex)                             |
+| name         | string  | User-defined display name                        |
+| capabilities | number  | `IRIS_CAP_*` bitmask                             |
+| state        | number  | `IRIS_STATE_*` bitmask (last polled value)       |
+| online       | boolean | Whether the device responded in the last poll    |
 
 ---
 
 #### Update Device Name
 
-Updates the name of a paired device.
+Renames a paired device (persisted to `iris_devices.bin`).
 
 - **URL:** `/api/devices/update`
 - **Method:** `POST`
@@ -479,23 +481,23 @@ Updates the name of a paired device.
 
 ```json
 {
-  "id": "matter-001",
-  "name": "New Device Name"
+  "id": "aabbccddeeff0011",
+  "name": "Wagen 07"
 }
 ```
 
 | Field | Type   | Required | Description            |
 |-------|--------|----------|------------------------|
-| id    | string | Yes      | Device ID              |
-| name  | string | Yes      | New device name        |
+| id    | string | Yes      | EUI-64                 |
+| name  | string | Yes      | New display name       |
 
-- **Response:** `200 OK` on success
+- **Response:** `200 OK` with `{"status":"ok"}`, `404` if device not found
 
 ---
 
 #### Unpair Device
 
-Removes a paired device.
+Removes a paired device from `iris_devices.bin`.
 
 - **URL:** `/api/devices/unpair`
 - **Method:** `POST`
@@ -504,21 +506,21 @@ Removes a paired device.
 
 ```json
 {
-  "id": "matter-001"
+  "id": "aabbccddeeff0011"
 }
 ```
 
 | Field | Type   | Required | Description   |
 |-------|--------|----------|---------------|
-| id    | string | Yes      | Device ID     |
+| id    | string | Yes      | EUI-64        |
 
-- **Response:** `200 OK` on success
+- **Response:** `200 OK` with `{"status":"ok"}`, `404` if device not found
 
 ---
 
-#### Toggle Device
+#### Toggle Device Capability (Unicast)
 
-Toggles a device (e.g., light on/off).
+Sends a unicast CoAP `POST /toggle` to one specific device. Intended for individual control from the OLED menu.
 
 - **URL:** `/api/devices/toggle`
 - **Method:** `POST`
@@ -527,19 +529,50 @@ Toggles a device (e.g., light on/off).
 
 ```json
 {
-  "id": "matter-001"
+  "id": "aabbccddeeff0011",
+  "cap": 1
 }
 ```
 
-| Field | Type   | Required | Description   |
-|-------|--------|----------|---------------|
-| id    | string | Yes      | Device ID     |
+| Field | Type   | Required | Description                                         |
+|-------|--------|----------|-----------------------------------------------------|
+| id    | string | Yes      | EUI-64 of the target device                         |
+| cap   | number | Yes      | Exactly one `IRIS_CAP_*` bit (e.g., `1` = inner light) |
 
-- **Response:** `200 OK` on success
+- **Response:** `200 OK` with `{"status":"ok"}`, `404` if device not found
+
+---
+
+#### Set All Devices (Multicast)
+
+Sends an explicit on/off state to **all** devices simultaneously via CoAP multicast (`ff03::1`). Use this instead of toggle to ensure all devices reach the same state.
+
+- **URL:** `/api/devices/toggle_all`
+- **Method:** `POST`
+- **Content-Type:** `application/json`
+- **Request Body:**
+
+```json
+{
+  "cap": 1,
+  "state": 1
+}
+```
+
+| Field | Type   | Required | Description                                              |
+|-------|--------|----------|----------------------------------------------------------|
+| cap   | number | Yes      | Exactly one `IRIS_CAP_*` bit                             |
+| state | number | Yes      | `1` = activate, `0` = deactivate                         |
+
+- **Response:** `200 OK` with `{"status":"ok"}`
+
+**Note:** This is a NON (non-confirmable) CoAP multicast — delivery is best-effort. No per-device acknowledgement.
 
 ---
 
 ### Scenes
+
+> **Not yet implemented.** All scene endpoints return `{"status":"not_implemented"}`. The schema below describes the planned API.
 
 #### Get All Scenes
 

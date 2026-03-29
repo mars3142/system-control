@@ -107,6 +107,51 @@ void Mercedes::setStateChangedCallback(MenuStateChangedCallback callback)
     m_stateChangedCallback = callback;
 }
 
+void Mercedes::setDynamicScreenProvider(DynamicScreenProvider provider)
+{
+    m_dynamicScreenProvider = provider;
+}
+
+void Mercedes::addOrReplaceScreen(const MenuScreenDef &screen)
+{
+    m_screens[screen.id] = screen;
+    if (screen.id == m_currentScreenId && m_stateChangedCallback)
+        m_stateChangedCallback();
+}
+
+void Mercedes::ensureItemInScreen(const std::string &screenId, const MenuItemDef &item)
+{
+    auto it = m_screens.find(screenId);
+    if (it == m_screens.end())
+        return;
+    for (const auto &existing : it->second.items)
+    {
+        if (existing.id == item.id)
+            return;  // already present — preserve existing in-memory state
+    }
+    it->second.items.push_back(item);
+    if (screenId == m_currentScreenId && m_stateChangedCallback)
+        m_stateChangedCallback();
+}
+
+void Mercedes::removeItemFromScreen(const std::string &screenId, const std::string &itemId)
+{
+    auto it = m_screens.find(screenId);
+    if (it == m_screens.end())
+        return;
+    auto &items = it->second.items;
+    for (auto jt = items.begin(); jt != items.end(); ++jt)
+    {
+        if (jt->id == itemId)
+        {
+            items.erase(jt);
+            if (screenId == m_currentScreenId && m_stateChangedCallback)
+                m_stateChangedCallback();
+            return;
+        }
+    }
+}
+
 bool Mercedes::buildFromJson(const std::string &jsonPayload)
 {
     cJSON *root = cJSON_Parse(jsonPayload.c_str());
@@ -134,13 +179,16 @@ bool Mercedes::buildFromJson(const std::string &jsonPayload)
                 continue;
 
             MenuScreenDef screenDef;
-            cJSON *screenId = cJSON_GetObjectItem(screenItem, "id");
-            cJSON *screenTitle = cJSON_GetObjectItem(screenItem, "title");
+            cJSON *screenId      = cJSON_GetObjectItem(screenItem, "id");
+            cJSON *screenTitle   = cJSON_GetObjectItem(screenItem, "title");
+            cJSON *screenDynamic = cJSON_GetObjectItem(screenItem, "dynamic");
 
             if (screenId && cJSON_IsString(screenId))
                 screenDef.id = screenId->valuestring;
             if (screenTitle && cJSON_IsString(screenTitle))
                 screenDef.title = screenTitle->valuestring;
+            if (screenDynamic && cJSON_IsBool(screenDynamic))
+                screenDef.dynamic = cJSON_IsTrue(screenDynamic);
 
             if (m_currentScreenId.empty() && !screenDef.id.empty())
             {
@@ -339,6 +387,14 @@ void Mercedes::navigateToScreen(const std::string &screenId)
     m_screenHistory.push({m_currentScreenId, m_selectedIndex});
     m_currentScreenId = screenId;
     m_selectedIndex = 0;
+
+    // For dynamic screens, invoke the provider before rendering so it can
+    // populate or refresh the screen's items via addOrReplaceScreen().
+    {
+        auto it = m_screens.find(screenId);
+        if (it != m_screens.end() && it->second.dynamic && m_dynamicScreenProvider)
+            m_dynamicScreenProvider(screenId);
+    }
 
     const MenuScreenDef &newScreen = m_screens[screenId];
     for (size_t i = 0; i < newScreen.items.size(); i++)

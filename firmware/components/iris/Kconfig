@@ -1,0 +1,92 @@
+menu "Iris Thread Manager"
+    depends on IDF_TARGET_ESP32C6 || IDF_TARGET_ESP32H2
+
+    config IRIS_ENABLED
+        bool "Enable Iris Thread device management"
+        default y
+        depends on OPENTHREAD_ENABLED
+        help
+            Enables the Thread Border Router, Commissioner, and device management.
+            Requires ESP32-C6 or ESP32-H2 target with OpenThread support.
+
+    config IRIS_MAX_DEVICES
+        int "Maximum number of paired Thread devices"
+        default 32
+        range 1 64
+        depends on IRIS_ENABLED
+        help
+            Maximum number of paired H2 devices stored in SPIFFS and kept in memory.
+
+    config IRIS_INVENTORY_INTERVAL_MS
+        int "Inventory poll interval (ms)"
+        default 30000
+        range 5000 300000
+        depends on IRIS_ENABLED
+        help
+            How often the inventory task polls all paired devices for their current state.
+
+    config IRIS_OFFLINE_THRESHOLD
+        int "Failed polls before marking device offline"
+        default 3
+        range 1 10
+        depends on IRIS_ENABLED
+        help
+            Number of consecutive CoAP timeout/errors before a device is marked offline.
+
+    config IRIS_DISCOVERY_WINDOW_MS
+        int "Discovery response collection window (ms)"
+        default 3000
+        range 500 10000
+        depends on IRIS_ENABLED
+        help
+            How long the C6 waits for responses after sending a multicast GET /discover.
+            Longer values catch slow or distant devices; shorter values speed up boot.
+
+    config IRIS_DISCOVERY_INTERVAL_CYCLES
+        int "Re-discovery every N inventory cycles"
+        default 10
+        range 1 100
+        depends on IRIS_ENABLED
+        help
+            A full discovery sweep (multicast GET /discover) is run automatically
+            every N inventory poll cycles. At the default of 10 cycles × 30 s = 5 min.
+            Set to 1 to rediscover every cycle (more network traffic).
+
+    config IRIS_JOINER_PSKD
+        string "Thread Joiner PSKd (Pre-Shared Key)"
+        default "JOINPW01"
+        depends on IRIS_ENABLED
+        help
+            The Pre-Shared Key for Device used during Thread commissioning.
+            Must match the PSKd compiled into the H2 firmware.
+            Minimum 6 characters, maximum 32 characters.
+
+    config IRIS_MASTER_PRIORITY
+        int "Master election priority (higher = preferred Master)"
+        default 1
+        range 1 255
+        depends on IRIS_ENABLED
+        help
+            Priority used in Master/Backup election. The device with the highest
+            priority becomes Master. Configure the primary C6 with a higher value
+            (e.g., 2) than the backup (e.g., 1).
+
+    config IRIS_MASTER_HEARTBEAT_INTERVAL_MS
+        int "Master heartbeat broadcast interval (ms)"
+        default 5000
+        range 1000 30000
+        depends on IRIS_ENABLED
+        help
+            How often the active Master broadcasts a heartbeat to the Thread multicast
+            group ff03::1 so the Backup knows the Master is alive.
+
+    config IRIS_MASTER_FAILOVER_TIMEOUT_MS
+        int "Failover timeout — max time without a heartbeat (ms)"
+        default 15000
+        range 3000 60000
+        depends on IRIS_ENABLED
+        help
+            If the Backup receives no heartbeat from the Master within this timeout,
+            it starts a new Master election. Should be > 3 × HEARTBEAT_INTERVAL.
+
+endmenu

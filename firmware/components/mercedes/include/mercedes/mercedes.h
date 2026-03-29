@@ -29,6 +29,18 @@ using ItemValueProvider = std::function<void(const std::string &id, char *buf, s
  */
 using MenuStateChangedCallback = std::function<void()>;
 
+/**
+ * @brief Called when navigating to a screen with dynamic=true.
+ *
+ * The provider should call addOrReplaceScreen() to populate or refresh the
+ * screen's items (and any sub-screens it references) before navigation
+ * completes. The callback runs synchronously inside navigateToScreen(), so
+ * it must not block indefinitely.
+ *
+ * @param screenId  The id of the screen being entered.
+ */
+using DynamicScreenProvider = std::function<void(const std::string &screenId)>;
+
 struct MenuSelectionItemDef
 {
     std::string value;
@@ -56,6 +68,7 @@ struct MenuScreenDef
     std::string id;
     std::string title;
     std::vector<MenuItemDef> items;
+    bool dynamic = false; /**< If true, DynamicScreenProvider is called before navigation completes */
 };
 
 /**
@@ -95,6 +108,39 @@ class Mercedes
      * @brief Sets the callback notified when menu state changes (for rendering)
      */
     void setStateChangedCallback(MenuStateChangedCallback callback);
+
+    /**
+     * @brief Sets the provider called when navigating to a screen with dynamic=true.
+     *
+     * The provider receives the target screen id and should call
+     * addOrReplaceScreen() to populate it before the navigation completes.
+     */
+    void setDynamicScreenProvider(DynamicScreenProvider provider);
+
+    /**
+     * @brief Insert or replace a screen in the internal screen map.
+     *
+     * Used by the DynamicScreenProvider to inject runtime-generated screens
+     * (e.g. per-device capability screens) that are not present in menu.json.
+     * If this is the currently displayed screen, triggers stateChangedCallback.
+     */
+    void addOrReplaceScreen(const MenuScreenDef &screen);
+
+    /**
+     * @brief Add an item to an existing screen if no item with the same id exists.
+     *
+     * Used by dynamic providers to append runtime items (e.g. multicast toggle)
+     * to a screen without replacing items that already have in-memory state.
+     * No-op if the screen does not exist or the item id is already present.
+     */
+    void ensureItemInScreen(const std::string &screenId, const MenuItemDef &item);
+
+    /**
+     * @brief Remove an item from a screen by id.
+     *
+     * No-op if the screen or item does not exist.
+     */
+    void removeItemFromScreen(const std::string &screenId, const std::string &itemId);
 
     // --- State accessors (used by hermes for rendering) ---
 
@@ -138,6 +184,7 @@ class Mercedes
     MenuActionCallback m_actionCallback;
     ItemValueProvider m_valueProvider;
     MenuStateChangedCallback m_stateChangedCallback;
+    DynamicScreenProvider m_dynamicScreenProvider;
 
     std::map<std::string, MenuScreenDef> m_screens;
     std::string m_currentScreenId;

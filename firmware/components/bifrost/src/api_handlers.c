@@ -159,6 +159,12 @@ esp_err_t api_handlers_register(httpd_handle_t server)
     if (err != ESP_OK)
         return err;
 
+    httpd_uri_t devices_toggle_all = {
+        .uri = "/api/devices/toggle_all", .method = HTTP_POST, .handler = api_devices_toggle_all_handler};
+    err = httpd_register_uri_handler(server, &devices_toggle_all);
+    if (err != ESP_OK)
+        return err;
+
     // Scenes endpoints
     httpd_uri_t scenes_get = {.uri = "/api/scenes", .method = HTTP_GET, .handler = api_scenes_get_handler};
     err = httpd_register_uri_handler(server, &scenes_get);

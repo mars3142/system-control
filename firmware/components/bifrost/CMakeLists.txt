@@ -22,4 +22,5 @@ idf_component_register(SRCS
             message-manager
             my_mqtt_client
             heimdall
+            iris
 )

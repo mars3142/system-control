@@ -23,6 +23,7 @@ idf_component_register(SRCS
         app_update
         driver
         my_mqtt_client
+        iris
 )
 
 spiffs_create_partition_image(storage ../storage FLASH_IN_PROJECT)
