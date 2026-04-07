@@ -1,0 +1,34 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "ESP-IDF: App Flash (preserve NVS & SPIFFS)",
+      "type": "shell",
+      "command": "${config:idf.toolsPath}/python_env/idf5.5_py3.14_env/bin/python ${config:idf.currentSetup}/tools/idf.py -p ${config:idf.port} app-flash && ${config:idf.toolsPath}/python_env/idf5.5_py3.14_env/bin/python -m esptool --port ${config:idf.port} run",
+      "options": {
+        "env": {
+          "IDF_PATH": "${config:idf.currentSetup}",
+          "IDF_TOOLS_PATH": "${config:idf.toolsPath}"
+        }
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "ESP-IDF: Storage Flash (SPIFFS only)",
+      "type": "shell",
+      "command": "${config:idf.toolsPath}/python_env/idf5.5_py3.14_env/bin/python ${config:idf.currentSetup}/tools/idf.py -p ${config:idf.port} storage-flash && ${config:idf.toolsPath}/python_env/idf5.5_py3.14_env/bin/python -m esptool --port ${config:idf.port} run",
+      "options": {
+        "env": {
+          "IDF_PATH": "${config:idf.currentSetup}",
+          "IDF_TOOLS_PATH": "${config:idf.toolsPath}"
+        }
+      },
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}

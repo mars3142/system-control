@@ -31,11 +31,13 @@
     },
     "segments": {
       "title": "Segments",
-      "empty": "No segments configured",
-      "empty.hint": "Click \"Add Segment\" to create a segment"
+      "empty": {
+        "title": "No segments configured",
+        "hint": "Click \"Add Segment\" to create a segment"
+      }
     },
     "segment": {
-      "add": "➕ Add Segment",
+      "add": "Add Segment",
       "name": "Segment {num}",
       "leds": "Number of LEDs",
       "start": "Start LED",
@@ -86,7 +88,11 @@
     "loading": "Loading schema...",
     "header": {
       "time": "Time",
-      "color": "Color"
+      "color": "Color",
+      "red": "R",
+      "green": "G",
+      "blue": "B",
+      "brightness": "Brightness"
     },
     "loaded": "{file} loaded successfully",
     "saved": "{file} saved successfully!",
@@ -94,15 +100,19 @@
   },
   "scenes": {
     "title": "Scenes",
-    "empty": "No scenes defined",
-    "empty.hint": "Create scenes in settings",
+    "empty": {
+      "title": "No scenes defined",
+      "hint": "Create scenes in settings"
+    },
     "manage": {
       "title": "Manage Scenes",
       "desc": "Create and edit scenes for quick access"
     },
     "config": {
-      "empty": "No scenes created",
-      "empty.hint": "Click \"New Scene\" to create a scene"
+      "empty": {
+        "title": "No scenes created",
+        "hint": "Click \"New Scene\" to create a scene"
+      }
     },
     "activated": "\"{name}\" activated",
     "created": "Scene created",
@@ -118,8 +128,10 @@
   "devices": {
     "external": "External Devices",
     "control": {
-      "empty": "No devices added",
-      "empty.hint": "Add devices in settings"
+      "empty": {
+        "title": "No devices added",
+        "hint": "Add devices in settings"
+      }
     },
     "new": {
       "title": "New Devices",
@@ -127,8 +139,10 @@
     },
     "searching": "Searching for devices...",
     "unpaired": {
-      "empty": "No new devices found",
-      "empty.hint": "Press \"Scan devices\" to search for Matter devices"
+      "empty": {
+        "title": "No new devices found",
+        "hint": "Press \"Scan devices\" to search for Matter devices"
+      }
     },
     "paired": {
       "title": "Paired Devices",
@@ -152,11 +166,15 @@
     "config": {
       "title": "WiFi Configuration"
     },
-    "ssid": "WiFi Name (SSID)",
-    "ssid.placeholder": "Enter network name",
-    "password": "WiFi Password",
-    "password.short": "Password",
-    "password.placeholder": "Enter password",
+    "ssid": {
+      "title": "WiFi Name (SSID)",
+      "placeholder": "Enter network name"
+    },
+    "password": {
+      "title": "WiFi Password",
+      "short": "Password",
+      "placeholder": "Enter password"
+    },
     "available": "Available Networks",
     "scan": {
       "hint": "Search for networks...",
@@ -212,8 +230,8 @@
   },
   "btn": {
     "scan": "🔍 Scan",
-    "save": "💾 Save",
-    "load": "🔄 Load",
+    "save": "Save",
+    "load": "Load",
     "cancel": "Cancel",
     "apply": "Apply",
     "new": {

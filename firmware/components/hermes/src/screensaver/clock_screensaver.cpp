@@ -1,6 +1,9 @@
 #include "hermes/screensaver/clock_screensaver.h"
 
+#include "simulator.h"
+
 #include <ctime>
+#include <cstring>
 
 ClockScreensaver::ClockScreensaver(u8g2_t *u8g2) : m_u8g2(u8g2)
 {
@@ -8,6 +11,14 @@ ClockScreensaver::ClockScreensaver(u8g2_t *u8g2) : m_u8g2(u8g2)
 
 void ClockScreensaver::get_time_string(char *buffer, size_t bufferSize)
 {
+    const char *sim_time = get_time();
+    if (sim_time != NULL)
+    {
+        strncpy(buffer, sim_time, bufferSize - 1);
+        buffer[bufferSize - 1] = '\0';
+        return;
+    }
+
     time_t rawtime;
     struct tm *timeinfo;
     time(&rawtime);

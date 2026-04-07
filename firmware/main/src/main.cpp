@@ -11,6 +11,7 @@
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <esp_system.h>
 #include <nvs_flash.h>
 #include <sdkconfig.h>
 
@@ -38,6 +39,12 @@ void app_main(void)
     gpio_config(&io_conf);
     gpio_set_level(WIFI_ANT_CONFIG, 1); // HIGH
 #endif
+
+    esp_reset_reason_t reset_reason = esp_reset_reason();
+    if (reset_reason == ESP_RST_PANIC || reset_reason == ESP_RST_TASK_WDT || reset_reason == ESP_RST_INT_WDT)
+    {
+        ESP_LOGW("app_main", "Reboot after crash (reason: %d) — continuing normal init", reset_reason);
+    }
 
     // Initialize NVS
     esp_err_t err = nvs_flash_init();

@@ -3,13 +3,13 @@
 	import Footer from './components/footer.svelte';
 	import Index from './routes/index.svelte';
 	import Captive from './routes/captive.svelte';
-	import Router, { location } from 'svelte-spa-router';
+	import Router from 'svelte-spa-router';
 	import { lang } from './i18n/store';
+	import { Toaster } from 'svelte-french-toast';
 
 	const routes = {
 		'/': Index,
-		'/control': Index,
-		'/config': Index,
+		'/captive': Captive,
 		// Fallback route
 		'*': Index
 	};
@@ -19,7 +19,8 @@
 	});
 </script>
 
-<div class="container mx-auto lg:max-w-2xl">
+<Toaster/>
+<div class="container mx-auto">
 	<Header />
 
 	<main class="py-8">

@@ -31,11 +31,13 @@
     },
     "segments": {
       "title": "Segmente",
-      "empty": "Keine Segmente konfiguriert",
-      "empty.hint": "Klicke auf \"Segment hinzufügen\" um ein Segment zu erstellen"
+      "empty": {
+        "title": "Keine Segmente konfiguriert",
+        "hint": "Klicke auf \"Segment hinzufügen\" um ein Segment zu erstellen"
+      }
     },
     "segment": {
-      "add": "➕ Segment hinzufügen",
+      "add": "Segment hinzufügen",
       "name": "Segment {num}",
       "leds": "Anzahl LEDs",
       "start": "Start-LED",
@@ -86,7 +88,11 @@
     "loading": "Schema wird geladen...",
     "header": {
       "time": "Zeit",
-      "color": "Farbe"
+      "color": "Farbe",
+      "red": "R",
+      "green": "G",
+      "blue": "B",
+      "brightness": "Helligkeit"
     },
     "loaded": "{file} erfolgreich geladen",
     "saved": "{file} erfolgreich gespeichert!",
@@ -94,15 +100,19 @@
   },
   "scenes": {
     "title": "Szenen",
-    "empty": "Keine Szenen definiert",
-    "empty.hint": "Erstelle Szenen unter Konfiguration",
+    "empty": {
+      "title": "Keine Szenen definiert",
+      "hint": "Erstelle Szenen unter Konfiguration"
+    },
     "manage": {
       "title": "Szenen verwalten",
       "desc": "Erstelle und bearbeite Szenen für schnellen Zugriff"
     },
     "config": {
-      "empty": "Keine Szenen erstellt",
-      "empty.hint": "Klicke auf \"Neue Szene\" um eine Szene zu erstellen"
+      "empty": {
+        "title": "Keine Szenen erstellt",
+        "hint": "Klicke auf \"Neue Szene\" um eine Szene zu erstellen"
+      }
     },
     "activated": "\"{name}\" aktiviert",
     "created": "Szene erstellt",
@@ -118,8 +128,10 @@
   "devices": {
     "external": "Externe Geräte",
     "control": {
-      "empty": "Keine Geräte hinzugefügt",
-      "empty.hint": "Füge Geräte unter Konfiguration hinzu"
+      "empty": {
+        "title": "Keine Geräte hinzugefügt",
+        "hint": "Füge Geräte unter Konfiguration hinzu"
+      }
     },
     "new": {
       "title": "Neue Geräte",
@@ -127,8 +139,10 @@
     },
     "searching": "Suche nach Geräten...",
     "unpaired": {
-      "empty": "Keine neuen Geräte gefunden",
-      "empty.hint": "Drücke \"Geräte suchen\" um nach Matter-Geräten zu suchen"
+      "empty": {
+        "title": "Keine neuen Geräte gefunden",
+        "hint": "Drücke \"Geräte suchen\" um nach Matter-Geräten zu suchen"
+      }
     },
     "paired": {
       "title": "Zugeordnete Geräte",
@@ -152,11 +166,15 @@
     "config": {
       "title": "WLAN Konfiguration"
     },
-    "ssid": "WLAN Name (SSID)",
-    "ssid.placeholder": "Netzwerkname eingeben",
-    "password": "WLAN Passwort",
-    "password.short": "Passwort",
-    "password.placeholder": "Passwort eingeben",
+    "ssid": {
+      "title": "WLAN Name (SSID)",
+      "placeholder": "Netzwerkname eingeben"
+    },
+    "password": {
+      "title": "WLAN Passwort",
+      "short": "Passwort",
+      "placeholder": "Passwort eingeben"
+    },
     "available": "Verfügbare Netzwerke",
     "scan": {
       "hint": "Nach Netzwerken suchen...",
@@ -212,8 +230,8 @@
   },
   "btn": {
     "scan": "🔍 Suchen",
-    "save": "💾 Speichern",
-    "load": "🔄 Laden",
+    "save": "Speichern",
+    "load": "Laden",
     "cancel": "Abbrechen",
     "apply": "Übernehmen",
     "new": {

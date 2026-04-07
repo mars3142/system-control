@@ -174,22 +174,31 @@ esp_err_t api_light_status_handler(httpd_req_t *req)
 // LED Configuration API
 // ============================================================================
 
+static int compare_segments_by_start(const void *a, const void *b)
+{
+    const led_segment_t *seg_a = (const led_segment_t *)a;
+    const led_segment_t *seg_b = (const led_segment_t *)b;
+    return (int)seg_a->start - (int)seg_b->start;
+}
+
 esp_err_t api_wled_config_get_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "GET /api/wled/config");
 
     extern led_segment_t segments[LED_SEGMENT_MAX_LEN];
     extern size_t segment_count;
-    size_t required_size = sizeof(segments) * segment_count;
 
     cJSON *json = cJSON_CreateObject();
 
     persistence_manager_t pm;
     if (persistence_manager_init(&pm, "led_config") == ESP_OK)
     {
+        segment_count = persistence_manager_get_int(&pm, "segment_count", 0);
+        size_t required_size = sizeof(led_segment_t) * segment_count;
         persistence_manager_get_blob(&pm, "segments", segments, required_size, NULL);
-        uint8_t segment_count = persistence_manager_get_int(&pm, "segment_count", 0);
         persistence_manager_deinit(&pm);
+
+        qsort(segments, segment_count, sizeof(led_segment_t), compare_segments_by_start);
 
         cJSON *segments_arr = cJSON_CreateArray();
         for (uint8_t i = 0; i < segment_count; ++i)
@@ -277,6 +286,8 @@ esp_err_t api_wled_config_post_handler(httpd_req_t *req)
         }
     }
     cJSON_Delete(json);
+
+    qsort(segments, segment_count, sizeof(led_segment_t), compare_segments_by_start);
 
     persistence_manager_t pm;
     if (persistence_manager_init(&pm, "led_config") == ESP_OK)

@@ -399,6 +399,7 @@ void stop_simulation_task(void)
         {
             TaskHandle_t handle_to_delete = simulation_task_handle;
             simulation_task_handle = NULL;
+            time = NULL;
             xSemaphoreGive(simulation_mutex);
 
             // Check if the task still exists before deleting it
