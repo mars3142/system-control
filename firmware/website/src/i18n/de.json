@@ -22,6 +22,9 @@
         "devices": "🔗 Geräte",
         "scenes": "🎬 Szenen"
       }
+    },
+    "system": {
+      "title": "🔧 System"
     }
   },
   "wled": {
@@ -203,6 +206,21 @@
     "signal": "Signal",
     "secure": "Gesichert",
     "open": "Offen"
+  },
+  "thread": {
+    "title": "Thread Netzwerk",
+    "desc": "Dieses Gerät ist der Thread-Master. Öffne das Netzwerk, um neue Geräte ohne Display anzulernen.",
+    "network": "Netzwerk:",
+    "channel": "Kanal:",
+    "panId": "PAN ID:",
+    "status": {
+      "active": "Aktiv",
+      "offline": "Offline"
+    },
+    "permitJoin": "Geräte anlernen",
+    "permitJoinActive": "Anlernen aktiv ({time}s)",
+    "joinedCount": "{count} Gerät(e) erfolgreich verbunden",
+    "noNetwork": "Kein aktives Thread-Netzwerk gefunden."
   },
   "modal": {
     "color": {
