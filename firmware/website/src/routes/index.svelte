@@ -5,18 +5,22 @@
 	import { controlStore } from "../stores/controlStore";
 	import ControlTab from "../components/controlTab/controlTab.svelte";
 	import ConfigTab from "../components/configTab/configTab.svelte";
+	import SystemTab from "../components/systemTab/systemTab.svelte";
 	import TabButton from "../components/common/tabButton.svelte";
 	import TabBar from "../components/common/tabBar.svelte";
 
-	type Tab = "control" | "config";
+	type Tab = "control" | "config" | "system";
 
 	const tabToPath: Record<Tab, string> = {
 		control: "/control",
-		config: "/config"
+		config: "/config",
+		system: "/system"
 	};
 
 	function pathToTab(path: string): Tab {
-		return path === "/config" ? "config" : "control";
+		if (path === "/config") return "config";
+		if (path === "/system") return "system";
+		return "control";
 	}
 
 	let activeTab = $derived(pathToTab($location));
@@ -46,12 +50,19 @@
 		label={$t("tab.config.title")}
 		onClick={() => setTab("config")}
 	/>
+	<TabButton
+		active={activeTab === "system"}
+		label={$t("tab.system.title")}
+		onClick={() => setTab("system")}
+	/>
 </TabBar>
 
 <div class="tab-content">
 	{#if activeTab === "control"}
 		<ControlTab />
-	{:else}
+	{:else if activeTab === "config"}
 		<ConfigTab />
+	{:else}
+		<SystemTab />
 	{/if}
 </div>

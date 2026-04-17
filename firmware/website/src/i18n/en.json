@@ -22,6 +22,9 @@
         "devices": "🔗 Devices",
         "scenes": "🎬 Scenes"
       }
+    },
+    "system": {
+      "title": "🔧 System"
     }
   },
   "wled": {
@@ -203,6 +206,21 @@
     "signal": "Signal",
     "secure": "Secured",
     "open": "Open"
+  },
+  "thread": {
+    "title": "Thread Network",
+    "desc": "This device is the Thread Master. Open the network to pair new display-less devices.",
+    "network": "Network:",
+    "channel": "Channel:",
+    "panId": "PAN ID:",
+    "status": {
+      "active": "Active",
+      "offline": "Offline"
+    },
+    "permitJoin": "Pair Devices",
+    "permitJoinActive": "Pairing active ({time}s)",
+    "joinedCount": "{count} device(s) successfully paired",
+    "noNetwork": "No active Thread network found."
   },
   "modal": {
     "color": {
