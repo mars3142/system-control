@@ -21,8 +21,8 @@
 
 <Card title="control.status.title">
 	<div class="flex flex-col sm:flex-row gap-4">
-		<div class="flex-1 p-3 bg-background rounded-md border border-border">
-			<div class="text-xs text-muted-foreground mb-1">
+		<div class="flex-1 p-3 bg-card rounded-md border border-border">
+			<div class="text-xs text-text-muted mb-1">
 				{$t("control.status.mode")}
 			</div>
 			<div class="font-medium flex items-center gap-2">
@@ -32,8 +32,8 @@
 			</div>
 		</div>
 
-		<div class="flex-1 p-3 bg-background rounded-md border border-border">
-			<div class="text-xs text-muted-foreground mb-1">
+		<div class="flex-1 p-3 bg-card rounded-md border border-border">
+			<div class="text-xs text-text-muted mb-1">
 				{$t("control.status.color")}
 			</div>
 			<div class="h-6 w-full rounded" style="background: {color};"></div>
@@ -41,9 +41,9 @@
 
 		{#if mode === "simulation"}
 			<div
-				class="flex-1 p-3 bg-background rounded-md border border-border"
+				class="flex-1 p-3 bg-card rounded-md border border-border"
 			>
-				<div class="text-xs text-muted-foreground mb-1">
+				<div class="text-xs text-text-muted mb-1">
 					{$t("control.status.clock")}
 				</div>
 				<div class="font-medium">

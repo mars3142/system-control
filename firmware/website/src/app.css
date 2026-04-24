@@ -1,6 +1,18 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+    --color-bg: var(--bg-color);
+    --color-card: var(--card-bg);
+    --color-accent: var(--accent);
+    --color-text: var(--text);
+    --color-text-muted: var(--text-muted);
+    --color-success: var(--success);
+    --color-error: var(--error);
+    --color-border: var(--border);
+    --color-input: var(--input-bg);
+    --color-primary: var(--primary);
+    --shadow-custom: var(--shadow);
+}
 
 :root {
     /* Default to Light Theme */
@@ -32,12 +44,6 @@
         --shadow: rgba(0, 0, 0, 0.3);
         --primary: #c41e3a;
     }
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
 }
 
 body {

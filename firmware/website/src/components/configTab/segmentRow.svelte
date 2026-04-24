@@ -10,14 +10,14 @@
 </script>
 
 <tr class="group">
-	<td class="px-3 py-2 text-sm bg-bg-secondary group-hover:bg-accent border-y border-l border-border">
+	<td class="px-3 py-2 text-sm bg-card group-hover:bg-accent border-y border-l border-border">
 		<input
 			type="text"
 			bind:value={name}
 			class="w-full px-1 py-0.5 text-sm rounded border border-border bg-input focus:outline-none focus:border-primary"
 		/>
 	</td>
-	<td class="px-3 py-2 text-sm text-center bg-bg-secondary group-hover:bg-accent border-y border-border">
+	<td class="px-3 py-2 text-sm text-center bg-card group-hover:bg-accent border-y border-border">
 		<input
 			type="number"
 			min="0"
@@ -25,7 +25,7 @@
 			class="w-16 px-1 py-0.5 text-sm text-right rounded border border-border bg-input focus:outline-none focus:border-primary no-spinner"
 		/>
 	</td>
-	<td class="px-3 py-2 text-sm text-center bg-bg-secondary group-hover:bg-accent border-y border-border">
+	<td class="px-3 py-2 text-sm text-center bg-card group-hover:bg-accent border-y border-border">
 		<input
 			type="number"
 			min="1"
@@ -33,7 +33,7 @@
 			class="w-16 px-1 py-0.5 text-sm text-right rounded border border-border bg-input focus:outline-none focus:border-primary no-spinner"
 		/>
 	</td>
-	<td class="px-1 py-2 text-sm text-center bg-bg-secondary group-hover:bg-accent border-y border-r border-border">
+	<td class="px-1 py-2 text-sm text-center bg-card group-hover:bg-accent border-y border-r border-border">
 		<button
 			onclick={onDelete}
 			aria-label="delete"

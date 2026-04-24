@@ -38,7 +38,7 @@
 	</div>
 
 	{#if mode === 'simulation'}
-		<div class="p-4 bg-background rounded-md border border-border">
+		<div class="p-4 bg-card rounded-md border border-border">
 			<label for="active-schema" class="block text-sm font-medium mb-2">{$t("control.schema.active")}</label>
 
 			<DropDown

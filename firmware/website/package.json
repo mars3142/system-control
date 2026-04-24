@@ -9,19 +9,15 @@
 	},
 	"devDependencies": {
 		"@sveltejs/vite-plugin-svelte": "^6.1.1",
-		"@tailwindcss/typography": "^0.5.19",
-		"autoprefixer": "^10.4.16",
-		"postcss": "^8.4.31",
+		"@tailwindcss/vite": "^4.1.18",
 		"svelte": "^5.53.5",
-		"tailwindcss": "^3.3.5",
+		"tailwindcss": "^4.1.18",
 		"vite": "^7.1.2",
 		"vite-plugin-compression": "^0.5.1",
 		"vitest": "^3.2.4"
 	},
 	"dependencies": {
 		"@fontsource/atkinson-hyperlegible": "^5.2.6",
-		"@picocss/pico": "^2.1.1",
-		"@tailwindcss/vite": "^4.1.18",
 		"gsap": "^3.13.0",
 		"svelte-french-toast": "^2.0.0-alpha.0",
 		"svelte-spa-router": "^4.0.2"

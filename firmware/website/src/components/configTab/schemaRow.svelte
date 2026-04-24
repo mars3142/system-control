@@ -15,11 +15,11 @@
 </script>
 
 <tr class="group">
-	<td class="px-3 py-2 text-sm bg-bg-secondary group-hover:bg-accent border-y border-l border-border">{time}</td>
-	<td class="px-2 py-2 text-sm bg-bg-secondary group-hover:bg-accent border-y border-border">
+	<td class="px-3 py-2 text-sm bg-card group-hover:bg-accent border-y border-l border-border">{time}</td>
+	<td class="px-2 py-2 text-sm bg-card group-hover:bg-accent border-y border-border">
 		<div class="h-6 rounded" style="background: rgb({r},{g},{b});"></div>
 	</td>
-	<td class="px-3 py-2 text-sm text-center bg-bg-secondary group-hover:bg-accent border-y border-border">
+	<td class="px-3 py-2 text-sm text-center bg-card group-hover:bg-accent border-y border-border">
 		<input
 			type="number" min="0" max="255"
 			bind:value={r}
@@ -27,7 +27,7 @@
 			class="w-14 px-1 py-0.5 text-sm text-center rounded border border-border bg-input focus:outline-none focus:border-primary no-spinner"
 		/>
 	</td>
-	<td class="px-3 py-2 text-sm text-center bg-bg-secondary group-hover:bg-accent border-y border-border">
+	<td class="px-3 py-2 text-sm text-center bg-card group-hover:bg-accent border-y border-border">
 		<input
 			type="number" min="0" max="255"
 			bind:value={g}
@@ -35,7 +35,7 @@
 			class="w-14 px-1 py-0.5 text-sm text-center rounded border border-border bg-input focus:outline-none focus:border-primary no-spinner"
 		/>
 	</td>
-	<td class="px-3 py-2 text-sm text-center bg-bg-secondary group-hover:bg-accent border-y border-border">
+	<td class="px-3 py-2 text-sm text-center bg-card group-hover:bg-accent border-y border-border">
 		<input
 			type="number" min="0" max="255"
 			bind:value={b}
@@ -43,7 +43,7 @@
 			class="w-14 px-1 py-0.5 text-sm text-center rounded border border-border bg-input focus:outline-none focus:border-primary no-spinner"
 		/>
 	</td>
-	<td class="px-3 py-2 text-sm text-center bg-bg-secondary group-hover:bg-accent border-y border-r border-border">
+	<td class="px-3 py-2 text-sm text-center bg-card group-hover:bg-accent border-y border-r border-border">
 		<input
 			type="number" min="0" max="255"
 			bind:value={brightness}

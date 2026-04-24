@@ -34,8 +34,8 @@
 	<button
 		type="button"
 		{id}
-		class="w-full flex items-center justify-between p-4 rounded-md border bg-background text-foreground transition-all {isDropdownOpen
-			? 'bg-primary/10 border-primary ring-destructive/20'
+		class="w-full flex items-center justify-between p-4 rounded-md border bg-card text-text transition-all {isDropdownOpen
+			? 'bg-primary/10 border-primary'
 			: 'border-border hover:bg-accent'}"
 		onclick={toggleDropdown}
 		aria-haspopup="listbox"
@@ -62,16 +62,16 @@
 	{#if isDropdownOpen}
 		<ul
 			transition:slide={{ duration: 150 }}
-			class="absolute z-20 w-full mt-2 bg-popover text-popover-foreground bg-card border border-border rounded-md shadow-md overflow-hidden"
+			class="absolute z-20 w-full mt-2 bg-card border border-border rounded-md shadow-md overflow-hidden"
 			role="listbox"
 		>
 			{#each options as option}
 				<li>
 					<button
 						type="button"
-						class="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-accent hover:text-accent-foreground {option.value ===
+						class="w-full text-left px-4 py-3 text-sm transition-colors hover:bg-accent hover:text-text {option.value ===
 						value
-							? 'bg-primary text-primary-foreground font-medium'
+							? 'bg-primary text-white font-medium'
 							: ''}"
 						role="option"
 						aria-selected={option.value === value}

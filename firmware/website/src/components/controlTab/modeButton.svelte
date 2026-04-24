@@ -9,8 +9,8 @@
 
 <button
 	class="flex-1 flex flex-col items-center justify-center p-4 rounded-md border transition-all {active
-		? 'bg-primary text-primary-foreground border-primary shadow-md'
-		: 'bg-background text-foreground border-border hover:bg-accent hover:text-accent-foreground'}"
+		? 'bg-primary text-white border-primary shadow-md'
+		: 'bg-card text-text border-border hover:bg-accent hover:text-text'}"
 	onclick={onClick}
 >
 	<span class="text-2xl mb-1">{icon}</span>

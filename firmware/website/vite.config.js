@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+import tailwindcss from '@tailwindcss/vite';
 import viteCompression from 'vite-plugin-compression';
 import { execSync } from 'child_process';
 import fs from 'fs';
@@ -20,6 +21,7 @@ export default defineConfig({
     }
   },
   plugins: [
+    tailwindcss(),
     svelte({
       configFile: 'svelte.config.js'
     }),
