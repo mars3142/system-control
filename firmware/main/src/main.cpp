@@ -5,7 +5,6 @@
 #include "persistence_manager.h"
 #include "wifi_manager.h"
 
-#include <ble_manager.h>
 #include <driver/gpio.h>
 #include <esp_event.h>
 #include <esp_log.h>
@@ -30,7 +29,7 @@ void app_main(void)
                              .pull_down_en = GPIO_PULLDOWN_DISABLE,
                              .intr_type = GPIO_INTR_DISABLE};
     gpio_config(&io_conf);
-    gpio_set_level(WIFI_ENABLE, 0); // LOW
+    gpio_set_level(WIFI_ENABLE, 1); // HIGH (External/Proper Antenna)
 
     vTaskDelay(pdMS_TO_TICKS(100));
 
@@ -64,7 +63,5 @@ void app_main(void)
 
     xTaskCreatePinnedToCore(app_task, "app_task", 8192, NULL, tskIDLE_PRIORITY + 5, NULL,
                             CONFIG_FREERTOS_NUMBER_OF_CORES - 1);
-    // xTaskCreatePinnedToCore(ble_manager_task, "ble_manager", 4096, NULL, tskIDLE_PRIORITY + 1, NULL,
-    //                         CONFIG_FREERTOS_NUMBER_OF_CORES - 1);
 }
 __END_DECLS

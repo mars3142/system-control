@@ -10,13 +10,15 @@ This document describes all REST API endpoints and WebSocket messages required f
   - [Light Control](#light-control)
   - [LED Configuration](#led-configuration)
   - [Schema](#schema)
-  - [Devices](#devices)
+  - [Thread Devices](#thread-devices)
+  - [Thread Groups](#thread-groups)
   - [Scenes](#scenes)
   - [Input](#input)
 - [WebSocket](#websocket)
   - [Connection](#connection)
   - [Client to Server Messages](#client-to-server-messages)
   - [Server to Client Messages](#server-to-client-messages)
+    - [Thread: Resource State Change (RFC 7641 Observe)](#thread-resource-state-change-rfc-7641-observe)
 
 ---
 
@@ -384,158 +386,285 @@ Saves a schema file.
 
 ---
 
-### Devices
+### Thread Devices
 
-#### Scan for Devices
+Manages OpenThread devices (e.g. ESP32-H2 lighthouses). Devices join the Thread network automatically and announce themselves via CoAP. They can also be added manually by IPv6 address.
 
-Scans for available Matter devices to pair.
+---
 
-- **URL:** `/api/devices/scan`
+#### List Thread Devices
+
+Returns all known Thread devices (auto-discovered via CoAP announce + manually added). Persisted in NVS.
+
+- **URL:** `/api/thread/devices`
 - **Method:** `GET`
 - **Response:**
 
 ```json
 [
   {
-    "id": "matter-001",
-    "type": "light",
-    "name": "Matter Lamp"
-  },
-  {
-    "id": "matter-002",
-    "type": "sensor",
-    "name": "Temperature Sensor"
+    "name": "Leuchtturm West",
+    "addr": "fd12:3456:789a::1",
+    "has_beacon": true,
+    "has_outdoor": true,
+    "reachable": true,
+    "beacon_on": false,
+    "outdoor_on": true
   }
 ]
 ```
 
-| Field | Type   | Description                                   |
-|-------|--------|-----------------------------------------------|
-| id    | string | Unique device identifier                      |
-| type  | string | Device type: `light`, `sensor`, `unknown`     |
-| name  | string | Device name (can be empty)                    |
+| Field       | Type    | Description                                                                    |
+|-------------|---------|--------------------------------------------------------------------------------|
+| name        | string  | Device name (from announce or manually set)                                    |
+| addr        | string  | Mesh-local IPv6 address                                                        |
+| has_beacon  | boolean | Device exposes `/beacon` CoAP resource                                         |
+| has_outdoor | boolean | Device exposes `/outdoor` CoAP resource                                        |
+| reachable   | boolean | True after last successful CoAP response (resets on boot)                      |
+| beacon_on   | boolean | Current beacon state — updated via CoAP Observe (RFC 7641), `false` until first notification |
+| outdoor_on  | boolean | Current outdoor lamp state — updated via CoAP Observe (RFC 7641), `false` until first notification |
+
+**Notes:**
+- After the C6 registers as a CoAP observer (`GET /beacon` with `Observe: 0`), the H2 pushes a `thread_state` WebSocket event on every state change — no polling needed.
+- `beacon_on` / `outdoor_on` start as `false` on boot and are set to the actual device state on the first observer notification, which arrives within seconds of the Observe registration.
+- Observe registrations survive normal device reboots: when the H2 re-announces after a reboot, the C6 re-registers automatically.
 
 ---
 
-#### Pair Device
+#### Add Thread Device
 
-Pairs a discovered device.
+Manually registers a Thread device by name and IPv6 address. Capabilities are discovered asynchronously via CoAP and arrive as a `thread_capabilities` WebSocket event. Idempotent: if `addr` already exists, the name is updated.
 
-- **URL:** `/api/devices/pair`
+- **URL:** `/api/thread/devices`
 - **Method:** `POST`
 - **Content-Type:** `application/json`
 - **Request Body:**
 
 ```json
 {
-  "id": "matter-001",
-  "name": "Living Room Lamp"
+  "name": "Leuchtturm Ost",
+  "addr": "fd12:3456:789a::2"
 }
 ```
 
-| Field | Type   | Required | Description                  |
-|-------|--------|----------|------------------------------|
-| id    | string | Yes      | Device ID from scan          |
-| name  | string | Yes      | User-defined device name     |
+| Field | Type   | Required | Description             |
+|-------|--------|----------|-------------------------|
+| name  | string | Yes      | Human-readable label    |
+| addr  | string | Yes      | Mesh-local IPv6 address |
 
-- **Response:** `200 OK` on success
+- **Response:** `{"ok":true}` on success, `507` if device limit (16) reached
 
 ---
 
-#### Get Paired Devices
+#### Remove Thread Device
 
-Returns list of all paired devices.
+Removes a device from NVS. The device is also removed from all groups and CoAP group-leave messages are sent.
 
-- **URL:** `/api/devices/paired`
-- **Method:** `GET`
-- **Response:**
+- **URL:** `/api/thread/devices`
+- **Method:** `DELETE`
+- **Content-Type:** `application/json`
+- **Request Body:**
 
 ```json
-[
-  {
-    "id": "matter-001",
-    "type": "light",
-    "name": "Living Room Lamp"
-  }
-]
+{
+  "addr": "fd12:3456:789a::2"
+}
 ```
 
-| Field | Type   | Description                               |
-|-------|--------|-------------------------------------------|
-| id    | string | Unique device identifier                  |
-| type  | string | Device type: `light`, `sensor`, `unknown` |
-| name  | string | User-defined device name                  |
+| Field | Type   | Required | Description             |
+|-------|--------|----------|-------------------------|
+| addr  | string | Yes      | Mesh-local IPv6 address |
+
+- **Response:** `{"ok":true}` on success, `404` if not found
 
 ---
 
-#### Update Device Name
+#### Control Device Resource
 
-Updates the name of a paired device.
+Sends a CoAP PUT to a device resource. Fire-and-forget.
 
-- **URL:** `/api/devices/update`
+- **URL:** `/api/thread/devices/set`
 - **Method:** `POST`
 - **Content-Type:** `application/json`
 - **Request Body:**
 
 ```json
 {
-  "id": "matter-001",
-  "name": "New Device Name"
+  "addr": "fd12:3456:789a::1",
+  "resource": "beacon",
+  "on": true
+}
+```
+
+| Field    | Type    | Required | Description                          |
+|----------|---------|----------|--------------------------------------|
+| addr     | string  | Yes      | Target device IPv6 address           |
+| resource | string  | Yes      | `"beacon"` or `"outdoor"`            |
+| on       | boolean | Yes      | `true` = on, `false` = off           |
+
+- **Response:** `{"ok":true}` on success
+
+---
+
+### Thread Groups
+
+Groups use IPv6 multicast addresses (`ff03::/16` mesh-local scope). Devices subscribed to a group respond to CoAP commands sent to the multicast address.
+
+Suggested multicast addresses:
+- `ff03::10` — All outdoor lamps
+- `ff03::11` — All beacons
+- `ff03::20` — All devices (harbour scene)
+
+---
+
+#### List Groups
+
+Returns all groups with their members.
+
+- **URL:** `/api/thread/groups`
+- **Method:** `GET`
+- **Response:**
+
+```json
+[
+  {
+    "name": "Alle Aussenlampen",
+    "addr": "ff03::10",
+    "members": ["fd12:3456:789a::1", "fd12:3456:789a::2"]
+  }
+]
+```
+
+| Field   | Type   | Description                              |
+|---------|--------|------------------------------------------|
+| name    | string | Group label                              |
+| addr    | string | IPv6 multicast address                   |
+| members | array  | List of member device IPv6 addresses     |
+
+---
+
+#### Create Group
+
+Creates a new group. The multicast address must be unique.
+
+- **URL:** `/api/thread/groups`
+- **Method:** `POST`
+- **Content-Type:** `application/json`
+- **Request Body:**
+
+```json
+{
+  "name": "Alle Aussenlampen",
+  "addr": "ff03::10"
+}
+```
+
+| Field | Type   | Required | Description             |
+|-------|--------|----------|-------------------------|
+| name  | string | Yes      | Group label             |
+| addr  | string | Yes      | IPv6 multicast address  |
+
+- **Response:** `{"ok":true}` on success, `409` if address already in use, `507` if group limit (8) reached
+
+---
+
+#### Delete Group
+
+Removes a group. CoAP group-leave messages are sent to all current members.
+
+- **URL:** `/api/thread/groups`
+- **Method:** `DELETE`
+- **Content-Type:** `application/json`
+- **Request Body:**
+
+```json
+{
+  "addr": "ff03::10"
 }
 ```
 
 | Field | Type   | Required | Description            |
 |-------|--------|----------|------------------------|
-| id    | string | Yes      | Device ID              |
-| name  | string | Yes      | New device name        |
+| addr  | string | Yes      | Group multicast address |
 
-- **Response:** `200 OK` on success
+- **Response:** `{"ok":true}` on success, `404` if not found
 
 ---
 
-#### Unpair Device
+#### Assign Device to Group
 
-Removes a paired device.
+Adds a device to a group. The device receives a CoAP PUT `/group` with payload `"ff03::10,1"` to subscribe to the multicast address. Idempotent.
 
-- **URL:** `/api/devices/unpair`
+- **URL:** `/api/thread/groups/assign`
 - **Method:** `POST`
 - **Content-Type:** `application/json`
 - **Request Body:**
 
 ```json
 {
-  "id": "matter-001"
+  "device_addr": "fd12:3456:789a::1",
+  "group_addr": "ff03::10"
 }
 ```
 
-| Field | Type   | Required | Description   |
-|-------|--------|----------|---------------|
-| id    | string | Yes      | Device ID     |
+| Field       | Type   | Required | Description              |
+|-------------|--------|----------|--------------------------|
+| device_addr | string | Yes      | Device IPv6 address      |
+| group_addr  | string | Yes      | Group multicast address  |
 
-- **Response:** `200 OK` on success
+- **Response:** `{"ok":true}` on success, `404` if group not found, `507` if member limit (8) reached
 
 ---
 
-#### Toggle Device
+#### Remove Device from Group
 
-Toggles a device (e.g., light on/off).
+Removes a device from a group. The device receives a CoAP PUT `/group` with payload `"ff03::10,0"` to unsubscribe.
 
-- **URL:** `/api/devices/toggle`
+- **URL:** `/api/thread/groups/assign`
+- **Method:** `DELETE`
+- **Content-Type:** `application/json`
+- **Request Body:**
+
+```json
+{
+  "device_addr": "fd12:3456:789a::1",
+  "group_addr": "ff03::10"
+}
+```
+
+| Field       | Type   | Required | Description              |
+|-------------|--------|----------|--------------------------|
+| device_addr | string | Yes      | Device IPv6 address      |
+| group_addr  | string | Yes      | Group multicast address  |
+
+- **Response:** `{"ok":true}` on success, `404` if group or member not found
+
+---
+
+#### Send Group Command
+
+Sends a CoAP PUT to a multicast address. All subscribed devices respond. Fire-and-forget.
+
+- **URL:** `/api/thread/groups/command`
 - **Method:** `POST`
 - **Content-Type:** `application/json`
 - **Request Body:**
 
 ```json
 {
-  "id": "matter-001"
+  "addr": "ff03::10",
+  "resource": "outdoor",
+  "on": false
 }
 ```
 
-| Field | Type   | Required | Description   |
-|-------|--------|----------|---------------|
-| id    | string | Yes      | Device ID     |
+| Field    | Type    | Required | Description                          |
+|----------|---------|----------|--------------------------------------|
+| addr     | string  | Yes      | Group multicast address              |
+| resource | string  | Yes      | `"beacon"` or `"outdoor"`            |
+| on       | boolean | Yes      | `true` = on, `false` = off           |
 
-- **Response:** `200 OK` on success
+- **Response:** `{"ok":true}` on success
 
 ---
 
@@ -801,6 +930,150 @@ Sent when the current color changes (during simulation).
 | r     | number | Red value (0-255)        |
 | g     | number | Green value (0-255)      |
 | b     | number | Blue value (0-255)       |
+
+---
+
+#### Thread: Resource State Change (RFC 7641 Observe)
+
+Sent whenever a device's `/beacon` or `/outdoor` state changes. Fired by the C6 after receiving a CoAP Observe notification (CON 2.05 Content) from the H2.
+
+```json
+{
+  "type": "thread_state",
+  "addr": "fd12:3456:789a::1",
+  "resource": "beacon",
+  "on": true
+}
+```
+
+| Field    | Type    | Description                           |
+|----------|---------|---------------------------------------|
+| type     | string  | Always `"thread_state"`               |
+| addr     | string  | Device IPv6 address                   |
+| resource | string  | `"beacon"` or `"outdoor"`             |
+| on       | boolean | New resource state                    |
+
+**Notes:**
+- Also fires once when the Observe subscription is first established (initial state).
+- The first notification after `GET /api/thread/devices` or a new device announcement reflects the actual current hardware state.
+- When a group command (multicast PUT) is issued, each device sends an individual `thread_state` event after switching — the number of events received is a confirmation count for the broadcast.
+
+---
+
+#### Thread: Device Announced
+
+Sent when a Thread device sends a CoAP `/announce` (on network join) or when one is added manually.
+
+```json
+{
+  "type": "thread_device",
+  "name": "Leuchtturm West",
+  "addr": "fd12:3456:789a::1"
+}
+```
+
+---
+
+#### Thread: Device Removed
+
+Sent when a device is deleted via the REST API.
+
+```json
+{
+  "type": "thread_device_removed",
+  "addr": "fd12:3456:789a::1"
+}
+```
+
+---
+
+#### Thread: Capabilities Discovered
+
+Sent after a successful CoAP `/.well-known/core` query (triggered automatically on announce, manual add, or when a device comes back online after being unreachable). Also serves as the **reachable-again** signal after a `thread_unreachable` event.
+
+```json
+{
+  "type": "thread_capabilities",
+  "addr": "fd12:3456:789a::1",
+  "beacon": true,
+  "outdoor": true
+}
+```
+
+---
+
+#### Thread: Device Unreachable
+
+Sent when CoAP Observe times out for a device — i.e. the device stopped sending notifications and OpenThread gave up retransmitting. Emitted at most once per outage regardless of how many resources (beacon, outdoor) the device had registered observers for.
+
+```json
+{
+  "type": "thread_unreachable",
+  "addr": "fd12:3456:789a::1"
+}
+```
+
+| Field | Type   | Description                        |
+| ----- | ------ | ---------------------------------- |
+| type  | string | Always `"thread_unreachable"`      |
+| addr  | string | IPv6 address of the offline device |
+
+The next `thread_capabilities` event for the same `addr` signals that the device is reachable again. At that point CoAP Observe is automatically re-registered.
+
+---
+
+#### Thread: Group Added
+
+Sent when a group is created.
+
+```json
+{
+  "type": "thread_group_added",
+  "name": "Alle Aussenlampen",
+  "addr": "ff03::10"
+}
+```
+
+---
+
+#### Thread: Group Removed
+
+Sent when a group is deleted.
+
+```json
+{
+  "type": "thread_group_removed",
+  "addr": "ff03::10"
+}
+```
+
+---
+
+#### Thread: Device Assigned to Group
+
+Sent when a device is added to a group.
+
+```json
+{
+  "type": "thread_group_assigned",
+  "device": "fd12:3456:789a::1",
+  "group": "ff03::10"
+}
+```
+
+---
+
+#### Thread: Device Removed from Group
+
+Sent when a device is removed from a group.
+
+```json
+{
+  "type": "thread_group_unassigned",
+  "device": "fd12:3456:789a::1",
+  "group": "ff03::10"
+}
+```
 
 ---
 

@@ -57,12 +57,18 @@ static char *time_to_string(int hhmm)
 }
 
 // Helper function: ensures mutex is initialized
-static void ensure_mutex_initialized(void)
+static bool ensure_mutex_initialized(void)
 {
     if (simulation_mutex == NULL)
     {
         simulation_mutex = xSemaphoreCreateMutex();
+        if (simulation_mutex == NULL)
+        {
+            ESP_LOGE(TAG, "Failed to create simulation mutex — out of memory");
+            return false;
+        }
     }
+    return true;
 }
 
 // Main interpolation function that selects the appropriate method
@@ -391,7 +397,8 @@ void start_simulation_task(void)
 
 void stop_simulation_task(void)
 {
-    ensure_mutex_initialized();
+    if (!ensure_mutex_initialized())
+        return;
 
     if (xSemaphoreTake(simulation_mutex, portMAX_DELAY) == pdTRUE)
     {

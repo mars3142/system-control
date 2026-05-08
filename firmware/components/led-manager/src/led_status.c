@@ -55,19 +55,29 @@ static void led_status_task(void *pvParameters)
                         control->is_on_in_blink ? control->behavior.on_time_ms : control->behavior.off_time_ms;
                     if ((now_us - control->last_toggle_time_us) / 1000 >= duration_ms)
                     {
-                        control->is_on_in_blink = !control->is_on_in_blink; // Toggle state
-                        control->last_toggle_time_us = now_us;              // Update timestamp
+                        control->is_on_in_blink      = !control->is_on_in_blink;
+                        control->last_toggle_time_us = now_us;
                     }
 
                     if (control->is_on_in_blink)
-                    {
                         led_strip_set_pixel(led_strip, i, control->behavior.color.red, control->behavior.color.green,
                                             control->behavior.color.blue);
-                    }
                     else
-                    {
                         led_strip_set_pixel(led_strip, i, 0, 0, 0);
+                }
+                break;
+
+                case LED_MODE_BLINK_ALT: {
+                    uint32_t duration_ms =
+                        control->is_on_in_blink ? control->behavior.on_time_ms : control->behavior.off_time_ms;
+                    if ((now_us - control->last_toggle_time_us) / 1000 >= duration_ms)
+                    {
+                        control->is_on_in_blink      = !control->is_on_in_blink;
+                        control->last_toggle_time_us = now_us;
                     }
+
+                    rgb_t *c = control->is_on_in_blink ? &control->behavior.color : &control->behavior.alt_color;
+                    led_strip_set_pixel(led_strip, i, c->red, c->green, c->blue);
                 }
                 break;
                 }

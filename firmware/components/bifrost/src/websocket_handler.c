@@ -2,7 +2,6 @@
 #include "bifrost/api_server.h"
 #include "bifrost/common.h"
 #include "message_manager.h"
-#include "my_mqtt_client.h"
 
 #include <esp_http_server.h>
 #include <esp_log.h>
@@ -267,8 +266,6 @@ esp_err_t websocket_broadcast(httpd_handle_t server, const char *message)
             }
         }
     }
-
-    mqtt_publish(message);
 
     return ret;
 }

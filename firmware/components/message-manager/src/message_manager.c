@@ -1,5 +1,4 @@
 #include "message_manager.h"
-#include "my_mqtt_client.h"
 #include "persistence_manager.h"
 
 #include <esp_app_desc.h>

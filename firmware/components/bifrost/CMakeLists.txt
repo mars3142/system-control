@@ -20,6 +20,6 @@ idf_component_register(SRCS
             simulator
             persistence-manager
             message-manager
-            my_mqtt_client
             heimdall
+            connectivity-manager
 )

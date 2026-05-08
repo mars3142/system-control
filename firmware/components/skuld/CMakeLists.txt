@@ -5,5 +5,5 @@ idf_component_register(SRCS
             lwip
             esp_http_client
             nvs_flash
-            cjson
+            json
 )

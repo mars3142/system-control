@@ -124,38 +124,65 @@ esp_err_t api_handlers_register(httpd_handle_t server)
     if (err != ESP_OK)
         return err;
 
-    // Devices endpoints
-    httpd_uri_t devices_scan = {.uri = "/api/devices/scan", .method = HTTP_GET, .handler = api_devices_scan_handler};
-    err = httpd_register_uri_handler(server, &devices_scan);
+    // Thread device endpoints
+    httpd_uri_t thread_devices_get = {
+        .uri = "/api/thread/devices", .method = HTTP_GET, .handler = api_thread_devices_get_handler};
+    err = httpd_register_uri_handler(server, &thread_devices_get);
     if (err != ESP_OK)
         return err;
 
-    httpd_uri_t devices_pair = {.uri = "/api/devices/pair", .method = HTTP_POST, .handler = api_devices_pair_handler};
-    err = httpd_register_uri_handler(server, &devices_pair);
+    httpd_uri_t thread_devices_add = {
+        .uri = "/api/thread/devices", .method = HTTP_POST, .handler = api_thread_devices_add_handler};
+    err = httpd_register_uri_handler(server, &thread_devices_add);
     if (err != ESP_OK)
         return err;
 
-    httpd_uri_t devices_paired = {
-        .uri = "/api/devices/paired", .method = HTTP_GET, .handler = api_devices_paired_handler};
-    err = httpd_register_uri_handler(server, &devices_paired);
+    httpd_uri_t thread_devices_delete = {
+        .uri = "/api/thread/devices", .method = HTTP_DELETE, .handler = api_thread_devices_delete_handler};
+    err = httpd_register_uri_handler(server, &thread_devices_delete);
     if (err != ESP_OK)
         return err;
 
-    httpd_uri_t devices_update = {
-        .uri = "/api/devices/update", .method = HTTP_POST, .handler = api_devices_update_handler};
-    err = httpd_register_uri_handler(server, &devices_update);
+    httpd_uri_t thread_devices_set = {
+        .uri = "/api/thread/devices/set", .method = HTTP_POST, .handler = api_thread_devices_set_handler};
+    err = httpd_register_uri_handler(server, &thread_devices_set);
     if (err != ESP_OK)
         return err;
 
-    httpd_uri_t devices_unpair = {
-        .uri = "/api/devices/unpair", .method = HTTP_POST, .handler = api_devices_unpair_handler};
-    err = httpd_register_uri_handler(server, &devices_unpair);
+    // Thread group endpoints
+    httpd_uri_t thread_groups_get = {
+        .uri = "/api/thread/groups", .method = HTTP_GET, .handler = api_thread_groups_get_handler};
+    err = httpd_register_uri_handler(server, &thread_groups_get);
     if (err != ESP_OK)
         return err;
 
-    httpd_uri_t devices_toggle = {
-        .uri = "/api/devices/toggle", .method = HTTP_POST, .handler = api_devices_toggle_handler};
-    err = httpd_register_uri_handler(server, &devices_toggle);
+    httpd_uri_t thread_groups_add = {
+        .uri = "/api/thread/groups", .method = HTTP_POST, .handler = api_thread_groups_add_handler};
+    err = httpd_register_uri_handler(server, &thread_groups_add);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t thread_groups_delete = {
+        .uri = "/api/thread/groups", .method = HTTP_DELETE, .handler = api_thread_groups_delete_handler};
+    err = httpd_register_uri_handler(server, &thread_groups_delete);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t thread_groups_assign = {
+        .uri = "/api/thread/groups/assign", .method = HTTP_POST, .handler = api_thread_groups_assign_handler};
+    err = httpd_register_uri_handler(server, &thread_groups_assign);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t thread_groups_unassign = {
+        .uri = "/api/thread/groups/assign", .method = HTTP_DELETE, .handler = api_thread_groups_unassign_handler};
+    err = httpd_register_uri_handler(server, &thread_groups_unassign);
+    if (err != ESP_OK)
+        return err;
+
+    httpd_uri_t thread_groups_command = {
+        .uri = "/api/thread/groups/command", .method = HTTP_POST, .handler = api_thread_groups_command_handler};
+    err = httpd_register_uri_handler(server, &thread_groups_command);
     if (err != ESP_OK)
         return err;
 

@@ -1,4 +1,5 @@
 #include "app_task.h"
+#include "bifrost/api_server.h"
 #include "button_handling.h"
 #include "common.h"
 #include "hal/u8g2_esp32_hal.h"
@@ -8,10 +9,10 @@
 #include "led_status.h"
 #include "mercedes/mercedes.h"
 #include "message_manager.h"
-#include "my_mqtt_client.h"
 #include "persistence_manager.h"
 #include "simulator.h"
-#include "u8g2_mqtt.h"
+#include "storage.h"
+#include "thread_manager.h"
 #include "wifi_manager.h"
 
 #include <cstring>
@@ -29,7 +30,6 @@ static const char *TAG = "app_task";
 
 u8g2_t u8g2;
 uint8_t received_signal;
-uint64_t last_mqtt_sync = 0;
 
 persistence_manager_t g_persistence_manager;
 
@@ -184,14 +184,15 @@ void app_task(void *args)
             .on_time_ms = 1000,
             .off_time_ms = 500,
             .color = {.red = 50, .green = 0, .blue = 0},
+            .alt_color = {},
             .index = 0,
             .mode = LED_MODE_BLINK,
         };
         led_status_set_behavior(led_behavior);
 
         ESP_LOGE(TAG, "Display not found on I2C bus");
-        vTaskDelete(nullptr);
-        return;
+        // vTaskDelete(nullptr);
+        // return;
     }
 
     setup_screen();
@@ -249,14 +250,14 @@ void app_task(void *args)
     // Initialize Hermes renderer (60s screensaver timeout)
     hermes_init(&u8g2, 60000);
 
-    // Show splash screen immediately
+    // Show splash screen for 2 seconds
     u8g2_ClearBuffer(&u8g2);
     hermes_draw(0);
     u8g2_SendBuffer(&u8g2);
+    vTaskDelay(pdMS_TO_TICKS(2000));
 
-    // Start network and services
-    wifi_manager_init();
-    mqtt_client_start();
+    // Start services
+    thread_manager_init(NULL);
     message_manager_register_listener(on_message_received);
     start_simulation();
 
@@ -280,6 +281,7 @@ void app_task(void *args)
 
     // Load dynamic menu from SPIFFS
     {
+        initialize_storage();
         FILE *f = fopen("/spiffs/menu.json", "r");
         if (f)
         {
@@ -304,9 +306,6 @@ void app_task(void *args)
         }
     }
 
-    display_mqtt_queue = xQueueCreate(1, 1024);
-    xTaskCreatePinnedToCore(u8g2_mqtt_task, "mqtt_disp", 4096, nullptr, 5, nullptr, tskNO_AFFINITY);
-
     xTaskCreatePinnedToCore(display_update_task, "display_update", 4096, nullptr, tskIDLE_PRIORITY + 1,
                             &display_update_task_handle, CONFIG_FREERTOS_NUMBER_OF_CORES - 1);
 
@@ -321,15 +320,6 @@ void app_task(void *args)
 
         u8g2_ClearBuffer(&u8g2);
         hermes_draw(deltaMs);
-
-        // MQTT display sync
-        auto now = esp_timer_get_time();
-        if (now - last_mqtt_sync > 1000000)
-        {
-            uint8_t *u8g2_buf = u8g2_GetBufferPtr(&u8g2);
-            xQueueOverwrite(display_mqtt_queue, u8g2_buf);
-            last_mqtt_sync = now;
-        }
 
         // Signal display task
         if (display_update_task_handle != nullptr)

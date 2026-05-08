@@ -1,9 +1,8 @@
-idf_component_register(SRCS 
+idf_component_register(SRCS
         src/main.cpp
         src/app_task.cpp
         src/button_handling.c
         src/i2c_checker.c
-        src/u8g2_mqtt.cpp
         src/hal/u8g2_esp32_hal.c
     INCLUDE_DIRS "include"
     PRIV_REQUIRES
@@ -22,7 +21,6 @@ idf_component_register(SRCS
         esp_wifi
         app_update
         driver
-        my_mqtt_client
 )
 
 spiffs_create_partition_image(storage ../storage FLASH_IN_PROJECT)

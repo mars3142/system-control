@@ -12,15 +12,17 @@ typedef enum
 {
     LED_MODE_OFF,
     LED_MODE_SOLID,
-    LED_MODE_BLINK
+    LED_MODE_BLINK,
+    LED_MODE_BLINK_ALT // alternates between color and alt_color
 } led_mode_t;
 
 // This is the structure you pass from the outside to define a behavior
 typedef struct
 {
-    uint32_t on_time_ms;  // Only relevant for BLINK
-    uint32_t off_time_ms; // Only relevant for BLINK
+    uint32_t on_time_ms;  // Only relevant for BLINK / BLINK_ALT
+    uint32_t off_time_ms; // Only relevant for BLINK / BLINK_ALT
     rgb_t color;
+    rgb_t alt_color; // Only relevant for BLINK_ALT
     uint8_t index;
     led_mode_t mode;
 } led_behavior_t;

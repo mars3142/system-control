@@ -38,13 +38,19 @@ extern "C"
     esp_err_t api_schema_get_handler(httpd_req_t *req);
     esp_err_t api_schema_post_handler(httpd_req_t *req);
 
-    // Devices API (Matter)
-    esp_err_t api_devices_scan_handler(httpd_req_t *req);
-    esp_err_t api_devices_pair_handler(httpd_req_t *req);
-    esp_err_t api_devices_paired_handler(httpd_req_t *req);
-    esp_err_t api_devices_update_handler(httpd_req_t *req);
-    esp_err_t api_devices_unpair_handler(httpd_req_t *req);
-    esp_err_t api_devices_toggle_handler(httpd_req_t *req);
+    // Thread Devices API
+    esp_err_t api_thread_devices_get_handler(httpd_req_t *req);
+    esp_err_t api_thread_devices_add_handler(httpd_req_t *req);
+    esp_err_t api_thread_devices_delete_handler(httpd_req_t *req);
+    esp_err_t api_thread_devices_set_handler(httpd_req_t *req);
+
+    // Thread Groups API
+    esp_err_t api_thread_groups_get_handler(httpd_req_t *req);
+    esp_err_t api_thread_groups_add_handler(httpd_req_t *req);
+    esp_err_t api_thread_groups_delete_handler(httpd_req_t *req);
+    esp_err_t api_thread_groups_assign_handler(httpd_req_t *req);
+    esp_err_t api_thread_groups_unassign_handler(httpd_req_t *req);
+    esp_err_t api_thread_groups_command_handler(httpd_req_t *req);
 
     // Scenes API
     esp_err_t api_scenes_get_handler(httpd_req_t *req);

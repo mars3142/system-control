@@ -1,0 +1,10 @@
+menu "Thread Configuration"
+
+    config THREAD_JOINER_PSK
+        string "Thread Joiner Pre-Shared Key (PSKd)"
+        default "MAERKLN"
+        help
+            Password used during Thread commissioning (6-32 uppercase alphanumeric chars,
+            no 0/O/I/Q). Must match the PSKd configured on the Commissioner (C6).
+
+endmenu

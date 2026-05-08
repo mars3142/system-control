@@ -55,8 +55,8 @@ static esp_err_t start_webserver(void)
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.server_port = s_config.port;
     config.lru_purge_enable = true;
-    config.max_uri_handlers = 32;
-    config.max_open_sockets = (CONFIG_LWIP_MAX_SOCKETS - 3);
+    config.max_uri_handlers = 40;
+    config.max_open_sockets = 5;
     config.uri_match_fn = httpd_uri_match_wildcard;
 
     ESP_LOGI(TAG, "Starting HTTP server on port %d", config.server_port);
