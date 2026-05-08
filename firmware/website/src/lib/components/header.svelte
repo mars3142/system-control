@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Button from "./common/button.svelte";
-	import { lang, t } from "../i18n/store";
+	import Button from "$lib/components/common/button.svelte";
+	import { lang, t } from "$lib/i18n/store";
 
 	let currentLangCode = $state($lang);
 	let currentLang = $state("English");

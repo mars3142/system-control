@@ -2,9 +2,9 @@
 	import { onMount } from 'svelte';
 	import Card from '../common/card.svelte';
 	import Button from '../common/button.svelte';
-	import { t } from '../../i18n/store';
+	import { t } from '$lib/i18n/store';
 	import SegmentRow from './segmentRow.svelte';
-	import { segmentStore, type Segment } from '../../stores/configSegmentStore';
+	import { segmentStore, type Segment } from '$lib/stores/configSegmentStore';
 	import toast from 'svelte-french-toast';
 
 	let segments = $state<Segment[]>([]);

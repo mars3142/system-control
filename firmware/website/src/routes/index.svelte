@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { location, replace } from 'svelte-spa-router';
-	import { t } from "../i18n/store";
-	import { controlStore } from "../stores/controlStore";
-	import ControlTab from "../components/controlTab/controlTab.svelte";
-	import ConfigTab from "../components/configTab/configTab.svelte";
-	import SystemTab from "../components/systemTab/systemTab.svelte";
-	import TabButton from "../components/common/tabButton.svelte";
-	import TabBar from "../components/common/tabBar.svelte";
+	import { t } from "$lib/i18n/store";
+	import { controlStore } from "$lib/stores/controlStore";
+	import ControlTab from "$lib/components/controlTab/controlTab.svelte";
+	import ConfigTab from "$lib/components/configTab/configTab.svelte";
+	import SystemTab from "$lib/components/systemTab/systemTab.svelte";
+	import TabButton from "$lib/components/common/tabButton.svelte";
+	import TabBar from "$lib/components/common/tabBar.svelte";
 
 	type Tab = "control" | "config" | "system";
 

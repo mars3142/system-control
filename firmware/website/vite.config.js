@@ -5,12 +5,17 @@ import tailwindcss from '@tailwindcss/vite';
 import viteCompression from 'vite-plugin-compression';
 import { execSync } from 'child_process';
 import fs from 'fs';
-import path from 'path';
+import path, { resolve } from 'path';
 
 const commitHash = execSync('git rev-parse --short HEAD').toString().trim();
 const version = fs.readFileSync(path.resolve(__dirname, '../version.txt'), 'utf-8').trim();
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '$lib': resolve(__dirname, './src/lib'),
+    },
+  },
   define: {
     __COMMIT_HASH__: JSON.stringify(commitHash),
     __APP_VERSION__: JSON.stringify(version),

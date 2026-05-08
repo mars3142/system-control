@@ -1,12 +1,13 @@
 <script lang="ts">
-	import { t } from '../../i18n/store';
-	import { threadStore } from '../../stores/threadStore';
+	import { t } from '$lib/i18n/store';
+	import { threadStore } from '$lib/stores/threadStore';
 	import Card from '../common/card.svelte';
 	import Button from '../common/button.svelte';
 
 	function handlePermitJoin() {
 		threadStore.startPermitJoin(60); // 60 seconds
 	}
+
 </script>
 
 <Card title="thread.title">

@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "$lib/*": ["src/lib/*"]
+    },
     "moduleResolution": "bundler",
     "target": "ESNext",
     "module": "ESNext",

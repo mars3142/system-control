@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { t } from '../../i18n/store';
+	import { t } from '$lib/i18n/store';
 	import ModeButton from './modeButton.svelte';
 	import DropDown from '../common/dropDown.svelte';
 	import Card from '../common/card.svelte';
-	import { controlStore } from '../../stores/controlStore';
+	import { controlStore } from '$lib/stores/controlStore';
 
 	let mode = $state('simulation');
 	let activeSchema = $state('schema_01.csv');

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Header from './components/header.svelte';
-	import Footer from './components/footer.svelte';
+	import Header from '$lib/components/header.svelte';
+	import Footer from '$lib/components/footer.svelte';
 	import Index from './routes/index.svelte';
 	import Captive from './routes/captive.svelte';
 	import Router from 'svelte-spa-router';
-	import { lang } from './i18n/store';
+	import { lang } from '$lib/i18n/store';
 	import { Toaster } from 'svelte-french-toast';
 
 	const routes = {

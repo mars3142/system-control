@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { t } from '../../i18n/store';
+	import { t } from '$lib/i18n/store';
 	import Card from '../common/card.svelte';
 	import Toggle from '../common/toggle.svelte';
-	import { controlStore } from '../../stores/controlStore';
+	import { controlStore } from '$lib/stores/controlStore';
 
 	let lightOn = $state(false);
 	controlStore.subscribe((state) => {

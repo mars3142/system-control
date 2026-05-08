@@ -1,12 +1,12 @@
 <script lang="ts">
 	import Card from '../common/card.svelte';
-	import { t } from '../../i18n/store';
+	import { t } from '$lib/i18n/store';
 	import DropDown from '../common/dropDown.svelte';
 	import Button from '../common/button.svelte';
 	import toast from 'svelte-french-toast';
 	import SchemaRow from './schemaRow.svelte';
-	import { schemaStore, type SchemaRow as SchemaRowData } from '../../stores/configSchemaStore';
-	import { controlStore } from '../../stores/controlStore';
+	import { schemaStore, type SchemaRow as SchemaRowData } from '$lib/stores/configSchemaStore';
+	import { controlStore } from '$lib/stores/controlStore';
 	import { onMount } from 'svelte';
 
 	const schemas = [

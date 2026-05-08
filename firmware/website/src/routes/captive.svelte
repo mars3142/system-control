@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { t } from '../i18n/store';
-	import Card from '../components/common/card.svelte';
+	import { t } from '$lib/i18n/store';
+	import Card from '$lib/components/common/card.svelte';
 
 	let ssid = $state('');
 	let password = $state('');
