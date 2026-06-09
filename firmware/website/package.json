@@ -14,7 +14,7 @@
 		"tailwindcss": "^4.1.18",
 		"vite": "^7.1.2",
 		"vite-plugin-compression": "^0.5.1",
-		"vitest": "^3.2.4"
+		"vitest": "^3.2.6"
 	},
 	"dependencies": {
 		"@fontsource/atkinson-hyperlegible": "^5.2.6",
